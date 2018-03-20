@@ -35,8 +35,6 @@ public class Generator {
 //            return super.toString().toLowerCase();
 //        }
 //    }
-    static ClassPool pool = ClassPool.getDefault();
-
 
     private ClazzFileContainer clazzContainer;
 
@@ -57,7 +55,6 @@ public class Generator {
      */
     public Generator(String filename) {
         this.clazzContainer = new ClazzFileContainer(filename);
-        createMinExecutableFile();
     }
 
     /**
@@ -65,28 +62,12 @@ public class Generator {
      */
     public Generator() {
         this.clazzContainer = new ClazzFileContainer("GenClazz");
-        createMinExecutableFile();
     }
 
     public ClazzFileContainer getClazzContainer() {
         return clazzContainer;
     }
 
-
-    /**
-     * creates a minimal executable class-file
-     */
-    private void createMinExecutableFile() {
-        try {
-            CtMethod m = CtNewMethod.make(
-                    "public static void main(String[] args) {}",
-                    clazzContainer.getClazzFile());
-            this.clazzContainer.getClazzFile().addMethod(m);
-        } catch (CannotCompileException e) {
-            System.err.println("Cannot create minimal executable class-file");
-            e.printStackTrace();
-        }
-    }
 
     /**
      * checks compatibility of given value and fieldtype
@@ -113,6 +94,8 @@ public class Generator {
                 return value instanceof Boolean;
             case Char:
                 return value instanceof Character;
+            case String:
+                return value instanceof String;
             default:
                 return false;
         }
@@ -123,6 +106,10 @@ public class Generator {
      */
     public CtClass getClazzFile() {
         return clazzContainer.getClazzFile();
+    }
+
+    public CtMethod getMain() {
+        return this.clazzContainer.getMain();
     }
 
     /**
