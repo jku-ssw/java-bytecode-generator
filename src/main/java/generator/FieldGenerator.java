@@ -1,7 +1,7 @@
 package generator;
-
 import javassist.*;
 import utils.ClazzFileContainer;
+import utils.FieldType;
 
 public class FieldGenerator extends Generator {
 
@@ -27,7 +27,7 @@ public class FieldGenerator extends Generator {
      */
     public boolean generateStaticPrimitiveField(String name, FieldType type, Object value) {
         try {
-            CtField f = new CtField(type.clazzType, name, this.getClazzContainer().getClazzFile());
+            CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
                 this.getClazzFile().addField(f);
                 return true;
@@ -35,7 +35,8 @@ public class FieldGenerator extends Generator {
                 System.err.println("Incompatible type and value for primitive global field " + name);
                 return false;
             }
-            switch (type) {
+
+            switch (type.getName()) {
                 case Byte:
                     this.getClazzFile().addField(f, CtField.Initializer.constant((byte) value));
                     break;
@@ -85,10 +86,10 @@ public class FieldGenerator extends Generator {
         try {
             CtMethod main = this.getClazzFile().getDeclaredMethod("main");
             if (value == null) {
-                main.addLocalVariable(name, type.clazzType);
+                main.addLocalVariable(name, type.getClazzType());
             } else {
                 if (isAssignable(value, type)) {
-                    main.addLocalVariable(name, type.clazzType);
+                    main.addLocalVariable(name, type.getClazzType());
                     main.insertBefore("y = " + value + ";");
                 } else {
                     System.err.println("Value not assignable to Field " + name + " of type " + type.toString());

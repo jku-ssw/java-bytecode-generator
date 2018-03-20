@@ -2,38 +2,44 @@ package generator;
 
 import javassist.*;
 import utils.ClazzFileContainer;
-
 import java.io.IOException;
+import utils.FieldType;
 
 /**
  * capable of generating the smallest executable class-file
  */
 public class Generator {
 
-    public enum FieldType {
-        Byte(CtClass.byteType),
-        Short(CtClass.shortType),
-        Int(CtClass.intType),
-        Long(CtClass.longType),
-        Float(CtClass.floatType),
-        Double(CtClass.doubleType),
-        Boolean(CtClass.booleanType),
-        Char(CtClass.charType);
+//        public enum FieldType {
+//        Byte(CtClass.byteType),
+//        Short(CtClass.shortType),
+//        Int(CtClass.intType),
+//        Long(CtClass.longType),
+//        Float(CtClass.floatType),
+//        Double(CtClass.doubleType),
+//        Boolean(CtClass.booleanType),
+//        Char(CtClass.charType),
+//            String(pool.get("java.lang.String"));
+//
+//        final CtClass clazzType;
+//
+//        FieldType(CtClass clazzType) {
+//            try {
+//                this.clazzType = clazzType;
+//            } catch(NotFoundException e) {
+//            }
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return super.toString().toLowerCase();
+//        }
+//    }
+    static ClassPool pool = ClassPool.getDefault();
 
-
-        final CtClass clazzType;
-
-        FieldType(CtClass clazzType) {
-            this.clazzType = clazzType;
-        }
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-    }
 
     private ClazzFileContainer clazzContainer;
+
 
     /**
      * Takes an existing utils.ClazzFileContainer to extend
@@ -42,7 +48,6 @@ public class Generator {
      */
     public Generator(ClazzFileContainer cf) {
         this.clazzContainer = cf;
-        createMinExecutableFile();
     }
 
     /**
@@ -85,12 +90,13 @@ public class Generator {
 
     /**
      * checks compatibility of given value and fieldtype
+     *
      * @param value the value to check compatibility for
-     * @param type the type to which value is checked for compatibility
+     * @param type  the type to which value is checked for compatibility
      * @return {@code true} if value is assignable to a field of given type, otherwise {@code false}
      */
     static boolean isAssignable(Object value, FieldType type) {
-        switch (type) {
+        switch (type.getName()) {
             case Byte:
                 return value instanceof Byte;
             case Short:
@@ -113,7 +119,6 @@ public class Generator {
     }
 
     /**
-     *
      * @return the class-file of this generator
      */
     public CtClass getClazzFile() {
