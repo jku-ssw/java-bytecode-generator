@@ -1,24 +1,26 @@
 package utils;
+
 import javassist.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * contains a ctClass-Object, that is exportable as a new class-file
  * holds import information about the actual content of the class-file
  */
 public class ClazzFileContainer {
-    private static final int MAX_LOCALS = 100;
-    private static final int MAX_GLOBALS = 100;
-    private static final int MAX_METHODS = 100;
-    private static final int MAX_METHOD_CALLS = 100;
-
 
     private CtClass clazz;
 
-    private CtMethod main_;
+    private ClazzLogger clazzLogger;
 
     public ClazzFileContainer(String file_name) {
         ClassPool pool = ClassPool.getDefault();
         this.clazz = pool.makeClass(file_name);
+        this.clazzLogger = new ClazzLogger();
         createMinExecutableFile();
     }
 
@@ -30,12 +32,13 @@ public class ClazzFileContainer {
             CtMethod m = CtNewMethod.make(
                     "public static void main(String[] args) {}",
                     this.clazz);
-            this.clazz.addMethod(m);
-            main_ = this.getClazzFile().getDeclaredMethod("main");
-        } catch (CannotCompileException | NotFoundException e) {
+            clazz.addMethod(m);
+        } catch (CannotCompileException e) {
             System.err.println("Cannot create minimal executable class-file");
             e.printStackTrace();
         }
+        MethodLogger ml = new MethodLogger("main");
+        clazzLogger.putMethod(ml);
     }
 
     public CtClass getClazzFile() {
@@ -43,6 +46,17 @@ public class ClazzFileContainer {
     }
 
     public CtMethod getMain() {
-        return main_;
+        try {
+            return this.clazz.getDeclaredMethod("main");
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
+
+    public ClazzLogger getClazzLogger() {
+        return clazzLogger;
+    }
+
+
 }

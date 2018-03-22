@@ -38,19 +38,19 @@ public final class FieldType {
         return name;
     }
 
-    final FieldTypeName name;
+    private final FieldTypeName name;
 
-    final CtClass clazzType;
+    private final CtClass clazzType;
 
     private FieldType(FieldTypeName name) {
         this.name = name;
         CtClass c = null;
-        switch(name) {
+        switch (name) {
             case Byte:
                 c = CtClass.byteType;
                 break;
             case Short:
-                c= CtClass.shortType;
+                c = CtClass.shortType;
                 break;
             case Int:
                 c = CtClass.intType;

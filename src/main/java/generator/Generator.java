@@ -2,7 +2,9 @@ package generator;
 
 import javassist.*;
 import utils.ClazzFileContainer;
+
 import java.io.IOException;
+
 import utils.FieldType;
 
 /**
@@ -10,34 +12,7 @@ import utils.FieldType;
  */
 public class Generator {
 
-//        public enum FieldType {
-//        Byte(CtClass.byteType),
-//        Short(CtClass.shortType),
-//        Int(CtClass.intType),
-//        Long(CtClass.longType),
-//        Float(CtClass.floatType),
-//        Double(CtClass.doubleType),
-//        Boolean(CtClass.booleanType),
-//        Char(CtClass.charType),
-//            String(pool.get("java.lang.String"));
-//
-//        final CtClass clazzType;
-//
-//        FieldType(CtClass clazzType) {
-//            try {
-//                this.clazzType = clazzType;
-//            } catch(NotFoundException e) {
-//            }
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return super.toString().toLowerCase();
-//        }
-//    }
-
     private ClazzFileContainer clazzContainer;
-
 
     /**
      * Takes an existing utils.ClazzFileContainer to extend
