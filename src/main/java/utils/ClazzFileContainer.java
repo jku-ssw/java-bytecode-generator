@@ -2,11 +2,6 @@ package utils;
 
 import javassist.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * contains a ctClass-Object, that is exportable as a new class-file
  * holds import information about the actual content of the class-file
@@ -38,7 +33,7 @@ public class ClazzFileContainer {
             e.printStackTrace();
         }
         MethodLogger ml = new MethodLogger("main");
-        clazzLogger.putMethod(ml);
+        clazzLogger.logMethod(ml);
     }
 
     public CtClass getClazzFile() {

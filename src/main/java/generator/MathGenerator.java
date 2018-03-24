@@ -1,4 +1,4 @@
 package generator;
 
-public class MathGenerator {
+public class MathGenerator extends Generator {
 }

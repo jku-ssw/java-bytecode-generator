@@ -5,12 +5,17 @@ import utils.ClazzFileContainer;
 
 import java.io.IOException;
 
+import utils.ClazzLogger;
 import utils.FieldType;
 
 /**
  * capable of generating the smallest executable class-file
  */
 public class Generator {
+    static final int MAX_LOCALS = 100;
+    static final int MAX_GLOBALS = 100;
+    static final int MAX_METHODS = 100;
+    static final int MAX_METHOD_CALLS = 100;
 
     private ClazzFileContainer clazzContainer;
 
@@ -97,6 +102,10 @@ public class Generator {
             System.err.println("Cannot write class-file");
             e.printStackTrace();
         }
+    }
+
+    public ClazzLogger getClazzLogger() {
+        return this.clazzContainer.getClazzLogger();
     }
 }
 

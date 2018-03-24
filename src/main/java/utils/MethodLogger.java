@@ -1,13 +1,15 @@
 package utils;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class MethodLogger {
+import utils.FieldType.FieldTypeName;
+
+class MethodLogger {
 
     private String name;
 
-    private Map<FieldType, List<Field>> locals;
+    private Map<FieldTypeName, Map<String, Field>> locals;
 
     //TODO maybe add field for Parameters
 
@@ -20,8 +22,17 @@ public class MethodLogger {
         return name;
     }
 
-    public Map<FieldType, List<Field>> getLocals() {
+    public Map<FieldTypeName, Map<String, Field>> getLocals() {
         return locals;
+    }
+
+    public boolean hasField(String fieldName) {
+        for (FieldType.FieldTypeName fieldTypeName : FieldType.FieldTypeName.values()) {
+            if (this.locals.get(fieldTypeName) != null && this.locals.get(fieldTypeName).get(fieldName) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
