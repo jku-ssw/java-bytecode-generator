@@ -5,11 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import utils.FieldType.FieldTypeName;
 
 public class ClazzLogger {
 
-    private Map<FieldTypeName, Map<String, Field>> globals;
+    private Map<FieldType, Map<String, Field>> globals;
     private Map<String, MethodLogger> methods;
 
     public ClazzLogger() {
@@ -22,25 +21,25 @@ public class ClazzLogger {
     }
 
     public void logGlobalField(String name, FieldType type, int modifiers) {
-        Field f = new Field(name, modifiers);
-        if (globals.get(type.getName()) == null) {
+        Field f = new Field(name, modifiers, type);
+        if (globals.get(type) == null) {
             Map<String, Field> m = new HashMap<>();
             m.put(name, f);
-            globals.put(type.getName(), m);
+            globals.put(type, m);
         } else {
-            globals.get(type.getName()).put(name, f);
+            globals.get(type).put(name, f);
         }
     }
 
-    public void logLocalVariable(String name, FieldType type, String method) {
+    public void logVariable(String name, FieldType type, String method) {
         MethodLogger ml = methods.get(method);
-        Field f = new Field(name, -1);
+        Field f = new Field(name, 0, type);
         if (ml.getLocals().get(type) == null) {
             Map<String, Field> m = new HashMap<>();
             m.put(name, f);
-            ml.getLocals().put(type.getName(), m);
+            ml.getLocals().put(type, m);
         } else {
-            ml.getLocals().get(type.getName()).put(name, f);
+            ml.getLocals().get(type).put(name, f);
         }
     }
 
@@ -53,7 +52,7 @@ public class ClazzLogger {
     }
 
     public List<Field> getLocals(String methodName) {
-        Map<FieldTypeName, Map<String, Field>> locals = methods.get(methodName).getLocals();
+        Map<FieldType, Map<String, Field>> locals = methods.get(methodName).getLocals();
         List<Field> allLocals = new ArrayList<>();
         for (Map<String, Field> m : locals.values()) {
             allLocals.addAll(m.values());
@@ -66,19 +65,37 @@ public class ClazzLogger {
     }
 
     public boolean hasField(String fieldName) {
-        for (FieldTypeName fieldTypeName : FieldType.FieldTypeName.values()) {
-            if (this.globals.get(fieldTypeName) != null && this.globals.get(fieldTypeName).get(fieldName) != null) {
+        for (FieldType type : FieldType.values()) {
+            if (this.globals.get(type) != null && this.globals.get(type).get(fieldName) != null) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean hasField(String fieldName, String methodName) {
+    public Field getField(String fieldName) {
+        for (FieldType type : FieldType.values()) {
+            if (this.globals.get(type) != null && this.globals.get(type).get(fieldName) != null) {
+                return this.globals.get(type).get(fieldName);
+            }
+        }
+        return null;
+    }
+
+    public boolean hasVariable(String fieldName, String methodName) {
         if (this.methods.get(methodName) != null) {
-            return this.methods.get(methodName).hasField(fieldName);
+            return this.methods.get(methodName).hasVariable(fieldName);
         } else {
             return false;
         }
     }
+
+    public Field getVariable(String fieldName, String methodName) {
+        if (this.methods.get(methodName) != null) {
+            return this.methods.get(methodName).getVariable(fieldName);
+        } else {
+            return null;
+        }
+    }
+
 }

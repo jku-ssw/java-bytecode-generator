@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class ProbabilityParser {
 
-    private static final String[] option_signatures = {"h", "f", "fa", "m", "mc"};
-    private String[] args = null;
+    private static final String[] option_signatures = {"h", "f", "v", "a", "m", "mc"};
+    private final String[] args;
     private Options options = new Options();
     private Map<String, Integer> probabilities = new HashMap<>();
 
@@ -17,12 +17,13 @@ public class ProbabilityParser {
         this.args = args;
         this.options.addOption("h", "help", false, "Lists all options and how to use them");
         this.options.addOption("f", "field_probability", true, "Probability to generate Fields");
-        this.options.addOption("fa", "field_access_probability", true, "Probability to generate access to Fields");
+        this.options.addOption("v", "variable_probability", true, "Probability to generate variables");
+        this.options.addOption("a", "assign_probability", true, "Probability for assigning values to variables or fields");
         this.options.addOption("m", "method_probability", true, "Probability to generate Methods");
         this.options.addOption("mc", "method_call_probability", true, "Probability to generate Method Calls");
     }
 
-    public int[] parse() {
+    public void parse() {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
 
@@ -48,7 +49,6 @@ public class ProbabilityParser {
             System.err.println("Failed to parse command line properties");
             e.printStackTrace();
         }
-        return null;
     }
 
     private void help() {
@@ -61,8 +61,12 @@ public class ProbabilityParser {
         return probabilities.get("f");
     }
 
-    public int getFieldAccessProbabilty() {
-        return probabilities.get("fa");
+    public int getVariableProbability() {
+        return probabilities.get("v");
+    }
+
+    public int getAssignProbability() {
+        return probabilities.get("a");
     }
 
     public int getMethodProbability() {

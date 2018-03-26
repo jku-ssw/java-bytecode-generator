@@ -57,7 +57,7 @@ public class Generator {
      * @return {@code true} if value is assignable to a field of given type, otherwise {@code false}
      */
     static boolean isAssignable(Object value, FieldType type) {
-        switch (type.getName()) {
+        switch (type) {
             case Byte:
                 return value instanceof Byte;
             case Short:
@@ -89,7 +89,7 @@ public class Generator {
     }
 
     public CtMethod getMain() {
-        return this.clazzContainer.getMain();
+        return this.getMethod("main");
     }
 
     /**
@@ -106,6 +106,41 @@ public class Generator {
 
     public ClazzLogger getClazzLogger() {
         return this.clazzContainer.getClazzLogger();
+    }
+
+    static boolean validateModifiers(int[] modifiers) {
+        int numberOfAccessModifiers = 0;
+        for (int m : modifiers) {
+            switch (m) {
+                case Modifier.STATIC:
+                    break;
+                case Modifier.PUBLIC:
+                    numberOfAccessModifiers++;
+                    break;
+                case Modifier.PRIVATE:
+                    numberOfAccessModifiers++;
+                    break;
+                case Modifier.PROTECTED:
+                    numberOfAccessModifiers++;
+                    break;
+                case Modifier.FINAL:
+                    break;
+                default:
+                    return false;
+            }
+        }
+        if (numberOfAccessModifiers > 1) return false;
+        else return true;
+    }
+
+    public CtMethod getMethod(String methodName) {
+        try {
+            return this.getClazzFile().getDeclaredMethod(methodName);
+        } catch (NotFoundException e) {
+            System.err.println("Method " + methodName + " not found");
+            e.printStackTrace();
+            return null;
+        }
     }
 }
 

@@ -40,14 +40,6 @@ public class ClazzFileContainer {
         return clazz;
     }
 
-    public CtMethod getMain() {
-        try {
-            return this.clazz.getDeclaredMethod("main");
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     public ClazzLogger getClazzLogger() {
         return clazzLogger;

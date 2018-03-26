@@ -7,25 +7,29 @@ import utils.FieldType;
 public class Testing {
 
     public static void main(String[] args)  {
-        System.out.println(args.length == 0);
 
         //TODO handle UserInput Parameters: Probabilities, filename, optionals
 
         FieldAndVarGenerator fld_generator = new FieldAndVarGenerator("MyTestClazz");
 
         //generate global field
-        int[] modifier = {Modifier.STATIC, Modifier.FINAL};
-        boolean gf = fld_generator.generateField("x", FieldType.boolean_, true, modifier);
-        boolean sf = fld_generator.generateField("z", FieldType.string_, "Hallo", modifier);
-        boolean sf2 = fld_generator.generateField("a", FieldType.string_, null, modifier);
+        int[] modifier = {Modifier.STATIC};
+        boolean gf = fld_generator.generateField("x", FieldType.Boolean, true, modifier);
+        boolean sf = fld_generator.generateField("z", FieldType.String, "Hallo", modifier);
+        boolean sf2 = fld_generator.generateField("a", FieldType.String, null, modifier);
 
         //generate local field
-        boolean lf = fld_generator.generateVariableInMain("y", FieldType.int_, 3);
+        boolean lf = fld_generator.generateVariable("y", FieldType.Int, 3, "main");
+
+        fld_generator.setFieldValue("x", false, "main");
+        fld_generator.setVariableValue("y", 300, "main");
+        fld_generator.setFieldValue("a", "Hey", "main");
 
         fld_generator.generatePrintFieldStatement("x");
         fld_generator.generatePrintFieldStatement("z");
         fld_generator.generatePrintFieldStatement("a");
         fld_generator.generatePrintVariableStatement("y", "main");
+
 
         //generate field access
 

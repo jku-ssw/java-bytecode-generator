@@ -4,89 +4,64 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
-public final class FieldType {
+public enum FieldType {
+    Byte("byte"),
+    Short("short"),
+    Int("int"),
+    Long("long"),
+    Float("float"),
+    Double("double"),
+    Boolean("boolean"),
+    Char("char"),
+    String("String");
 
-    public enum FieldTypeName {
-        Byte,
-        Short,
-        Int,
-        Long,
-        Float,
-        Double,
-        Boolean,
-        Char,
-        String;
+    private CtClass clazzType;
+    private final String name;
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-    }
-
-    public final static FieldType byte_ = new FieldType(FieldType.FieldTypeName.Byte);
-    public final static FieldType short_ = new FieldType(FieldType.FieldTypeName.Short);
-    public final static FieldType int_ = new FieldType(FieldType.FieldTypeName.Int);
-    public final static FieldType long_ = new FieldType(FieldType.FieldTypeName.Long);
-    public final static FieldType Float_ = new FieldType(FieldType.FieldTypeName.Float);
-    public final static FieldType double_ = new FieldType(FieldType.FieldTypeName.Double);
-    public final static FieldType boolean_ = new FieldType(FieldType.FieldTypeName.Boolean);
-    public final static FieldType char_ = new FieldType(FieldType.FieldTypeName.Char);
-    public final static FieldType string_ = new FieldType(FieldType.FieldTypeName.String);
-
-
-    public FieldTypeName getName() {
-        return name;
-    }
-
-    private final FieldTypeName name;
-
-    private final CtClass clazzType;
-
-    private FieldType(FieldTypeName name) {
+    FieldType(java.lang.String name) {
         this.name = name;
-        CtClass c = null;
         switch (name) {
-            case Byte:
-                c = CtClass.byteType;
+            case "byte":
+                this.clazzType = CtClass.byteType;
                 break;
-            case Short:
-                c = CtClass.shortType;
+            case "short":
+                this.clazzType = CtClass.shortType;
                 break;
-            case Int:
-                c = CtClass.intType;
+            case "int":
+                this.clazzType = CtClass.intType;
                 break;
-            case Long:
-                c = CtClass.longType;
+            case "long":
+                this.clazzType = CtClass.longType;
                 break;
-            case Float:
-                c = CtClass.floatType;
+            case "float":
+                this.clazzType = CtClass.floatType;
                 break;
-            case Double:
-                c = CtClass.doubleType;
+            case "double":
+                this.clazzType = CtClass.doubleType;
                 break;
-            case Boolean:
-                c = CtClass.booleanType;
+            case "boolean":
+                this.clazzType = CtClass.booleanType;
                 break;
-            case Char:
-                c = CtClass.charType;
+            case "char":
+                this.clazzType = CtClass.charType;
                 break;
-            case String:
+            case "String":
                 try {
-                    c = ClassPool.getDefault().get("java.lang.String");
+                    this.clazzType = ClassPool.getDefault().get("java.lang.String");
                 } catch (NotFoundException e) {
                     System.err.println("Cannot create FieldType of class String");
                     e.printStackTrace();
                 }
+                break;
         }
-        this.clazzType = c;
     }
 
     public CtClass getClazzType() {
-        return clazzType;
+        return this.clazzType;
     }
 
-    @Override
-    public String toString() {
-        return name.toString();
+    public String getName() {
+        return this.name;
     }
+
 }

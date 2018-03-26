@@ -2,6 +2,7 @@ package generator;
 
 import javassist.*;
 import utils.ClazzFileContainer;
+import utils.Field;
 import utils.FieldType;
 
 public class FieldAndVarGenerator extends Generator {
@@ -34,7 +35,7 @@ public class FieldAndVarGenerator extends Generator {
             if (value == null) {
                 this.getClazzFile().addField(f);
             } else if (isAssignable(value, type)) {
-                switch (type.getName()) {
+                switch (type) {
                     case Byte:
                         this.getClazzFile().addField(f, CtField.Initializer.constant((byte) value));
                         break;
@@ -92,57 +93,29 @@ public class FieldAndVarGenerator extends Generator {
         }
     }
 
-    private static boolean validateModifiers(int[] modifiers) {
-        for (int m : modifiers) {
-            switch (m) {
-                case Modifier.STATIC:
-                    break;
-                case Modifier.PUBLIC:
-                    break;
-                case Modifier.PRIVATE:
-                    break;
-                case Modifier.PROTECTED:
-                    break;
-                case Modifier.FINAL:
-                    break;
-                default:
-                    return false;
-            }
-        }
-        return true;
-    }
-
-
-    /**
-     * @param name  the name of the generated field
-     * @param type  the datatype of the generated field
-     * @param value the value to be assigned to the field, null if the field should be initialized
-     * @return {@code true} if the field was generated successfully, otherwise {@code false}
-     */
-    public boolean generateVariableInMain(String name, FieldType type, Object value) {
-        return this.generateVariable(name, type, value, this.getMain());
-    }
 
     // TODO maybe add boolean for final modifier and add final in bytecode at Field Initialization
+
     /**
-     * @param name   the name of the generated field
-     * @param type   the datatype of the generated field
-     * @param value  the value to be assigned to the field, null if the field should be initialized
-     * @param method the method in which the variable is generated
+     * @param name       the name of the generated field
+     * @param type       the datatype of the generated field
+     * @param value      the value to be assigned to the field, null if the field should be initialized
+     * @param methodName the method in which the variable is generated
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    public boolean generateVariable(String name, FieldType type, Object value, CtMethod method) {
+    public boolean generateVariable(String name, FieldType type, Object value, String methodName) {
+        CtMethod method = this.getMethod(methodName);
         try {
             method.addLocalVariable(name, type.getClazzType());
             if (value != null) {
                 if (isAssignable(value, type)) {
-                    method.insertBefore("y = " + value + ";");
+                    method.insertBefore(name + " = " + value + ";");
                 } else {
                     System.err.println("Value not assignable to Field " + name + " of type " + type.toString());
                     return false;
                 }
             }
-            this.getClazzContainer().getClazzLogger().logLocalVariable(name, type, method.getName());
+            this.getClazzContainer().getClazzLogger().logVariable(name, type, method.getName());
             return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of primitive local field " + name + "  failed");
@@ -151,11 +124,11 @@ public class FieldAndVarGenerator extends Generator {
         }
     }
 
+
     public boolean generatePrintFieldStatement(String fieldName) {
         try {
             if (this.getClazzLogger().hasField(fieldName)) {
-                //System.out.println("\"" + fieldName +)
-                this.getMain().insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName +");");
+                this.getMain().insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
                 System.err.println("Class does not contain a Field " + fieldName);
@@ -170,9 +143,9 @@ public class FieldAndVarGenerator extends Generator {
 
     public boolean generatePrintVariableStatement(String fieldName, String methodName) {
         try {
-            if (this.getClazzLogger().hasField(fieldName, methodName)) {
+            if (this.getClazzLogger().hasVariable(fieldName, methodName)) {
                 CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
-                m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName +");");
+                m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
                 System.err.println("Class does not contain a Field " + fieldName);
@@ -185,21 +158,50 @@ public class FieldAndVarGenerator extends Generator {
         }
     }
 
-    //TODO
-    public boolean setFieldValue(String fieldName) {
-        try {
-            CtField f = this.getClazzFile().getDeclaredField(fieldName);
-        } catch (NotFoundException e) {
-            System.err.println("Cannot access global field " + fieldName);
-            e.printStackTrace();
+    public boolean setFieldValue(String fieldName, Object value, String methodName) {
+        CtMethod method = this.getMethod(methodName);
+        Field field = this.getClazzLogger().getField(fieldName);
+        if (method == null || field == null) {
+            return false;
+        } else {
+            return assign(field, value, this.getMethod(methodName));
         }
-        return false;
     }
 
-    //TODO
-    public boolean assignFieldToField(String fieldName1, String fieldName2) {
-        return false;
+    public boolean setVariableValue(String varName, Object value, String methodName) {
+        Field field = this.getClazzLogger().getVariable(varName, methodName);
+        CtMethod method = this.getMethod(methodName);
+        if (method == null || field == null) {
+            return false;
+        } else {
+            return assign(field, value, this.getMethod(methodName));
+        }
     }
+
+    private boolean assign(Field field, Object value, CtMethod method) {
+        if (isAssignable(value, field.getType()) && !field.isFinal()) {
+            try {
+                if (field.getType() == FieldType.String) {
+                    method.insertAfter(field.getName() + " = " + "\"" + value + "\"" + ";");
+                } else {
+                    method.insertAfter(field.getName() + " = " + value + ";");
+                }
+                return true;
+            } catch (CannotCompileException e) {
+                System.err.println("Cannot access global field " + field.getName());
+                e.printStackTrace();
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    //TODO
+//    public boolean assignFieldToField(String fieldName1, String fieldName2) {
+//        return false;
+//    }
 
 }
 
