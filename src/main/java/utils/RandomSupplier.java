@@ -3,14 +3,14 @@ package utils;
 import java.lang.reflect.Modifier;
 import java.util.Random;
 
-public class RndmSupplier {
+public class RandomSupplier {
 
-    private int char_num = 97;
-    private int repeat = 0;
+    static private int char_num = 97;
+    static private int repeat = 0;
     private final static Random random = new Random();
-    private final String stringCandidates = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    static private final String stringCandidates = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    public String getVarName() {
+    public static String getVarName() {
         if (char_num == 123) {
             repeat++;
             char_num = 97;
@@ -25,16 +25,12 @@ public class RndmSupplier {
         return name;
     }
 
-    public FieldType getFieldType() {
+    public static FieldType getFieldType() {
         int r = random.nextInt(FieldType.values().length);
         return FieldType.values()[r];
     }
 
-    public Object getValue(FieldType ft) {
-        boolean r = random.nextBoolean();
-        if(r) {
-            return null;
-        }
+    public static Object getValue(FieldType ft) {
         switch (ft) {
             case Byte:
                 return (byte) random.nextInt();
@@ -51,16 +47,17 @@ public class RndmSupplier {
             case Boolean:
                 return random.nextBoolean();
             case Char:
-                return (char) random.nextInt();
+                return stringCandidates.charAt(random.nextInt(stringCandidates.length()));
             case String:
+                //if(random.nextBoolean()) return null;
                 return getString();
             default:
                 return null;
         }
     }
 
-    public String getString() {
-        int length = random.nextInt(100);
+    public static String getString() {
+        int length = random.nextInt(10);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append(stringCandidates.charAt(random.nextInt(stringCandidates.length())));
@@ -72,7 +69,7 @@ public class RndmSupplier {
     /**
      * @return returns random modifiers with modifier static always included
      */
-    public int[] getModifiers() {
+    public static int[] getModifiers() {
         int numberOfModifiers = 1 + random.nextInt(3);
         int[] modifiers = new int[numberOfModifiers];
         modifiers[0] = Modifier.STATIC;

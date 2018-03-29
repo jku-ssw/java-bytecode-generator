@@ -4,6 +4,9 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
+/**
+ * Enum-Class of all possible Variable- and FieldTypes for ByteCodeGenerator
+ */
 public enum FieldType {
     Byte("byte"),
     Short("short"),
@@ -56,10 +59,16 @@ public enum FieldType {
         }
     }
 
+    /**
+     * @return returns the CtType of this FieldType
+     */
     public CtClass getClazzType() {
         return this.clazzType;
     }
 
+    /**
+     * @return returns the name of this FieldType
+     */
     public String getName() {
         return this.name;
     }

@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ProbabilityParser {
 
-    private static final String[] option_signatures = {"h", "f", "v", "a", "m", "mc"};
+    private static final String[] option_signatures = {"h", "f", "v", "ga", "la", "vtv", "m", "mc"};
     private final String[] args;
     private Options options = new Options();
     private Map<String, Integer> probabilities = new HashMap<>();
@@ -18,7 +18,9 @@ public class ProbabilityParser {
         this.options.addOption("h", "help", false, "Lists all options and how to use them");
         this.options.addOption("f", "field_probability", true, "Probability to generate Fields");
         this.options.addOption("v", "variable_probability", true, "Probability to generate variables");
-        this.options.addOption("a", "assign_probability", true, "Probability for assigning values to variables or fields");
+        this.options.addOption("ga", "global_assign_probability", true, "Probability for assigning values to fields");
+        this.options.addOption("la", "local_assign_probability", true, "Probability for assigning values to variables");
+        this.options.addOption("vtv", "variable_to_variable_probability", true, "Probability for assigning variables to variables");
         this.options.addOption("m", "method_probability", true, "Probability to generate Methods");
         this.options.addOption("mc", "method_call_probability", true, "Probability to generate Method Calls");
     }
@@ -65,8 +67,16 @@ public class ProbabilityParser {
         return probabilities.get("v");
     }
 
-    public int getAssignProbability() {
-        return probabilities.get("a");
+    public int getGlobalAssignProbability() {
+        return probabilities.get("ga");
+    }
+
+    public int getLocalAssignProbability() {
+        return probabilities.get("la");
+    }
+
+    public int getVariableToVariableAssignProbability() {
+        return probabilities.get("vtv");
     }
 
     public int getMethodProbability() {

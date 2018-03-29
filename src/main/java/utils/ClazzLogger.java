@@ -1,101 +1,99 @@
 package utils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * logs Information about a generated class
+ */
+public class ClazzLogger extends MyLogger {
 
-public class ClazzLogger {
-
-    private Map<FieldType, Map<String, Field>> globals;
     private Map<String, MethodLogger> methods;
 
     public ClazzLogger() {
         methods = new HashMap<>();
-        globals = new HashMap<>();
+        this.variables = new HashMap<>();
     }
 
+    /**
+     * logs Information about a generated Method
+     *
+     * @param ml the MethodLogger in which the Information is stored
+     */
     public void logMethod(MethodLogger ml) {
         methods.put(ml.getName(), ml);
     }
 
-    public void logGlobalField(String name, FieldType type, int modifiers) {
-        Field f = new Field(name, modifiers, type);
-        if (globals.get(type) == null) {
-            Map<String, Field> m = new HashMap<>();
-            m.put(name, f);
-            globals.put(type, m);
-        } else {
-            globals.get(type).put(name, f);
+    /**
+     * logs Information about a generated Variable
+     *
+     * @param name       the name of the Variable
+     * @param type       the type of the Variable
+     * @param methodName the Method in which the Variable is declared
+     */
+    public void logVariable(String name, FieldType type, String methodName) {
+        if (methods.get(methodName) == null) {
+            System.err.println("Failed to log Variable " + name + "in Method " + methodName + ". Method does not exist");
+            return;
         }
+       methods.get(methodName).logVariable(name, type, 0);
     }
 
-    public void logVariable(String name, FieldType type, String method) {
-        MethodLogger ml = methods.get(method);
-        Field f = new Field(name, 0, type);
-        if (ml.getLocals().get(type) == null) {
-            Map<String, Field> m = new HashMap<>();
-            m.put(name, f);
-            ml.getLocals().put(type, m);
-        } else {
-            ml.getLocals().get(type).put(name, f);
-        }
-    }
-
-    public List<Field> getGlobals() {
-        List<Field> allGlobals = new ArrayList<>();
-        for (Map<String, Field> m : globals.values()) {
-            allGlobals.addAll(m.values());
-        }
-        return allGlobals;
-    }
-
+    /**
+     * @param methodName the Method, which's local Variables are returned
+     * @return returns a List of all Field-Objects of the Variables and Paramters of the method
+     */
     public List<Field> getLocals(String methodName) {
-        Map<FieldType, Map<String, Field>> locals = methods.get(methodName).getLocals();
-        List<Field> allLocals = new ArrayList<>();
-        for (Map<String, Field> m : locals.values()) {
-            allLocals.addAll(m.values());
+        MethodLogger ml = this.methods.get(methodName);
+        if(ml == null) {
+            System.err.println("Failed to get Locals of Method " + methodName +": " +
+                    "Method does not exist");
+            return null;
         }
-        return allLocals;
+        return ml.getVariables();
     }
 
-    public void logGlobalField(String name, FieldType type) {
-        logGlobalField(name, type, -1);
-    }
-
-    public boolean hasField(String fieldName) {
-        for (FieldType type : FieldType.values()) {
-            if (this.globals.get(type) != null && this.globals.get(type).get(fieldName) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Field getField(String fieldName) {
-        for (FieldType type : FieldType.values()) {
-            if (this.globals.get(type) != null && this.globals.get(type).get(fieldName) != null) {
-                return this.globals.get(type).get(fieldName);
-            }
-        }
-        return null;
-    }
-
+    /**
+     * checks if a variable exists in a given Method
+     *
+     * @param fieldName  the name of the variable
+     * @param methodName the name of the method
+     * @return {@code true} if the variable exists, else {@code false}
+     */
     public boolean hasVariable(String fieldName, String methodName) {
-        if (this.methods.get(methodName) != null) {
-            return this.methods.get(methodName).hasVariable(fieldName);
-        } else {
-            return false;
-        }
+        MethodLogger ml = methods.get(methodName);
+        if (ml != null) {
+            return ml.hasVariable(fieldName);
+        } else return false;
     }
 
-    public Field getVariable(String fieldName, String methodName) {
-        if (this.methods.get(methodName) != null) {
-            return this.methods.get(methodName).getVariable(fieldName);
+    /**
+     * @param varName
+     * @param methodName
+     * @return returns the Field-Object of the variable
+     */
+    public Field getVariable(String varName, String methodName) {
+        MethodLogger ml = methods.get(methodName);
+        if (ml != null) {
+            return ml.getVariable(varName);
         } else {
+            System.err.println("Failed to get Variable Object of Method " + methodName +": " +
+                    "Method does not exist");
             return null;
         }
     }
 
+    public Field getRandomVariable(String methodName) {
+        if (this.methods.get(methodName) == null) {
+            System.err.println("Method " + methodName + "does not exist");
+            return null;
+        }
+        return this.methods.get(methodName).getRandomVariable();
+
+    }
+
+    public boolean noLocals(String methodName) {
+        return methods.get(methodName).noVariables();
+    }
 }

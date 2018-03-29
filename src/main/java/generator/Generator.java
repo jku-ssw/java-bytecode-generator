@@ -4,8 +4,13 @@ import javassist.*;
 import utils.ClazzFileContainer;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import utils.ClazzLogger;
+import utils.Field;
 import utils.FieldType;
 
 /**
@@ -17,6 +22,10 @@ public class Generator {
     static final int MAX_METHODS = 100;
     static final int MAX_METHOD_CALLS = 100;
 
+
+    private static final List<FieldType> compWithShort = Arrays.asList(FieldType.Byte, FieldType.Short, FieldType.Char);
+    private static final List<FieldType> compWithInt = Arrays.asList(FieldType.Byte, FieldType.Short, FieldType.Char, FieldType.Int);
+    private static final List<FieldType> compWithLong = Arrays.asList(FieldType.Byte, FieldType.Short, FieldType.Char, FieldType.Int, FieldType.Long);
     private ClazzFileContainer clazzContainer;
 
     /**
@@ -79,6 +88,53 @@ public class Generator {
             default:
                 return false;
         }
+    }
+
+    static boolean isCompatibleTo(FieldType type1, FieldType type2) {
+        switch (type1) {
+            case Byte:
+                if (type2 == FieldType.Byte) return true;
+                break;
+            case Short:
+                if (compWithShort.contains(type2)) return true;
+                else return false;
+            case Int:
+                if (compWithInt.contains(type2)) return true;
+                else return false;
+            case Long:
+                if (compWithLong.contains(type2)) return true;
+                else return false;
+            case Float:
+                if (type2 == FieldType.Float) return true;
+                else return false;
+            case Double:
+                if (type2 == FieldType.Float || type2 == FieldType.Double) return true;
+                else return false;
+            case Boolean:
+                if (type2 == FieldType.Boolean) return true;
+                else return false;
+            case Char:
+                if (type2 == FieldType.Char || type2 == FieldType.Short) return true;
+                else return false;
+            case String:
+                if (type2 == FieldType.String) return true;
+                else return false;
+        }
+        return false;
+    }
+
+    private static <T> boolean contains2(final T[] array, final T v) {
+        if (v == null) {
+            for (final T e : array)
+                if (e == null)
+                    return true;
+        } else {
+            for (final T e : array)
+                if (e == v || v.equals(e))
+                    return true;
+        }
+
+        return false;
     }
 
     /**

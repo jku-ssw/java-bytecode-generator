@@ -12,24 +12,28 @@ public class ClazzFileContainer {
 
     private ClazzLogger clazzLogger;
 
+    /**
+     * generates a new minimal executable class and a new Clazzlogger
+     * @param file_name the name of the generated class
+     */
     public ClazzFileContainer(String file_name) {
         ClassPool pool = ClassPool.getDefault();
         this.clazz = pool.makeClass(file_name);
         this.clazzLogger = new ClazzLogger();
-        createMinExecutableFile();
+        createMinExecutableClazz();
     }
 
     /**
      * creates a minimal executable class-file
      */
-    private void createMinExecutableFile() {
+    private void createMinExecutableClazz() {
         try {
             CtMethod m = CtNewMethod.make(
                     "public static void main(String[] args) {}",
                     this.clazz);
             clazz.addMethod(m);
         } catch (CannotCompileException e) {
-            System.err.println("Cannot create minimal executable class-file");
+            System.err.println("Cannot create minimal executable class");
             e.printStackTrace();
         }
         MethodLogger ml = new MethodLogger("main");
@@ -41,6 +45,9 @@ public class ClazzFileContainer {
     }
 
 
+    /**
+     * @return the ClazzLogger Object, which contains information about the generated clazz
+     */
     public ClazzLogger getClazzLogger() {
         return clazzLogger;
     }
