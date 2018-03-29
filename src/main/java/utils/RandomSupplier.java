@@ -31,6 +31,7 @@ public class RandomSupplier {
     }
 
     public static Object getValue(FieldType ft) {
+       // if(random.nextInt(FieldType.values().length) == 3) return null;
         switch (ft) {
             case Byte:
                 return (byte) random.nextInt();
@@ -49,7 +50,6 @@ public class RandomSupplier {
             case Char:
                 return stringCandidates.charAt(random.nextInt(stringCandidates.length()));
             case String:
-                //if(random.nextBoolean()) return null;
                 return getString();
             default:
                 return null;
@@ -57,7 +57,7 @@ public class RandomSupplier {
     }
 
     public static String getString() {
-        int length = random.nextInt(10);
+        int length = random.nextInt(20);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append(stringCandidates.charAt(random.nextInt(stringCandidates.length())));

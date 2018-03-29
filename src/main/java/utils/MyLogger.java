@@ -50,6 +50,11 @@ abstract class MyLogger {
         return true;
     }
 
+    public boolean noVariables(FieldType type) {
+        if (variables.get(type) != null) return false;
+        return true;
+    }
+
     public Field getRandomVariable() {
         if (noVariables()) {
             System.err.println("Cannot return random Variable: no Variables available");
@@ -58,6 +63,17 @@ abstract class MyLogger {
         Random rnd = new Random();
         List<FieldType> types = new ArrayList<>(variables.keySet());
         Map<String, Field> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
+        List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
+        return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+    }
+
+    public Field getRandomVariableOfType(FieldType type) {
+        if (noVariables(type)) {
+            System.err.println("Cannot return random Variable: no Variables available");
+            return null;
+        }
+        Random rnd = new Random();
+        Map<String, Field> oneTypeGlobals = variables.get(type);
         List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }

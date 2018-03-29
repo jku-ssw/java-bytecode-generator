@@ -107,6 +107,9 @@ public class FieldGenerator extends Generator {
         CtMethod method = this.getMethod(methodName);
         try {
             method.addLocalVariable(name, type.getClazzType());
+            if (value == null && type == FieldType.String) { //objects initialized with null
+                method.insertBefore(name + " = " + value + ";");
+            }
             if (value != null) {
                 if (isAssignable(value, type)) {
                     if (type == FieldType.String) {
@@ -132,7 +135,6 @@ public class FieldGenerator extends Generator {
     public boolean generatePrintFieldStatement(String fieldName) {
         try {
             if (this.getClazzLogger().hasVariable(fieldName)) {
-                System.out.println("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 this.getMain().insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
@@ -150,8 +152,7 @@ public class FieldGenerator extends Generator {
         try {
             if (this.getClazzLogger().hasVariable(fieldName, methodName)) {
                 CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
-                System.out.println("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
-                m.insertAfter("System.out.println(\""+fieldName+"\");");
+                m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
                 System.err.println("Method " + methodName + " does not contain a Field " + fieldName);

@@ -37,7 +37,7 @@ public class ClazzLogger extends MyLogger {
             System.err.println("Failed to log Variable " + name + "in Method " + methodName + ". Method does not exist");
             return;
         }
-       methods.get(methodName).logVariable(name, type, 0);
+        methods.get(methodName).logVariable(name, type, 0);
     }
 
     /**
@@ -46,8 +46,8 @@ public class ClazzLogger extends MyLogger {
      */
     public List<Field> getLocals(String methodName) {
         MethodLogger ml = this.methods.get(methodName);
-        if(ml == null) {
-            System.err.println("Failed to get Locals of Method " + methodName +": " +
+        if (ml == null) {
+            System.err.println("Failed to get Locals of Method " + methodName + ": " +
                     "Method does not exist");
             return null;
         }
@@ -78,7 +78,7 @@ public class ClazzLogger extends MyLogger {
         if (ml != null) {
             return ml.getVariable(varName);
         } else {
-            System.err.println("Failed to get Variable Object of Method " + methodName +": " +
+            System.err.println("Failed to get Variable Object of Method " + methodName + ": " +
                     "Method does not exist");
             return null;
         }
@@ -90,7 +90,14 @@ public class ClazzLogger extends MyLogger {
             return null;
         }
         return this.methods.get(methodName).getRandomVariable();
+    }
 
+    public Field getRandomVariableOfType(FieldType type, String methodName) {
+        if (this.methods.get(methodName) == null) {
+            System.err.println("Method " + methodName + "does not exist");
+            return null;
+        }
+        return this.methods.get(methodName).getRandomVariableOfType(type);
     }
 
     public boolean noLocals(String methodName) {

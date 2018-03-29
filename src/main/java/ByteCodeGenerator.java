@@ -20,7 +20,7 @@ public class ByteCodeGenerator {
         RandomSupplier rs = new RandomSupplier();
         Random random = new Random();
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 10; i++) {
             int r = 1 + random.nextInt(100);
 
             //generate a new field with random type and value (may also be null)
@@ -49,23 +49,40 @@ public class ByteCodeGenerator {
                 Field f = fld_generator.getClazzLogger().getRandomVariable("main");
                 fld_generator.setLocalVariableValue(f, RandomSupplier.getValue(f.getType()), "main");
             }
-
+        }
+        for (int i = 0; i < 200; i++) {
+            int r = 1 + random.nextInt(100);
             if (r <= parser.getVariableToVariableAssignProbability()) {
-                System.out.println("here");
                 if (r <= parser.getGlobalAssignProbability()) {
-                    if (random.nextBoolean()) {
+                    if (random.nextBoolean()) { //assign value of a field to another field
                         Field f1 = fld_generator.getClazzLogger().getRandomVariable();
                         Field f2 = fld_generator.getClazzLogger().getRandomVariable();
-                        if (f1 != null && f2 != null) fld_generator.assignFieldToField(f1, f2, "main");
-                    } else {
+                        if (f1 != null && f2 != null) {
+                            System.out.println(fld_generator.assignFieldToField(f1, f2, "main"));
+                        }
+                    } else { //assign value of a variable to a field
                         Field f1 = fld_generator.getClazzLogger().getRandomVariable();
                         Field f2 = fld_generator.getClazzLogger().getRandomVariable("main");
-                        if (f1 != null && f2 != null) fld_generator.assignVarToField(f1, f2, "main");
+                        if (f1 != null && f2 != null) {
+                            System.out.println(fld_generator.assignVarToField(f1, f2, "main"));
+                        }
                     }
                 }
 
                 if (r <= parser.getLocalAssignProbability()) {
-
+                    if (random.nextBoolean()) { //assign value of a field to another field
+                        Field f1 = fld_generator.getClazzLogger().getRandomVariable("main");
+                        Field f2 = fld_generator.getClazzLogger().getRandomVariable("main");
+                        if (f1 != null && f2 != null) {
+                            System.out.println(fld_generator.assignVarToVar(f1, f2, "main"));
+                        }
+                    } else { //assign value of a variable to a field
+                        Field f1 = fld_generator.getClazzLogger().getRandomVariable("main");
+                        Field f2 = fld_generator.getClazzLogger().getRandomVariable();
+                        if (f1 != null && f2 != null) {
+                            System.out.println(fld_generator.assignFieldToVar(f1, f2, "main"));
+                        }
+                    }
                 }
             }
         }

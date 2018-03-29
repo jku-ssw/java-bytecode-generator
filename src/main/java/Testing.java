@@ -2,6 +2,7 @@ import generator.FieldGenerator;
 import javassist.*;
 import utils.Field;
 import utils.FieldType;
+import utils.RandomSupplier;
 
 
 public class Testing {
@@ -19,11 +20,13 @@ public class Testing {
         boolean sf2 = fld_generator.generateField("a", FieldType.String, null, modifier);
 
         //generate local field
-        boolean lf = fld_generator.generateLocalVariable("y", FieldType.Char, 'b', "main");
+        Object v = RandomSupplier.getValue(FieldType.Char);
+        System.out.println(v);
+        boolean lf = fld_generator.generateLocalVariable("y", FieldType.Char, v, "main");
         boolean lp = fld_generator.generateLocalVariable("m", FieldType.Int, -1000345, "main");
 
 //        fld_generator.setFieldValue("x", false, "main");
-        System.out.println(fld_generator.setLocalVariableValue(fld_generator.getClazzLogger().getVariable("y", "main"), 'k', "main"));
+        fld_generator.setLocalVariableValue(fld_generator.getClazzLogger().getVariable("y", "main"), 'k', "main");
 //        fld_generator.setFieldValue("a", "Hey", "main");
 
         fld_generator.generatePrintFieldStatement("x");
@@ -32,13 +35,12 @@ public class Testing {
         fld_generator.generatePrintLocalVariableStatement("y", "main");
 
 
-
         //fld_generator.getMain().insertAfter("System.out.println(k);");
 
         //generate field access
-        for(Field f: fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
-            fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
-        }
+//        for (Field f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
+//            fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
+//        }
 
         //write File
         fld_generator.writeFile();
@@ -46,7 +48,6 @@ public class Testing {
 //        for(Field f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
 //            System.out.println(f.getName());
 //        }
-
 
 
     }
