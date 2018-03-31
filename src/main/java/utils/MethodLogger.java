@@ -2,7 +2,7 @@ package utils;
 
 import java.util.HashMap;
 
-class MethodLogger extends MyLogger{
+public class MethodLogger extends MyLogger{
 
     private String name;
 

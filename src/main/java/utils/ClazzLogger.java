@@ -32,19 +32,19 @@ public class ClazzLogger extends MyLogger {
      * @param type       the type of the Variable
      * @param methodName the Method in which the Variable is declared
      */
-    public void logVariable(String name, FieldType type, String methodName) {
+    public void logVariable(String name, FieldVarType type, String methodName, boolean initialized) {
         if (methods.get(methodName) == null) {
             System.err.println("Failed to log Variable " + name + "in Method " + methodName + ". Method does not exist");
             return;
         }
-        methods.get(methodName).logVariable(name, type, 0);
+        methods.get(methodName).logVariable(name, type, 0, initialized);
     }
 
     /**
      * @param methodName the Method, which's local Variables are returned
-     * @return returns a List of all Field-Objects of the Variables and Paramters of the method
+     * @return returns a List of all FieldVarContainer-Objects of the Variables and Paramters of the method
      */
-    public List<Field> getLocals(String methodName) {
+    public List<FieldVarContainer> getLocals(String methodName) {
         MethodLogger ml = this.methods.get(methodName);
         if (ml == null) {
             System.err.println("Failed to get Locals of Method " + methodName + ": " +
@@ -71,9 +71,9 @@ public class ClazzLogger extends MyLogger {
     /**
      * @param varName
      * @param methodName
-     * @return returns the Field-Object of the variable
+     * @return returns the FieldVarContainer-Object of the variable
      */
-    public Field getVariable(String varName, String methodName) {
+    public FieldVarContainer getVariable(String varName, String methodName) {
         MethodLogger ml = methods.get(methodName);
         if (ml != null) {
             return ml.getVariable(varName);
@@ -84,7 +84,15 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public Field getRandomVariable(String methodName) {
+    public FieldVarContainer getRandomField() {
+        return this.getRandomVariable();
+    }
+
+    /**
+     * @param methodName the name of the method
+     * @return returns a random variable of the given method
+     */
+    public FieldVarContainer getRandomVariable(String methodName) {
         if (this.methods.get(methodName) == null) {
             System.err.println("Method " + methodName + "does not exist");
             return null;
@@ -92,15 +100,42 @@ public class ClazzLogger extends MyLogger {
         return this.methods.get(methodName).getRandomVariable();
     }
 
-    public Field getRandomVariableOfType(FieldType type, String methodName) {
+    /**
+     * @param type the type of which a compatible field is returned
+     * @return returns a random Field, that is compatible to a given type
+     */
+    public FieldVarContainer getRandomCompatibleField(FieldVarType type) {
+        FieldVarType randomType = getRandomCompatibleType(type);
+        return this.getRandomVariableOfType(randomType);
+    }
+
+    /**
+     * @param type       the type of which a compatible variable is returned
+     * @param methodName the method of which a random local variable is returned
+     * @return returns a random variable, that is compatible to a given type
+     */
+    public FieldVarContainer getRandomCompatibleVariable(FieldVarType type, String methodName) {
         if (this.methods.get(methodName) == null) {
             System.err.println("Method " + methodName + "does not exist");
             return null;
         }
-        return this.methods.get(methodName).getRandomVariableOfType(type);
+        FieldVarType randomType = getRandomCompatibleType(type);
+        return this.methods.get(methodName).getRandomVariableOfType(randomType);
     }
 
+    /**
+     * @param methodName the name of the method
+     * @return {@code true} if this method has no local variables, otherwise {@code false}
+     */
     public boolean noLocals(String methodName) {
         return methods.get(methodName).noVariables();
+    }
+
+    /**
+     * @param methodName the name of the method
+     * @return {@code true} if the method exists in the generated class, otherwise {@code false}
+     */
+    public boolean hasMethod(String methodName) {
+        return methods.get(methodName) != null;
     }
 }

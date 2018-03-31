@@ -25,13 +25,13 @@ public class RandomSupplier {
         return name;
     }
 
-    public static FieldType getFieldType() {
-        int r = random.nextInt(FieldType.values().length);
-        return FieldType.values()[r];
+    public static FieldVarType getFieldType() {
+        int r = random.nextInt(FieldVarType.values().length);
+        return FieldVarType.values()[r];
     }
 
-    public static Object getValue(FieldType ft) {
-       // if(random.nextInt(FieldType.values().length) == 3) return null;
+    public static Object getValue(FieldVarType ft) {
+        if(random.nextInt(FieldVarType.values().length) == 0) return null;
         switch (ft) {
             case Byte:
                 return (byte) random.nextInt();

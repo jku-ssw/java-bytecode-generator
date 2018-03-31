@@ -2,15 +2,17 @@ package utils;
 
 import java.lang.reflect.Modifier;
 
-public class Field {
+public class FieldVarContainer {
     private final String name;
     private final int modifiers;
-    private final FieldType type;
+    private final FieldVarType type;
+    boolean initilized = false;
 
-    public Field(String name, int modifiers, FieldType type) {
+    public FieldVarContainer(String name, int modifiers, FieldVarType type, boolean initilized) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
+        this.initilized = initilized;
     }
 
     public String getName() {
@@ -21,7 +23,15 @@ public class Field {
         return modifiers;
     }
 
-    public FieldType getType() {
+    public boolean isInitialized() {
+        return initilized;
+    }
+
+    public void setInitialized() {
+        this.initilized = true;
+    }
+
+    public FieldVarType getType() {
         return type;
     }
 

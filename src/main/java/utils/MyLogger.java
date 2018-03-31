@@ -3,13 +3,13 @@ package utils;
 import java.util.*;
 
 abstract class MyLogger {
-    Map<FieldType, Map<String, Field>> variables;
+    Map<FieldVarType, Map<String, FieldVarContainer>> variables;
 
 
-    public void logVariable(String name, FieldType type, int modifiers) {
-        Field f = new Field(name, modifiers, type);
+    public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
+        FieldVarContainer f = new FieldVarContainer(name, modifiers, type, initialized);
         if (variables.get(type) == null) {
-            Map<String, Field> m = new HashMap<>();
+            Map<String, FieldVarContainer> m = new HashMap<>();
             m.put(name, f);
             variables.put(type, m);
         } else {
@@ -17,16 +17,16 @@ abstract class MyLogger {
         }
     }
 
-    public List<Field> getVariables() {
-        List<Field> allGlobals = new ArrayList<>();
-        for (Map<String, Field> m : variables.values()) {
+    public List<FieldVarContainer> getVariables() {
+        List<FieldVarContainer> allGlobals = new ArrayList<>();
+        for (Map<String, FieldVarContainer> m : variables.values()) {
             allGlobals.addAll(m.values());
         }
         return allGlobals;
     }
 
     public boolean hasVariable(String fieldName) {
-        for (FieldType type : FieldType.values()) {
+        for (FieldVarType type : FieldVarType.values()) {
             if (this.variables.get(type) != null && this.variables.get(type).get(fieldName) != null) {
                 return true;
             }
@@ -34,8 +34,8 @@ abstract class MyLogger {
         return false;
     }
 
-    public Field getVariable(String fieldName) {
-        for (FieldType type : FieldType.values()) {
+    public FieldVarContainer getVariable(String fieldName) {
+        for (FieldVarType type : FieldVarType.values()) {
             if (this.variables.get(type) != null && this.variables.get(type).get(fieldName) != null) {
                 return this.variables.get(type).get(fieldName);
             }
@@ -44,38 +44,77 @@ abstract class MyLogger {
     }
 
     public boolean noVariables() {
-        for (FieldType t : variables.keySet()) {
+        for (FieldVarType t : variables.keySet()) {
             if (variables.get(t) != null) return false;
         }
         return true;
     }
 
-    public boolean noVariables(FieldType type) {
+    public boolean noVariables(FieldVarType type) {
         if (variables.get(type) != null) return false;
         return true;
     }
 
-    public Field getRandomVariable() {
+    FieldVarContainer getRandomVariable() {
         if (noVariables()) {
             System.err.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();
-        List<FieldType> types = new ArrayList<>(variables.keySet());
-        Map<String, Field> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
+        List<FieldVarType> types = new ArrayList<>(variables.keySet());
+        Map<String, FieldVarContainer> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
         List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }
 
-    public Field getRandomVariableOfType(FieldType type) {
+    public FieldVarContainer getRandomVariableOfType(FieldVarType type) {
         if (noVariables(type)) {
             System.err.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();
-        Map<String, Field> oneTypeGlobals = variables.get(type);
+        Map<String, FieldVarContainer> oneTypeGlobals = variables.get(type);
         List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+    }
+
+    static FieldVarType getRandomCompatibleType(FieldVarType type) {
+        FieldVarType randomType = null;
+        Random r = new Random();
+        int i;
+        switch (type) {
+            case Byte:
+                randomType = FieldVarType.Byte;
+                break;
+            case Short:
+                i = r.nextInt(FieldVarType.getCompWithShort().size());
+                randomType = FieldVarType.getCompWithShort().get(i);
+                break;
+            case Int:
+                i = r.nextInt(FieldVarType.getCompWithInt().size());
+                randomType = FieldVarType.getCompWithInt().get(i);
+                break;
+            case Long:
+                i = r.nextInt(FieldVarType.getCompWithLong().size());
+                randomType = FieldVarType.getCompWithLong().get(i);
+                break;
+            case Float:
+                randomType = FieldVarType.Float;
+                break;
+            case Double:
+                i = r.nextInt(FieldVarType.getCompWithDouble().size());
+                randomType = FieldVarType.getCompWithDouble().get(i);
+                break;
+            case Boolean:
+                randomType = FieldVarType.Boolean;
+                break;
+            case Char:
+                randomType = FieldVarType.Char;
+                break;
+            case String:
+                randomType = FieldVarType.String;
+        }
+        return randomType;
     }
 
 }

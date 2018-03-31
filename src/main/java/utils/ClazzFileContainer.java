@@ -40,6 +40,10 @@ public class ClazzFileContainer {
         clazzLogger.logMethod(ml);
     }
 
+    /**
+     *
+     * @return returns the CtClass-Object of the clazz contained in this ClazzFileContainer
+     */
     public CtClass getClazzFile() {
         return clazz;
     }

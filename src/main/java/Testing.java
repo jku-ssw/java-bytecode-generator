@@ -1,7 +1,6 @@
 import generator.FieldGenerator;
 import javassist.*;
-import utils.Field;
-import utils.FieldType;
+import utils.FieldVarType;
 import utils.RandomSupplier;
 
 
@@ -15,15 +14,15 @@ public class Testing {
 
         //generate global field
         int[] modifier = {Modifier.STATIC};
-        boolean gf = fld_generator.generateField("x", FieldType.Char, 'c', modifier);
-        boolean sf = fld_generator.generateField("z", FieldType.String, "Hallo", modifier);
-        boolean sf2 = fld_generator.generateField("a", FieldType.String, null, modifier);
+        boolean gf = fld_generator.generateField("x", FieldVarType.Char, 'c', modifier);
+        boolean sf = fld_generator.generateField("z", FieldVarType.String, "Hallo", modifier);
+        boolean sf2 = fld_generator.generateField("a", FieldVarType.String, null, modifier);
 
         //generate local field
-        Object v = RandomSupplier.getValue(FieldType.Char);
+        Object v = RandomSupplier.getValue(FieldVarType.Char);
         System.out.println(v);
-        boolean lf = fld_generator.generateLocalVariable("y", FieldType.Char, v, "main");
-        boolean lp = fld_generator.generateLocalVariable("m", FieldType.Int, -1000345, "main");
+        boolean lf = fld_generator.generateLocalVariable("y", FieldVarType.Char, v, "main");
+        boolean lp = fld_generator.generateLocalVariable("m", FieldVarType.Int, -1000345, "main");
 
 //        fld_generator.setFieldValue("x", false, "main");
         fld_generator.setLocalVariableValue(fld_generator.getClazzLogger().getVariable("y", "main"), 'k', "main");
@@ -38,14 +37,14 @@ public class Testing {
         //fld_generator.getMain().insertAfter("System.out.println(k);");
 
         //generate field access
-//        for (Field f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
+//        for (FieldVarContainer f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
 //            fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
 //        }
 
         //write File
         fld_generator.writeFile();
 //
-//        for(Field f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
+//        for(FieldVarContainer f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
 //            System.out.println(f.getName());
 //        }
 

@@ -4,10 +4,13 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Enum-Class of all possible Variable- and FieldTypes for ByteCodeGenerator
+ * Enum-Class of all possible Variable- and FieldTypes in the ByteCodeGenerator
  */
-public enum FieldType {
+public enum FieldVarType {
     Byte("byte"),
     Short("short"),
     Int("int"),
@@ -18,10 +21,15 @@ public enum FieldType {
     Char("char"),
     String("String");
 
+    private static final List<FieldVarType> compWithShort = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
+    private static final List<FieldVarType> compWithInt = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
+    private static final List<FieldVarType> compWithLong = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int, FieldVarType.Long);
+    private static final List<FieldVarType> compWithDouble = Arrays.asList(FieldVarType.Float, FieldVarType.Double);
+
     private CtClass clazzType;
     private final String name;
 
-    FieldType(java.lang.String name) {
+    FieldVarType(java.lang.String name) {
         this.name = name;
         switch (name) {
             case "byte":
@@ -52,22 +60,39 @@ public enum FieldType {
                 try {
                     this.clazzType = ClassPool.getDefault().get("java.lang.String");
                 } catch (NotFoundException e) {
-                    System.err.println("Cannot create FieldType of class String");
+                    System.err.println("Cannot create FieldVarType of class String");
                     e.printStackTrace();
                 }
                 break;
         }
     }
 
+    public static List<FieldVarType> getCompWithShort() {
+        return compWithShort;
+    }
+
+    public static List<FieldVarType> getCompWithInt() {
+        return compWithInt;
+    }
+
+
+    public static List<FieldVarType> getCompWithLong() {
+        return compWithLong;
+    }
+
+    public static List<FieldVarType> getCompWithDouble() {
+        return compWithDouble;
+    }
+
     /**
-     * @return returns the CtType of this FieldType
+     * @return returns the CtClass of this FieldVarType
      */
     public CtClass getClazzType() {
         return this.clazzType;
     }
 
     /**
-     * @return returns the name of this FieldType
+     * @return returns the name of this FieldVarType
      */
     public String getName() {
         return this.name;
