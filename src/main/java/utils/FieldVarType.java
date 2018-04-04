@@ -19,7 +19,8 @@ public enum FieldVarType {
     Double("double"),
     Boolean("boolean"),
     Char("char"),
-    String("String");
+    String("String"),
+    Void("void");
 
     private static final List<FieldVarType> compWithShort = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
     private static final List<FieldVarType> compWithInt = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
@@ -64,6 +65,8 @@ public enum FieldVarType {
                     e.printStackTrace();
                 }
                 break;
+            case "void":
+                this.clazzType = CtClass.voidType;
         }
     }
 

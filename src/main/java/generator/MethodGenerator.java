@@ -8,6 +8,8 @@ import utils.FieldVarType;
 import utils.MethodLogger;
 import utils.RandomSupplier;
 
+import java.util.Random;
+
 public class MethodGenerator extends Generator {
 
     public MethodGenerator(String filename) {
@@ -22,24 +24,37 @@ public class MethodGenerator extends Generator {
         super();
     }
 
-    public boolean generateMethod(String name, FieldVarType returnType, FieldVarType[] params, int[] modifiers) {
+    public boolean generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int[] modifiers) {
+        if (returnType == null || paramTypes == null || modifiers == null) return false;
         try {
+            MethodLogger ml = new MethodLogger(name);
+
             StringBuilder paramsStrB = new StringBuilder("");
-            if (params != null) {
-                paramsStrB.append(params[0].getName() + " " + RandomSupplier.getVarName());
-                for (int i = 1; i < params.length; i++) {
+            if (paramTypes != null) {
+                paramsStrB.append(paramTypes[0].getName() + " " + RandomSupplier.getVarName());
+                for (int i = 1; i < paramTypes.length; i++) {
                     paramsStrB.append(", ");
-                    paramsStrB.append(params[0].getName() + " " + RandomSupplier.getVarName());
+                    String paramName = RandomSupplier.getVarName();
+                    ml.logParam(paramName, paramTypes[0]);
+                    paramsStrB.append(paramTypes[0].getName() + " " + paramName);
                 }
             }
-            String returnTypeStr = returnType != null ? returnType.getName() + " " : "void ";
+
+            String returnTypeStr = returnType.getName();
+
+            System.out.println(returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
+                    generateMethodBody(returnType) + " }");
             CtMethod newMethod = CtNewMethod.make(
-                    returnTypeStr + name + "(" + paramsStrB.toString() + ") { " +
-                            /*generateMethodBody() + */  " }", this.getClazzFile());
-            newMethod.setModifiers(mergeModifiers(modifiers));
+                    returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
+                            generateMethodBody(returnType) + " }", this.getClazzFile());
+
+            int mod = mergeModifiers(modifiers);
+            ml.setModifiers(mod);
+            newMethod.setModifiers(mod);
+
             this.getClazzFile().addMethod(newMethod);
-            MethodLogger ml = new MethodLogger(name);
             this.getClazzLogger().logMethod(ml);
+
             return true;
         } catch (CannotCompileException e) {
             e.printStackTrace();
@@ -47,11 +62,18 @@ public class MethodGenerator extends Generator {
         }
     }
 
-//    private String generateMethodBody() {
-//
-//    }
+    private String generateMethodBody(FieldVarType returnType) {
+        if (returnType == FieldVarType.Char) {
+            return "return '" + RandomSupplier.getValue(returnType) + "';";
+        } else if (returnType == FieldVarType.String) {
+            return "return \"" + RandomSupplier.getValue(returnType) + "\";";
+        } else if (returnType != null) {
+            return "return " + RandomSupplier.getValue(returnType) + ";";
+        }
+        return "";
+    }
 
-//    public boolean invokeMethod(String name) {
+//    public boolean generateMethodCall(String name) {
 //
 //    }
 

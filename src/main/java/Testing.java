@@ -14,23 +14,23 @@ public class Testing {
 
         //generate global field
         int[] modifier = {Modifier.STATIC};
-        boolean gf = fld_generator.generateField("x", FieldVarType.Char, 'c', modifier);
-        boolean sf = fld_generator.generateField("z", FieldVarType.String, "Hallo", modifier);
-        boolean sf2 = fld_generator.generateField("a", FieldVarType.String, null, modifier);
+        boolean gf = fld_generator.generateField("x", FieldVarType.Char, modifier, 'c');
+        boolean sf = fld_generator.generateField("z", FieldVarType.String, modifier, "Hallo");
+        boolean sf2 = fld_generator.generateField("a", FieldVarType.String, modifier, null);
 
         //generate local field
         Object v = RandomSupplier.getValue(FieldVarType.Char);
         System.out.println(v);
-        boolean lf = fld_generator.generateLocalVariable("y", FieldVarType.Char, v, "main");
-        boolean lp = fld_generator.generateLocalVariable("m", FieldVarType.Int, -1000345, "main");
+        boolean lf = fld_generator.generateLocalVariable("y", FieldVarType.Char, "main", v);
+        boolean lp = fld_generator.generateLocalVariable("m", FieldVarType.Int, "main");
 
 //        fld_generator.setFieldValue("x", false, "main");
         fld_generator.setLocalVariableValue(fld_generator.getClazzLogger().getVariable("y", "main"), 'k', "main");
 //        fld_generator.setFieldValue("a", "Hey", "main");
 
-        fld_generator.generatePrintFieldStatement("x");
-        fld_generator.generatePrintFieldStatement("z");
-        fld_generator.generatePrintFieldStatement("a");
+        fld_generator.generatePrintFieldStatement("x", "main");
+        fld_generator.generatePrintFieldStatement("z", "main");
+        fld_generator.generatePrintFieldStatement("a", "main");
         fld_generator.generatePrintLocalVariableStatement("y", "main");
 
 

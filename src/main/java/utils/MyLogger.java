@@ -57,7 +57,7 @@ abstract class MyLogger {
 
     FieldVarContainer getRandomVariable() {
         if (noVariables()) {
-            System.err.println("Cannot return random Variable: no Variables available");
+            System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();
@@ -69,7 +69,7 @@ abstract class MyLogger {
 
     public FieldVarContainer getRandomVariableOfType(FieldVarType type) {
         if (noVariables(type)) {
-            System.err.println("Cannot return random Variable: no Variables available");
+            System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();

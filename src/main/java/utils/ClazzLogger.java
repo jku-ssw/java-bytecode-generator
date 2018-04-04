@@ -138,4 +138,12 @@ public class ClazzLogger extends MyLogger {
     public boolean hasMethod(String methodName) {
         return methods.get(methodName) != null;
     }
+
+    /**
+     * @param methodName the name of the method
+     * @return returns the MethodLogger of this method
+     */
+    public MethodLogger getMethodLogger(String methodName) {
+        return methods.get(methodName);
+    }
 }

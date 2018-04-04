@@ -56,29 +56,32 @@ public class Generator {
      * @param type  the type to which value is checked for compatibility
      * @return {@code true} if value is assignable to a field of given type, otherwise {@code false}
      */
-    static boolean isAssignable(Object value, FieldVarType type) {
-        switch (type) {
-            case Byte:
-                return value instanceof Byte;
-            case Short:
-                return value instanceof Short;
-            case Int:
-                return value instanceof Integer;
-            case Long:
-                return value instanceof Long;
-            case Float:
-                return value instanceof Float;
-            case Double:
-                return value instanceof Double;
-            case Boolean:
-                return value instanceof Boolean;
-            case Char:
-                return value instanceof Character;
-            case String:
-                return value instanceof String;
-            default:
-                return false;
-        }
+    static boolean isAssignable(Object[] value, FieldVarType type) {
+        if (value.length == 0) return false;
+        if (value.length == 1) {
+            switch (type) {
+                case Byte:
+                    return value[0] instanceof Byte;
+                case Short:
+                    return value[0] instanceof Short;
+                case Int:
+                    return value[0] instanceof Integer;
+                case Long:
+                    return value[0] instanceof Long;
+                case Float:
+                    return value[0] instanceof Float;
+                case Double:
+                    return value[0] instanceof Double;
+                case Boolean:
+                    return value[0] instanceof Boolean;
+                case Char:
+                    return value[0] instanceof Character;
+                case String:
+                    return value[0] instanceof String;
+                default:
+                    return false;
+            }
+        } else return false;
     }
 
     static boolean isCompatibleTo(FieldVarType type1, FieldVarType type2) {
@@ -188,7 +191,7 @@ public class Generator {
         }
     }
 
-    static int mergeModifiers(int [] modifiers) {
+    static int mergeModifiers(int[] modifiers) {
         int merged_modifiers = modifiers[0];
         for (int i = 1; i < modifiers.length; i++) {
             merged_modifiers |= modifiers[i];

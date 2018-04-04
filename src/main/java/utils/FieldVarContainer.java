@@ -38,4 +38,8 @@ public class FieldVarContainer {
     public boolean isFinal() {
         return (modifiers & Modifier.FINAL) != 0;
     }
+
+    public boolean isStatic() {
+        return (modifiers & Modifier.STATIC) != 0;
+    }
 }

@@ -4,34 +4,67 @@ import java.lang.reflect.Modifier;
 import java.util.Random;
 
 public class RandomSupplier {
-
-    static private int char_num = 97;
-    static private int repeat = 0;
+    static private int methodCharNum = 97;
+    static private int varCharNum = 97;
+    static private int varRepeat = 0;
+    static private int methodRepeat = 0;
     private final static Random random = new Random();
     static private final String stringCandidates = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     public static String getVarName() {
-        if (char_num == 123) {
-            repeat++;
-            char_num = 97;
+        if (varCharNum == 123) {
+            varRepeat++;
+            varCharNum = 97;
         }
-        char c = (char) char_num;
-        char_num++;
-        String varname = String.valueOf(c);
-        String name = varname;
-        for (int i = 0; i < repeat; i++) {
-            name = name + varname;
+        char c = (char) varCharNum;
+        varCharNum++;
+        String character = String.valueOf(c);
+        String name = character;
+        for (int i = 0; i < varRepeat; i++) {
+            name = name + character;
         }
         return name;
     }
 
-    public static FieldVarType getFieldType() {
+    public static String getMethodName() {
+        if (methodCharNum == 123) {
+            methodRepeat++;
+            methodCharNum = 97;
+        }
+        char c = (char) methodCharNum;
+        methodCharNum++;
+        String character = String.valueOf(c);
+        String name = "method" + character.toUpperCase();
+        for (int i = 0; i < methodRepeat; i++) {
+            name = name + character;
+        }
+        return name;
+    }
+
+    public static FieldVarType getFieldVarType() {
+        int r = random.nextInt(FieldVarType.values().length - 1); //exclude voidType
+        return FieldVarType.values()[r];
+    }
+
+    public static FieldVarType[] getFieldVarTypes() {
+        int number = 1 + random.nextInt(FieldVarType.values().length - 2);
+        FieldVarType[] types = new FieldVarType[number];
+        for (int i = 0; i < number; i++) {
+            types[i] = getFieldVarType();
+        }
+        return types;
+    }
+
+    public static FieldVarType getReturnType() {
         int r = random.nextInt(FieldVarType.values().length);
         return FieldVarType.values()[r];
     }
 
     public static Object getValue(FieldVarType ft) {
-        if(random.nextInt(FieldVarType.values().length) == 0) return null;
+        if (ft.getClazzType().getName().startsWith("java.lang")) {
+            //for Objects 25% chance to be initialized with null
+            if (random.nextInt(4) == 0) return null;
+        }
         switch (ft) {
             case Byte:
                 return (byte) random.nextInt();

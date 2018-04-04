@@ -20,57 +20,60 @@ public class FieldGenerator extends Generator {
     }
 
     /**
-     * generates a static global field with optional default value
+     * generates a global field with optional default value
      *
      * @param name      the name of the generated field
-     * @param type      the datatype of the generated field
-     * @param value     the value to be assigned to the field, null if the field should be initialized
-     * @param modifiers array of Modifiers for the new field (from javassist class Modifier).
-     *                  For default modifier, set parameter to null.
+     * @param type      the dataType of the generated field
+     * @param value     the value to be assigned to the field, null if the field should not be initialized
+     * @param modifiers array of Modifiers for the new field (from javassist class Modifier)
+     *                  null for no modifiers
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    public boolean generateField(String name, FieldVarType type, Object value, int[] modifiers) {
+    public boolean generateField(String name, FieldVarType type, int[] modifiers, Object... value) {
         boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
-            if (value == null) {
+            if (value.length == 0) {
                 this.getClazzFile().addField(f);
+            } else if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
+                this.getClazzFile().addField(f, "null");
             } else if (isAssignable(value, type)) {
-                switch (type) {
-                    case Byte:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((byte) value));
-                        break;
-                    case Short:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((short) value));
-                        break;
-                    case Int:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((int) value));
-                        break;
-                    case Long:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((long) value));
-                        break;
-                    case Float:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((float) value));
-                        break;
-                    case Double:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((double) value));
-                        break;
-                    case Boolean:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((boolean) value));
-                        break;
-                    case Char:
-                        this.getClazzFile().addField(f, CtField.Initializer.constant((char) value));
-                        break;
-                    case String:
-                        this.getClazzFile().addField(f, "\"" + value + "\"");
-                        break;
+                if (value.length == 1) {
+                    switch (type) {
+                        case Byte:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((byte) value[0]));
+                            break;
+                        case Short:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((short) value[0]));
+                            break;
+                        case Int:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((int) value[0]));
+                            break;
+                        case Long:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((long) value[0]));
+                            break;
+                        case Float:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((float) value[0]));
+                            break;
+                        case Double:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((double) value[0]));
+                            break;
+                        case Boolean:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((boolean) value[0]));
+                            break;
+                        case Char:
+                            this.getClazzFile().addField(f, CtField.Initializer.constant((char) value[0]));
+                            break;
+                        case String:
+                            this.getClazzFile().addField(f, "\"" + value[0] + "\"");
+                            break;
+                    }
                 }
                 initialized = true;
             } else {
                 System.err.println("Incompatible type and value for primitive global field " + name);
                 return false;
             }
-
             if (modifiers == null) {
                 this.getClazzContainer().getClazzLogger().logVariable(name, type, 0, initialized);
                 return true;
@@ -94,39 +97,43 @@ public class FieldGenerator extends Generator {
 
 
     /**
-     * @param name       the name of the generated field
-     * @param type       the datatype of the generated field
-     * @param value      the value to be assigned to the field, null if the field should be initialized
+     * @param name       the name of the generated variable
+     * @param type       the dataType of the generated variable
+     * @param value      the value to be assigned to the field, null if the field should not be initialized
      * @param methodName the method in which the variable is generated
-     * @return {@code true} if the field was generated successfully, otherwise {@code false}
+     * @return {@code true} if the variable was generated successfully, otherwise {@code false}
      */
-    public boolean generateLocalVariable(String name, FieldVarType type, Object value, String methodName) {
+    public boolean generateLocalVariable(String name, FieldVarType type, String methodName, Object... value) {
         boolean initialized = false;
         CtMethod method = this.getMethod(methodName);
-        if (method == null) return false;
+        if (method == null) {
+            System.err.println("Method " + methodName + " does not exist");
+            return false;
+        }
         try {
             method.addLocalVariable(name, type.getClazzType());
-            if (value == null && type == FieldVarType.String) { //objects initialized with null
-                method.insertBefore(name + " = " + value + ";");
-                initialized = true;
-            }
-            if (value != null) {
+            //Objects can be initialized with null
+            if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
+                method.insertBefore(name + " = " + "null" + ";");
+            } else if (value.length != 0) {
                 if (isAssignable(value, type)) {
-                    if (type == FieldVarType.String) {
-                        method.insertBefore(name + " = " + "\"" + value + "\"" + ";");
-                    } else if (type == FieldVarType.Char) {
-                        method.insertBefore(name + " = " + "'" + value + "'" + ";");
-                    } else method.insertBefore(name + " = " + value + ";");
+                    if (value.length == 1) {
+                        if (type == FieldVarType.String) {
+                            method.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
+                        } else if (type == FieldVarType.Char) {
+                            method.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
+                        } else method.insertBefore(name + " = " + value[0] + ";");
+                    }
                     initialized = true;
                 } else {
-                    System.err.println("Value not assignable to FieldVarContainer " + name + " of type " + type.toString());
+                    System.err.println("Value not assignable to Variable " + name + " of type " + type.toString());
                     return false;
                 }
             }
             this.getClazzContainer().getClazzLogger().logVariable(name, type, method.getName(), initialized);
             return true;
         } catch (CannotCompileException e) {
-            System.err.println("Generation of local field " + name + "  failed");
+            System.err.println("Generation of local variable " + name + "  failed");
             e.printStackTrace();
             return false;
         }
@@ -134,29 +141,32 @@ public class FieldGenerator extends Generator {
 
 
     /**
-     * generates a System.out.println-Statement this field
+     * generates a System.out.println-Statement in the given Method for this field
      *
      * @param fieldName the name of the field
      * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
      */
-    public boolean generatePrintFieldStatement(String fieldName) {
+    public boolean generatePrintFieldStatement(String fieldName, String methodName) {
         try {
-            if (this.getClazzLogger().hasVariable(fieldName)) {
-                this.getMain().insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
+            if (this.getClazzLogger().hasVariable(fieldName) && this.getClazzLogger().hasMethod(methodName) &&
+                    (this.getClazzLogger().getVariable(fieldName).isStatic() ||
+                            !this.getClazzLogger().getMethodLogger(fieldName).isStatic())) {
+                CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
+                m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
-                System.err.println("Class does not contain a FieldVarContainer " + fieldName);
+                System.err.println("Class does not contain a Field " + fieldName);
                 return false;
             }
-        } catch (CannotCompileException e) {
-            System.err.println("Generation of PrintField-Statement failed");
+        } catch (CannotCompileException | NotFoundException e) {
+            System.err.println("Generation of PrintField-Statement for Field + " + fieldName + " failed");
             e.printStackTrace();
             return false;
         }
     }
 
     /**
-     * generates a System.out.println-Statement this variable
+     * generates a System.out.println-Statement in the given Method for this variable
      *
      * @param varName    the name of the variable
      * @param methodName the method in which the variable is declared and where the statement is generated
@@ -170,13 +180,11 @@ public class FieldGenerator extends Generator {
                 m.insertAfter("System.out.println(\"" + varName + " = \" + " + varName + ");");
                 return true;
             } else {
-                System.err.println("Method " + methodName + " does not contain a FieldVarContainer " + varName);
+                System.err.println("Method " + methodName + " does not contain a Variable " + varName);
                 return false;
             }
         } catch (CannotCompileException | NotFoundException e) {
-            FieldVarContainer f = this.getClazzLogger().getVariable(varName, methodName);
-            System.out.println(f.getName() + " " + f.getType());
-            System.err.println("Generation of PrintField-Statement failed");
+            System.err.println("Generation of Print-Statement for Variable/Field " + varName + "failed");
             e.printStackTrace();
             return false;
         }
@@ -225,7 +233,8 @@ public class FieldGenerator extends Generator {
      * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
      */
     private boolean assign(FieldVarContainer fieldVar, Object value, CtMethod method) {
-        if (isAssignable(value, fieldVar.getType()) && !fieldVar.isFinal()) {
+        //later: if value is of type Array -> cast to Object[]
+        if (isAssignable(new Object[]{value}, fieldVar.getType()) && !fieldVar.isFinal()) {
             try {
                 if (fieldVar.getType() == FieldVarType.String) {
                     method.insertAfter(fieldVar.getName() + " = " + "\"" + value + "\"" + ";");
