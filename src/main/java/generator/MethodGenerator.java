@@ -8,8 +8,6 @@ import utils.FieldVarType;
 import utils.MethodLogger;
 import utils.RandomSupplier;
 
-import java.util.Random;
-
 public class MethodGenerator extends Generator {
 
     public MethodGenerator(String filename) {
@@ -41,9 +39,6 @@ public class MethodGenerator extends Generator {
             }
 
             String returnTypeStr = returnType.getName();
-
-            System.out.println(returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
-                    generateMethodBody(returnType) + " }");
             CtMethod newMethod = CtNewMethod.make(
                     returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
                             generateMethodBody(returnType) + " }", this.getClazzFile());

@@ -37,10 +37,8 @@ public class ByteCodeGenerator {
                 Object value = rs.getValue(ft);
                 fld_generator.generateLocalVariable(rs.getVarName(), ft, "main", value);
             }
-        }
 
-        for (int i = 0; i < 10; i++) {
-            int r = 1 + random.nextInt(100);
+
             //randomly assign a value to an existing variable
             if (r <= parser.getGlobalAssignProbability()) {
                 if (fld_generator.getClazzLogger().noVariables()) continue;
@@ -53,10 +51,8 @@ public class ByteCodeGenerator {
                 FieldVarLogger f = fld_generator.getClazzLogger().getRandomVariable("main");
                 fld_generator.setLocalVariableValue(f, RandomSupplier.getValue(f.getType()), "main");
             }
-        }
 
-        for (int i = 0; i < 10; i++) {
-            int r = 1 + random.nextInt(100);
+
             if (r <= parser.getVariableToVariableAssignProbability()) {
                 if (r <= parser.getGlobalAssignProbability()) {
                     if (random.nextBoolean()) { //assign value of a field to another field
@@ -94,27 +90,13 @@ public class ByteCodeGenerator {
                     }
                 }
             }
-        }
 
-        for (int i = 0; i < 10; i++) {
-            int r = 1 + random.nextInt(100);
             if (r <= parser.getMethodProbability()) {
                 m_generator.generateMethod(RandomSupplier.getMethodName(), RandomSupplier.getReturnType(),
                         RandomSupplier.getFieldVarTypes(), RandomSupplier.getModifiers());
             }
         }
 
-
-//        m_generator.generateMethod("methodA" , null, rs.getModifiers());
-//
-//        m_generator.getMain().insertAfter("testPrint();");
-//        try {
-//            CtMethod m = fld_generator.getClazzFile().getDeclaredMethod("testPrint");
-//            System.out.println(m.getName());
-//        } catch (NotFoundException e) {
-//            System.err.println("Method " + "testPrint" + " not found");
-//            e.printStackTrace();
-//        }
 
         for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
             fld_generator.generatePrintFieldStatement(f.getName(), "main");

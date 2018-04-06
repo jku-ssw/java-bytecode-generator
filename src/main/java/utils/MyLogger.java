@@ -5,7 +5,14 @@ import java.util.*;
 abstract class MyLogger {
     Map<FieldVarType, Map<String, FieldVarLogger>> variables;
 
-
+    /**
+     * logs information about a generated Variable
+     *
+     * @param name        the name of the Variable
+     * @param type        the type of the Variable
+     * @param modifiers   the modifiers of the Variable
+     * @param initialized @code{true} if the variable is initialized, otherwise @code{false}
+     */
     public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
         FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
         if (variables.get(type) == null) {
@@ -17,32 +24,46 @@ abstract class MyLogger {
         }
     }
 
+    /**
+     * @return all logged Variables
+     */
     public List<FieldVarLogger> getVariables() {
-        List<FieldVarLogger> allGlobals = new ArrayList<>();
+        List<FieldVarLogger> allVariables = new ArrayList<>();
         for (Map<String, FieldVarLogger> m : variables.values()) {
-            allGlobals.addAll(m.values());
+            allVariables.addAll(m.values());
         }
-        return allGlobals;
+        return allVariables;
     }
 
-    public boolean hasVariable(String fieldName) {
+    /**
+     * @param varName the name of the Variable
+     * @return @code{true} if the logger contains information about this Variable, otherwise @code{false}
+     */
+    public boolean hasVariable(String varName) {
         for (FieldVarType type : FieldVarType.values()) {
-            if (this.variables.get(type) != null && this.variables.get(type).get(fieldName) != null) {
+            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
                 return true;
             }
         }
         return false;
     }
 
-    public FieldVarLogger getVariable(String fieldName) {
+    /**
+     * @param varName the name of the Variable
+     * @return the FieldVarLogger of this Variable
+     */
+    public FieldVarLogger getVariable(String varName) {
         for (FieldVarType type : FieldVarType.values()) {
-            if (this.variables.get(type) != null && this.variables.get(type).get(fieldName) != null) {
-                return this.variables.get(type).get(fieldName);
+            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
+                return this.variables.get(type).get(varName);
             }
         }
         return null;
     }
 
+    /**
+     * @return @code{true} if there are logged Variables
+     */
     public boolean noVariables() {
         for (FieldVarType t : variables.keySet()) {
             if (variables.get(t) != null) return false;
@@ -50,11 +71,17 @@ abstract class MyLogger {
         return true;
     }
 
+    /**
+     * @return @code{true} if there are logged Variables of this type
+     */
     public boolean noVariables(FieldVarType type) {
         if (variables.get(type) != null) return false;
         return true;
     }
 
+    /**
+     * @return the FieldVarLogger of random logged Variable
+     */
     FieldVarLogger getRandomVariable() {
         if (noVariables()) {
             System.out.println("Cannot return random Variable: no Variables available");
@@ -67,6 +94,10 @@ abstract class MyLogger {
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }
 
+    /**
+     * @param type the type of the Variable
+     * @return the FieldVarLogger of random logged Variable of this type
+     */
     public FieldVarLogger getRandomVariableOfType(FieldVarType type) {
         if (noVariables(type)) {
             System.out.println("Cannot return random Variable: no Variables available");
@@ -78,6 +109,10 @@ abstract class MyLogger {
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }
 
+    /**
+     * @param type
+     * @return a random FieldVarType that is compatible to type
+     */
     static FieldVarType getRandomCompatibleType(FieldVarType type) {
         FieldVarType randomType = null;
         Random r = new Random();
