@@ -30,7 +30,12 @@ public enum FieldVarType {
     private CtClass clazzType;
     private final String name;
 
-    FieldVarType(java.lang.String name) {
+    /**
+     * constructs a new FieldVarType with given name and ClazzType
+     *
+     * @param name the name of this FieldVarType
+     */
+    FieldVarType(String name) {
         this.name = name;
         switch (name) {
             case "byte":
@@ -70,19 +75,30 @@ public enum FieldVarType {
         }
     }
 
+    /**
+     * @return all FieldVarTypes compatible with Short
+     */
     public static List<FieldVarType> getCompWithShort() {
         return compWithShort;
     }
 
+    /**
+     * @return all FieldVarTypes compatible with Int
+     */
     public static List<FieldVarType> getCompWithInt() {
         return compWithInt;
     }
 
-
+    /**
+     * @return all FieldVarTypes compatible with Long
+     */
     public static List<FieldVarType> getCompWithLong() {
         return compWithLong;
     }
 
+    /**
+     * @return all FieldVarTypes compatible with Double
+     */
     public static List<FieldVarType> getCompWithDouble() {
         return compWithDouble;
     }

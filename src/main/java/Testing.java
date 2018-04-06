@@ -37,17 +37,16 @@ public class Testing {
         //fld_generator.getMain().insertAfter("System.out.println(k);");
 
         //generate field access
-//        for (FieldVarContainer f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
+//        for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
 //            fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
 //        }
 
         //write File
         fld_generator.writeFile();
 //
-//        for(FieldVarContainer f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
+//        for(FieldVarLogger f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
 //            System.out.println(f.getName());
 //        }
-
 
     }
 }

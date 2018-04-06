@@ -12,10 +12,6 @@ import utils.FieldVarType;
  * capable of generating the smallest executable class-file
  */
 public class Generator {
-    static final int MAX_LOCALS = 100;
-    static final int MAX_GLOBALS = 100;
-    static final int MAX_METHODS = 100;
-    static final int MAX_METHOD_CALLS = 100;
 
     private ClazzFileContainer clazzContainer;
 
@@ -84,6 +80,11 @@ public class Generator {
         } else return false;
     }
 
+    /**
+     * @param type1
+     * @param type2
+     * @return {@code true} if the types are compatible, otherwise {@code false}
+     */
     static boolean isCompatibleTo(FieldVarType type1, FieldVarType type2) {
         switch (type1) {
             case Byte:
@@ -124,9 +125,6 @@ public class Generator {
         return clazzContainer.getClazzFile();
     }
 
-    public CtMethod getMain() {
-        return this.getMethod("main");
-    }
 
     /**
      * write the CtClass-Object as a .class file
@@ -147,6 +145,12 @@ public class Generator {
         return this.clazzContainer.getClazzLogger();
     }
 
+    /**
+     * validates the modifiers
+     *
+     * @param modifiers the modifiers to validate
+     * @return @code{true} if the modifiers are valid, otherwise @code{false}
+     */
     static boolean validateModifiers(int[] modifiers) {
         int numberOfAccessModifiers = 0;
         for (int m : modifiers) {
@@ -191,6 +195,12 @@ public class Generator {
         }
     }
 
+    /**
+     * megeres the given array of modifiers into one Integer-variable
+     *
+     * @param modifiers the modifiers to merge
+     * @return the merged modifiers
+     */
     static int mergeModifiers(int[] modifiers) {
         int merged_modifiers = modifiers[0];
         for (int i = 1; i < modifiers.length; i++) {

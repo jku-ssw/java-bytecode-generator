@@ -1,6 +1,6 @@
 import generator.FieldGenerator;
 import generator.MethodGenerator;
-import utils.FieldVarContainer;
+import utils.FieldVarLogger;
 import utils.FieldVarType;
 import utils.ProbabilityParser;
 import utils.RandomSupplier;
@@ -44,13 +44,13 @@ public class ByteCodeGenerator {
             //randomly assign a value to an existing variable
             if (r <= parser.getGlobalAssignProbability()) {
                 if (fld_generator.getClazzLogger().noVariables()) continue;
-                FieldVarContainer f = fld_generator.getClazzLogger().getRandomField();
+                FieldVarLogger f = fld_generator.getClazzLogger().getRandomField();
                 fld_generator.setFieldValue(f, RandomSupplier.getValue(f.getType()), "main");
             }
 
             if (r <= parser.getLocalAssignProbability()) {
                 if (fld_generator.getClazzLogger().noLocals("main")) continue;
-                FieldVarContainer f = fld_generator.getClazzLogger().getRandomVariable("main");
+                FieldVarLogger f = fld_generator.getClazzLogger().getRandomVariable("main");
                 fld_generator.setLocalVariableValue(f, RandomSupplier.getValue(f.getType()), "main");
             }
         }
@@ -60,17 +60,17 @@ public class ByteCodeGenerator {
             if (r <= parser.getVariableToVariableAssignProbability()) {
                 if (r <= parser.getGlobalAssignProbability()) {
                     if (random.nextBoolean()) { //assign value of a field to another field
-                        FieldVarContainer f1 = fld_generator.getClazzLogger().getRandomField();
+                        FieldVarLogger f1 = fld_generator.getClazzLogger().getRandomField();
                         if (f1 == null || f1.isFinal()) continue;
-                        FieldVarContainer f2 = fld_generator.getClazzLogger().getRandomCompatibleField(f1.getType());
+                        FieldVarLogger f2 = fld_generator.getClazzLogger().getRandomCompatibleField(f1.getType());
                         if (f2 != null && f2.isInitialized()) {
                             fld_generator.assignFieldToField(f1, f2, "main");
                         }
                     }
                 } else { //assign value of a variable to a field
-                    FieldVarContainer f1 = fld_generator.getClazzLogger().getRandomField();
+                    FieldVarLogger f1 = fld_generator.getClazzLogger().getRandomField();
                     if (f1 == null || f1.isFinal()) continue;
-                    FieldVarContainer f2 = fld_generator.getClazzLogger().getRandomCompatibleVariable(f1.getType(), "main");
+                    FieldVarLogger f2 = fld_generator.getClazzLogger().getRandomCompatibleVariable(f1.getType(), "main");
                     if (f2 != null && f2.isInitialized()) {
                         fld_generator.assignVarToField(f1, f2, "main");
                     }
@@ -79,16 +79,16 @@ public class ByteCodeGenerator {
 
             if (r <= parser.getLocalAssignProbability()) {
                 if (random.nextBoolean()) { //assign value of a variable to another variable
-                    FieldVarContainer f1 = fld_generator.getClazzLogger().getRandomVariable("main");
+                    FieldVarLogger f1 = fld_generator.getClazzLogger().getRandomVariable("main");
                     if (f1 == null || f1.isFinal()) continue;
-                    FieldVarContainer f2 = fld_generator.getClazzLogger().getRandomCompatibleVariable(f1.getType(), "main");
+                    FieldVarLogger f2 = fld_generator.getClazzLogger().getRandomCompatibleVariable(f1.getType(), "main");
                     if (f2 != null && f2.isInitialized()) {
                         fld_generator.assignVarToVar(f1, f2, "main");
                     }
                 } else { //assign value of a field to a variable
-                    FieldVarContainer f1 = fld_generator.getClazzLogger().getRandomVariable("main");
+                    FieldVarLogger f1 = fld_generator.getClazzLogger().getRandomVariable("main");
                     if (f1 == null || f1.isFinal()) continue;
-                    FieldVarContainer f2 = fld_generator.getClazzLogger().getRandomCompatibleField(f1.getType());
+                    FieldVarLogger f2 = fld_generator.getClazzLogger().getRandomCompatibleField(f1.getType());
                     if (f2 != null && f2.isInitialized()) {
                         fld_generator.assignFieldToVar(f1, f2, "main");
                     }
@@ -116,11 +116,11 @@ public class ByteCodeGenerator {
 //            e.printStackTrace();
 //        }
 
-        for (FieldVarContainer f : fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
+        for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
             fld_generator.generatePrintFieldStatement(f.getName(), "main");
         }
 
-        for (FieldVarContainer f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
+        for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
             fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
         }
 

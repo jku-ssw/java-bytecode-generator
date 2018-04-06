@@ -25,6 +25,9 @@ public class ProbabilityParser {
         this.options.addOption("mc", "method_call_probability", true, "Probability to generate Method Calls");
     }
 
+    /**
+     * parses all input options and stores them in probabilities
+     */
     public void parse() {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
@@ -53,38 +56,59 @@ public class ProbabilityParser {
         }
     }
 
+    /**
+     * Writes information about all Options to the Console
+     */
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("ByteCodeGenerator", options);
         System.exit(0);
     }
 
+    /**
+     * @return the probability for generating Fields
+     */
     public int getFieldProbability() {
         return probabilities.get("f");
     }
 
+    /**
+     * @return the probability for generating Variables
+     */
     public int getVariableProbability() {
         return probabilities.get("v");
     }
 
+    /**
+     * @return the probability for generating assignments to global Variables
+     */
     public int getGlobalAssignProbability() {
         return probabilities.get("ga");
     }
 
+    /**
+     * @return the probability for generating assignments to local Variables
+     */
     public int getLocalAssignProbability() {
         return probabilities.get("la");
     }
 
+    /**
+     * @return the probability for generating assignments of Variables to Variables
+     */
     public int getVariableToVariableAssignProbability() {
         return probabilities.get("vtv");
     }
 
+    /**
+     * @return the probability for generating Methods
+     */
     public int getMethodProbability() {
         return probabilities.get("m");
     }
 
-    public int getMethodCallProbability() {
-        return probabilities.get("mc");
-    }
+//    public int getMethodCallProbability() {
+//        return probabilities.get("mc");
+//    }
 
 }

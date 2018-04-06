@@ -2,7 +2,7 @@ package generator;
 
 import javassist.*;
 import utils.ClazzFileContainer;
-import utils.FieldVarContainer;
+import utils.FieldVarLogger;
 import utils.FieldVarType;
 
 public class FieldGenerator extends Generator {
@@ -144,7 +144,7 @@ public class FieldGenerator extends Generator {
      * generates a System.out.println-Statement in the given Method for this field
      *
      * @param fieldName the name of the field
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean generatePrintFieldStatement(String fieldName, String methodName) {
         try {
@@ -170,7 +170,7 @@ public class FieldGenerator extends Generator {
      *
      * @param varName    the name of the variable
      * @param methodName the method in which the variable is declared and where the statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean generatePrintLocalVariableStatement(String varName, String methodName) {
         try {
@@ -196,9 +196,9 @@ public class FieldGenerator extends Generator {
      * @param field      the field, which's value is set
      * @param value      the value to be assigned
      * @param methodName the method in which the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldValue(FieldVarContainer field, Object value, String methodName) {
+    public boolean setFieldValue(FieldVarLogger field, Object value, String methodName) {
         CtMethod method = this.getMethod(methodName);
         if (method == null || field == null || !this.getClazzLogger().hasVariable(field.getName())) {
             return false;
@@ -213,9 +213,9 @@ public class FieldGenerator extends Generator {
      * @param variable   the variable, which's value is set
      * @param value      the value to be assigned
      * @param methodName the method in which the variable exists and the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setLocalVariableValue(FieldVarContainer variable, Object value, String methodName) {
+    public boolean setLocalVariableValue(FieldVarLogger variable, Object value, String methodName) {
         CtMethod method = this.getMethod(methodName);
         if (method == null || variable == null || !this.getClazzLogger().hasVariable(variable.getName(), methodName)) {
             return false;
@@ -230,9 +230,9 @@ public class FieldGenerator extends Generator {
      * @param fieldVar the field or variable to which value is assigned
      * @param value    the value to be assigned
      * @param method   the method in which the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    private boolean assign(FieldVarContainer fieldVar, Object value, CtMethod method) {
+    private boolean assign(FieldVarLogger fieldVar, Object value, CtMethod method) {
         //later: if value is of type Array -> cast to Object[]
         if (isAssignable(new Object[]{value}, fieldVar.getType()) && !fieldVar.isFinal()) {
             try {
@@ -259,9 +259,9 @@ public class FieldGenerator extends Generator {
      * @param fieldVar1 the field or variable to which the value of fieldVar2 is assigned
      * @param fieldVar2 the field or variable, which's value is assigned to fieldVar1
      * @param method    the method in which the assign-statement is generated
-     * @return
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    private boolean assign(FieldVarContainer fieldVar1, FieldVarContainer fieldVar2, CtMethod method) {
+    private boolean assign(FieldVarLogger fieldVar1, FieldVarLogger fieldVar2, CtMethod method) {
         if (isCompatibleTo(fieldVar1.getType(), fieldVar2.getType()) && !fieldVar1.isFinal() && method != null) {
             try {
                 method.insertAfter(fieldVar1.getName() + " = " + fieldVar2.getName() + ";");
@@ -281,9 +281,9 @@ public class FieldGenerator extends Generator {
      * @param field1     the field to which the value of field2is assigned
      * @param field2     the field, which's value is assigned to field1
      * @param methodName the name of the method in which the assign-statement is generated
-     * @return
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignFieldToField(FieldVarContainer field1, FieldVarContainer field2, String methodName) {
+    public boolean assignFieldToField(FieldVarLogger field1, FieldVarLogger field2, String methodName) {
         if (!this.getClazzLogger().hasVariable(field1.getName()) || !this.getClazzLogger().hasVariable(field1.getName())) {
             return false;
         }
@@ -294,9 +294,9 @@ public class FieldGenerator extends Generator {
      * @param variable   the variable to which the value of field is assigned
      * @param field      the field, which's value is assigned to variable
      * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignFieldToVar(FieldVarContainer variable, FieldVarContainer field, String methodName) {
+    public boolean assignFieldToVar(FieldVarLogger variable, FieldVarLogger field, String methodName) {
         if (!this.getClazzLogger().hasVariable(variable.getName()) || !this.getClazzLogger().hasVariable(field.getName(), methodName)) {
             return false;
         }
@@ -307,9 +307,9 @@ public class FieldGenerator extends Generator {
      * @param field      the field to which the value of variable is assigned
      * @param variable   the variable, which's value is assigned to field
      * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignVarToField(FieldVarContainer field, FieldVarContainer variable, String methodName) {
+    public boolean assignVarToField(FieldVarLogger field, FieldVarLogger variable, String methodName) {
         if (!this.getClazzLogger().hasVariable(field.getName(), methodName) || !this.getClazzLogger().hasVariable(variable.getName())) {
             return false;
         }
@@ -320,9 +320,9 @@ public class FieldGenerator extends Generator {
      * @param variable1  the variable to which the value of variable2 is assigned
      * @param variable2  the variable, which's value is assigned to variable1
      * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the the statement was generated successfully, otherwise {@code false}
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignVarToVar(FieldVarContainer variable1, FieldVarContainer variable2, String methodName) {
+    public boolean assignVarToVar(FieldVarLogger variable1, FieldVarLogger variable2, String methodName) {
         if (!this.getClazzLogger().hasVariable(variable1.getName(), methodName) ||
                 !this.getClazzLogger().hasVariable(variable2.getName(), methodName)) {
             return false;

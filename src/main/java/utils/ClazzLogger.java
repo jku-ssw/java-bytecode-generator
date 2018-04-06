@@ -42,9 +42,9 @@ public class ClazzLogger extends MyLogger {
 
     /**
      * @param methodName the Method, which's local Variables are returned
-     * @return returns a List of all FieldVarContainer-Objects of the Variables and Paramters of the method
+     * @return a List of all FieldVarLogger-Objects of the Variables and Parameters of the Method
      */
-    public List<FieldVarContainer> getLocals(String methodName) {
+    public List<FieldVarLogger> getLocals(String methodName) {
         MethodLogger ml = this.methods.get(methodName);
         if (ml == null) {
             System.err.println("Failed to get Locals of Method " + methodName + ": " +
@@ -57,9 +57,9 @@ public class ClazzLogger extends MyLogger {
     /**
      * checks if a variable exists in a given Method
      *
-     * @param fieldName  the name of the variable
-     * @param methodName the name of the method
-     * @return {@code true} if the variable exists, else {@code false}
+     * @param fieldName  the name of the Variable
+     * @param methodName the name of the Method
+     * @return {@code true} if the Variable exists, else {@code false}
      */
     public boolean hasVariable(String fieldName, String methodName) {
         MethodLogger ml = methods.get(methodName);
@@ -71,9 +71,9 @@ public class ClazzLogger extends MyLogger {
     /**
      * @param varName
      * @param methodName
-     * @return returns the FieldVarContainer-Object of the variable
+     * @return the FieldVarLogger-Object of the Variable
      */
-    public FieldVarContainer getVariable(String varName, String methodName) {
+    public FieldVarLogger getVariable(String varName, String methodName) {
         MethodLogger ml = methods.get(methodName);
         if (ml != null) {
             return ml.getVariable(varName);
@@ -84,15 +84,18 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public FieldVarContainer getRandomField() {
+    /**
+     * @return a random FieldVarLogger
+     */
+    public FieldVarLogger getRandomField() {
         return this.getRandomVariable();
     }
 
     /**
-     * @param methodName the name of the method
-     * @return returns a random variable of the given method
+     * @param methodName the name of the Method
+     * @return a random variable of the given Method
      */
-    public FieldVarContainer getRandomVariable(String methodName) {
+    public FieldVarLogger getRandomVariable(String methodName) {
         if (this.methods.get(methodName) == null) {
             System.err.println("Method " + methodName + "does not exist");
             return null;
@@ -101,20 +104,20 @@ public class ClazzLogger extends MyLogger {
     }
 
     /**
-     * @param type the type of which a compatible field is returned
-     * @return returns a random Field, that is compatible to a given type
+     * @param type the Type of which a compatible Field is returned
+     * @return returns a random Field, that is compatible to the given Type
      */
-    public FieldVarContainer getRandomCompatibleField(FieldVarType type) {
+    public FieldVarLogger getRandomCompatibleField(FieldVarType type) {
         FieldVarType randomType = getRandomCompatibleType(type);
         return this.getRandomVariableOfType(randomType);
     }
 
     /**
-     * @param type       the type of which a compatible variable is returned
-     * @param methodName the method of which a random local variable is returned
-     * @return returns a random variable, that is compatible to a given type
+     * @param type       the Type of which a compatible Variable is returned
+     * @param methodName the Method of which a random local Variable is returned
+     * @return a random Variable, that is compatible to the given Type
      */
-    public FieldVarContainer getRandomCompatibleVariable(FieldVarType type, String methodName) {
+    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type, String methodName) {
         if (this.methods.get(methodName) == null) {
             System.err.println("Method " + methodName + "does not exist");
             return null;
@@ -124,24 +127,24 @@ public class ClazzLogger extends MyLogger {
     }
 
     /**
-     * @param methodName the name of the method
-     * @return {@code true} if this method has no local variables, otherwise {@code false}
+     * @param methodName the name of the Method
+     * @return {@code true} if this Method has no local Variables, otherwise {@code false}
      */
     public boolean noLocals(String methodName) {
         return methods.get(methodName).noVariables();
     }
 
     /**
-     * @param methodName the name of the method
-     * @return {@code true} if the method exists in the generated class, otherwise {@code false}
+     * @param methodName the name of the Method
+     * @return {@code true} if the Method exists in the generated Class, otherwise {@code false}
      */
     public boolean hasMethod(String methodName) {
         return methods.get(methodName) != null;
     }
 
     /**
-     * @param methodName the name of the method
-     * @return returns the MethodLogger of this method
+     * @param methodName the name of the Method
+     * @return returns the MethodLogger of this Method
      */
     public MethodLogger getMethodLogger(String methodName) {
         return methods.get(methodName);

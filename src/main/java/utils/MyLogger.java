@@ -3,13 +3,13 @@ package utils;
 import java.util.*;
 
 abstract class MyLogger {
-    Map<FieldVarType, Map<String, FieldVarContainer>> variables;
+    Map<FieldVarType, Map<String, FieldVarLogger>> variables;
 
 
     public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
-        FieldVarContainer f = new FieldVarContainer(name, modifiers, type, initialized);
+        FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
         if (variables.get(type) == null) {
-            Map<String, FieldVarContainer> m = new HashMap<>();
+            Map<String, FieldVarLogger> m = new HashMap<>();
             m.put(name, f);
             variables.put(type, m);
         } else {
@@ -17,9 +17,9 @@ abstract class MyLogger {
         }
     }
 
-    public List<FieldVarContainer> getVariables() {
-        List<FieldVarContainer> allGlobals = new ArrayList<>();
-        for (Map<String, FieldVarContainer> m : variables.values()) {
+    public List<FieldVarLogger> getVariables() {
+        List<FieldVarLogger> allGlobals = new ArrayList<>();
+        for (Map<String, FieldVarLogger> m : variables.values()) {
             allGlobals.addAll(m.values());
         }
         return allGlobals;
@@ -34,7 +34,7 @@ abstract class MyLogger {
         return false;
     }
 
-    public FieldVarContainer getVariable(String fieldName) {
+    public FieldVarLogger getVariable(String fieldName) {
         for (FieldVarType type : FieldVarType.values()) {
             if (this.variables.get(type) != null && this.variables.get(type).get(fieldName) != null) {
                 return this.variables.get(type).get(fieldName);
@@ -55,25 +55,25 @@ abstract class MyLogger {
         return true;
     }
 
-    FieldVarContainer getRandomVariable() {
+    FieldVarLogger getRandomVariable() {
         if (noVariables()) {
             System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();
         List<FieldVarType> types = new ArrayList<>(variables.keySet());
-        Map<String, FieldVarContainer> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
+        Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
         List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }
 
-    public FieldVarContainer getRandomVariableOfType(FieldVarType type) {
+    public FieldVarLogger getRandomVariableOfType(FieldVarType type) {
         if (noVariables(type)) {
             System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
         Random rnd = new Random();
-        Map<String, FieldVarContainer> oneTypeGlobals = variables.get(type);
+        Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
         List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
         return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }

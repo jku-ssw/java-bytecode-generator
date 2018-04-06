@@ -3,8 +3,8 @@ package utils;
 import javassist.*;
 
 /**
- * contains a ctClass-Object, that is exportable as a new class-file
- * holds import information about the actual content of the class-file
+ * contains a ctClass-Object, that is exportable as a new Class-file
+ * holds important information about the actual content of the Class-file
  */
 public class ClazzFileContainer {
 
@@ -13,8 +13,9 @@ public class ClazzFileContainer {
     private ClazzLogger clazzLogger;
 
     /**
-     * generates a new minimal executable class and a new Clazzlogger
-     * @param file_name the name of the generated class
+     * generates a new minimal executable Class and a new ClazzLogger
+     *
+     * @param file_name the name of the generated Class
      */
     public ClazzFileContainer(String file_name) {
         ClassPool pool = ClassPool.getDefault();
@@ -24,7 +25,7 @@ public class ClazzFileContainer {
     }
 
     /**
-     * creates a minimal executable class-file
+     * creates a minimal executable Class-file
      */
     private void createMinExecutableClazz() {
         try {
@@ -41,8 +42,7 @@ public class ClazzFileContainer {
     }
 
     /**
-     *
-     * @return returns the CtClass-Object of the clazz contained in this ClazzFileContainer
+     * @return the CtClass-Object of the Clazz contained in this ClazzFileContainer
      */
     public CtClass getClazzFile() {
         return clazz;
@@ -50,7 +50,7 @@ public class ClazzFileContainer {
 
 
     /**
-     * @return the ClazzLogger Object, which contains information about the generated clazz
+     * @return the ClazzLogger Object, which contains information about the generated Clazz
      */
     public ClazzLogger getClazzLogger() {
         return clazzLogger;
