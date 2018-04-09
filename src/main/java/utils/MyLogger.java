@@ -64,34 +64,36 @@ abstract class MyLogger {
     /**
      * @return @code{true} if there are logged Variables
      */
-    public boolean noVariables() {
+    public boolean hasVariables() {
         for (FieldVarType t : variables.keySet()) {
-            if (variables.get(t) != null) return false;
+            if (variables.get(t) != null) return true;
         }
-        return true;
+        return false;
     }
 
     /**
      * @return @code{true} if there are logged Variables of this type
      */
-    public boolean noVariables(FieldVarType type) {
-        if (variables.get(type) != null) return false;
-        return true;
+    public boolean hasVariables(FieldVarType type) {
+        if (variables.get(type) != null) return true;
+        return false;
     }
 
     /**
      * @return the FieldVarLogger of random logged Variable
      */
     FieldVarLogger getRandomVariable() {
-        if (noVariables()) {
-            System.out.println("Cannot return random Variable: no Variables available");
+        if (hasVariables()) {
+            Random rnd = new Random();
+            List<FieldVarType> types = new ArrayList<>(variables.keySet());
+            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
+            List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
+            return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+        } else {
+            //TODO: maybe add to Logger
+            //System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
-        Random rnd = new Random();
-        List<FieldVarType> types = new ArrayList<>(variables.keySet());
-        Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
-        List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-        return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
     }
 
     /**
@@ -99,14 +101,17 @@ abstract class MyLogger {
      * @return the FieldVarLogger of random logged Variable of this type
      */
     public FieldVarLogger getRandomVariableOfType(FieldVarType type) {
-        if (noVariables(type)) {
-            System.out.println("Cannot return random Variable: no Variables available");
+        if (hasVariables(type)) {
+            Random rnd = new Random();
+            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
+            List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
+            return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+        } else {
+            //TODO: maybe add to Logger
+            //System.out.println("Cannot return random Variable: no Variables available");
             return null;
         }
-        Random rnd = new Random();
-        Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
-        List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-        return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+
     }
 
     /**

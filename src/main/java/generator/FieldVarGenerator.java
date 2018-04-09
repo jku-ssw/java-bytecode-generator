@@ -5,17 +5,17 @@ import utils.ClazzFileContainer;
 import utils.FieldVarLogger;
 import utils.FieldVarType;
 
-public class FieldGenerator extends Generator {
+public class FieldVarGenerator extends Generator {
 
-    public FieldGenerator(String filename) {
+    public FieldVarGenerator(String filename) {
         super(filename);
     }
 
-    public FieldGenerator(ClazzFileContainer cf) {
+    public FieldVarGenerator(ClazzFileContainer cf) {
         super(cf);
     }
 
-    public FieldGenerator() {
+    public FieldVarGenerator() {
         super();
     }
 
@@ -36,6 +36,7 @@ public class FieldGenerator extends Generator {
             if (value.length == 0) {
                 this.getClazzFile().addField(f);
             } else if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
+                //Objects can be initialized with null
                 this.getClazzFile().addField(f, "null");
             } else if (isAssignable(value, type)) {
                 if (value.length == 1) {
@@ -112,8 +113,8 @@ public class FieldGenerator extends Generator {
         }
         try {
             method.addLocalVariable(name, type.getClazzType());
-            //Objects can be initialized with null
             if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
+                //Objects can be initialized with null
                 method.insertBefore(name + " = " + "null" + ";");
             } else if (value.length != 0) {
                 if (isAssignable(value, type)) {
@@ -150,15 +151,15 @@ public class FieldGenerator extends Generator {
         try {
             if (this.getClazzLogger().hasVariable(fieldName) && this.getClazzLogger().hasMethod(methodName) &&
                     (this.getClazzLogger().getVariable(fieldName).isStatic() ||
-                            !this.getClazzLogger().getMethodLogger(fieldName).isStatic())) {
-                CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
+                            !this.getClazzLogger().getMethodLogger(methodName).isStatic())) {
+                CtMethod m = this.getMethod(methodName);
                 m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
             } else {
                 System.err.println("Class does not contain a Field " + fieldName);
                 return false;
             }
-        } catch (CannotCompileException | NotFoundException e) {
+        } catch (CannotCompileException e) {
             System.err.println("Generation of PrintField-Statement for Field + " + fieldName + " failed");
             e.printStackTrace();
             return false;

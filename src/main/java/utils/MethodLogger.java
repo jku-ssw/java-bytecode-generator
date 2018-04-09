@@ -1,7 +1,9 @@
 package utils;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,13 +14,14 @@ public class MethodLogger extends MyLogger {
     private String name;
 
     private int modifiers;
-    private Map<String, FieldVarLogger> params;
+
+    private List<FieldVarLogger> params;
 
     public MethodLogger(String name) {
         this.name = name;
         this.variables = new HashMap<>();
         this.modifiers = 0;
-        this.params = new HashMap<>();
+        this.params = new ArrayList<>();
     }
 
     /**
@@ -37,8 +40,8 @@ public class MethodLogger extends MyLogger {
      * @param type
      */
     public void logParam(String paramName, FieldVarType type) {
-        FieldVarLogger fvc = new FieldVarLogger(name, modifiers, type, false);
-        params.put(paramName, fvc);
+        FieldVarLogger l = new FieldVarLogger(name, modifiers, type, false);
+        params.add(l);
     }
 
     /**
@@ -53,5 +56,15 @@ public class MethodLogger extends MyLogger {
      */
     public boolean isStatic() {
         return (modifiers & Modifier.STATIC) != 0;
+    }
+
+    public FieldVarType[] getParamsTypes() {
+        FieldVarType[] types = new FieldVarType[params.size()];
+        int i = 0;
+        for (FieldVarLogger l : params) {
+            types[i] = l.getType();
+            i++;
+        }
+        return types;
     }
 }

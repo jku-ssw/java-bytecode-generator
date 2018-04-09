@@ -107,8 +107,11 @@ public class ProbabilityParser {
         return probabilities.get("m");
     }
 
-//    public int getMethodCallProbability() {
-//        return probabilities.get("mc");
-//    }
+    /**
+     * @return the probability for calling Methods
+     */
+    public int getMethodCallProbability() {
+        return probabilities.get("mc");
+    }
 
 }

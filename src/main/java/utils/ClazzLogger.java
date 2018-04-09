@@ -1,8 +1,6 @@
 package utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * logs Information about a generated class
@@ -78,7 +76,7 @@ public class ClazzLogger extends MyLogger {
         if (ml != null) {
             return ml.getVariable(varName);
         } else {
-            System.err.println("Failed to get Variable Object of Method " + methodName + ": " +
+            System.err.println("Failed to get FieldVarLogger-Object of Method " + methodName + ": " +
                     "Method does not exist");
             return null;
         }
@@ -130,8 +128,8 @@ public class ClazzLogger extends MyLogger {
      * @param methodName the name of the Method
      * @return {@code true} if this Method has no local Variables, otherwise {@code false}
      */
-    public boolean noLocals(String methodName) {
-        return methods.get(methodName).noVariables();
+    public boolean hasLocals(String methodName) {
+        return methods.get(methodName).hasVariables();
     }
 
     /**
@@ -148,5 +146,16 @@ public class ClazzLogger extends MyLogger {
      */
     public MethodLogger getMethodLogger(String methodName) {
         return methods.get(methodName);
+    }
+
+    public MethodLogger getRandomMethod() {
+        Random rnd = new Random();
+        List<String> keys = new ArrayList<>(methods.keySet());
+        keys.remove("main");
+        return methods.isEmpty() ? null : methods.get(keys.get(rnd.nextInt(keys.size())));
+    }
+
+    public boolean hasMethods() {
+        return !methods.isEmpty();
     }
 }
