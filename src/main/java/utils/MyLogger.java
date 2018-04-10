@@ -4,6 +4,7 @@ import java.util.*;
 
 abstract class MyLogger {
     Map<FieldVarType, Map<String, FieldVarLogger>> variables;
+    static Random random = new Random();
 
     /**
      * logs information about a generated Variable
@@ -84,11 +85,10 @@ abstract class MyLogger {
      */
     FieldVarLogger getRandomVariable() {
         if (hasVariables()) {
-            Random rnd = new Random();
             List<FieldVarType> types = new ArrayList<>(variables.keySet());
-            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(rnd.nextInt(types.size())));
+            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(random.nextInt(types.size())));
             List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+            return oneTypeGlobals.get(keys.get(random.nextInt(keys.size())));
         } else {
             //TODO: maybe add to Logger
             //System.out.println("Cannot return random Variable: no Variables available");
@@ -102,10 +102,9 @@ abstract class MyLogger {
      */
     public FieldVarLogger getRandomVariableOfType(FieldVarType type) {
         if (hasVariables(type)) {
-            Random rnd = new Random();
             Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
             List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return oneTypeGlobals.get(keys.get(rnd.nextInt(keys.size())));
+            return oneTypeGlobals.get(keys.get(random.nextInt(keys.size())));
         } else {
             //TODO: maybe add to Logger
             //System.out.println("Cannot return random Variable: no Variables available");
@@ -120,29 +119,28 @@ abstract class MyLogger {
      */
     static FieldVarType getRandomCompatibleType(FieldVarType type) {
         FieldVarType randomType = null;
-        Random r = new Random();
         int i;
         switch (type) {
             case Byte:
                 randomType = FieldVarType.Byte;
                 break;
             case Short:
-                i = r.nextInt(FieldVarType.getCompWithShort().size());
+                i = random.nextInt(FieldVarType.getCompWithShort().size());
                 randomType = FieldVarType.getCompWithShort().get(i);
                 break;
             case Int:
-                i = r.nextInt(FieldVarType.getCompWithInt().size());
+                i = random.nextInt(FieldVarType.getCompWithInt().size());
                 randomType = FieldVarType.getCompWithInt().get(i);
                 break;
             case Long:
-                i = r.nextInt(FieldVarType.getCompWithLong().size());
+                i = random.nextInt(FieldVarType.getCompWithLong().size());
                 randomType = FieldVarType.getCompWithLong().get(i);
                 break;
             case Float:
                 randomType = FieldVarType.Float;
                 break;
             case Double:
-                i = r.nextInt(FieldVarType.getCompWithDouble().size());
+                i = random.nextInt(FieldVarType.getCompWithDouble().size());
                 randomType = FieldVarType.getCompWithDouble().get(i);
                 break;
             case Boolean:

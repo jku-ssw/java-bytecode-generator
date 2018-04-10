@@ -11,14 +11,6 @@ public class FieldVarGenerator extends Generator {
         super(filename);
     }
 
-    public FieldVarGenerator(ClazzFileContainer cf) {
-        super(cf);
-    }
-
-    public FieldVarGenerator() {
-        super();
-    }
-
     /**
      * generates a global field with optional default value
      *
@@ -29,7 +21,7 @@ public class FieldVarGenerator extends Generator {
      *                  null for no modifiers
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    public boolean generateField(String name, FieldVarType type, int[] modifiers, Object... value) {
+    public boolean generateField(String name, FieldVarType type, int modifiers, Object... value) {
         boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
@@ -38,7 +30,7 @@ public class FieldVarGenerator extends Generator {
             } else if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
                 //Objects can be initialized with null
                 this.getClazzFile().addField(f, "null");
-            } else if (isAssignable(value, type)) {
+            } else {
                 if (value.length == 1) {
                     switch (type) {
                         case Byte:
@@ -71,24 +63,10 @@ public class FieldVarGenerator extends Generator {
                     }
                 }
                 initialized = true;
-            } else {
-                System.err.println("Incompatible type and value for primitive global field " + name);
-                return false;
             }
-            if (modifiers == null) {
-                this.getClazzContainer().getClazzLogger().logVariable(name, type, 0, initialized);
-                return true;
-            }
-            boolean valid = validateModifiers(modifiers);
-            if (valid) {
-                int merged_modifiers = mergeModifiers(modifiers);
-                f.setModifiers(merged_modifiers);
-                this.getClazzContainer().getClazzLogger().logVariable(name, type, merged_modifiers, initialized);
-                return true;
-            } else {
-                System.err.println("Invalid Modifiers for global field " + name);
-                return false;
-            }
+            f.setModifiers(modifiers);
+            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, initialized);
+            return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of static field " + name + " failed");
             e.printStackTrace();
@@ -117,19 +95,14 @@ public class FieldVarGenerator extends Generator {
                 //Objects can be initialized with null
                 method.insertBefore(name + " = " + "null" + ";");
             } else if (value.length != 0) {
-                if (isAssignable(value, type)) {
-                    if (value.length == 1) {
-                        if (type == FieldVarType.String) {
-                            method.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
-                        } else if (type == FieldVarType.Char) {
-                            method.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
-                        } else method.insertBefore(name + " = " + value[0] + ";");
-                    }
-                    initialized = true;
-                } else {
-                    System.err.println("Value not assignable to Variable " + name + " of type " + type.toString());
-                    return false;
+                if (value.length == 1) {
+                    if (type == FieldVarType.String) {
+                        method.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
+                    } else if (type == FieldVarType.Char) {
+                        method.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
+                    } else method.insertBefore(name + " = " + value[0] + ";");
                 }
+                initialized = true;
             }
             this.getClazzContainer().getClazzLogger().logVariable(name, type, method.getName(), initialized);
             return true;
@@ -149,16 +122,11 @@ public class FieldVarGenerator extends Generator {
      */
     public boolean generatePrintFieldStatement(String fieldName, String methodName) {
         try {
-            if (this.getClazzLogger().hasVariable(fieldName) && this.getClazzLogger().hasMethod(methodName) &&
-                    (this.getClazzLogger().getVariable(fieldName).isStatic() ||
-                            !this.getClazzLogger().getMethodLogger(methodName).isStatic())) {
+            if (this.getClazzLogger().getMethodLogger(methodName).isStatic()) {
                 CtMethod m = this.getMethod(methodName);
                 m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
                 return true;
-            } else {
-                System.err.println("Class does not contain a Field " + fieldName);
-                return false;
-            }
+            } else return false;
         } catch (CannotCompileException e) {
             System.err.println("Generation of PrintField-Statement for Field + " + fieldName + " failed");
             e.printStackTrace();
@@ -175,15 +143,11 @@ public class FieldVarGenerator extends Generator {
      */
     public boolean generatePrintLocalVariableStatement(String varName, String methodName) {
         try {
-            if (this.getClazzLogger().hasVariable(varName, methodName) &&
-                    this.getClazzLogger().getVariable(varName, methodName).isInitialized()) {
+            if (this.getClazzLogger().getVariable(varName, methodName).isInitialized()) {
                 CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
                 m.insertAfter("System.out.println(\"" + varName + " = \" + " + varName + ");");
                 return true;
-            } else {
-                System.err.println("Method " + methodName + " does not contain a Variable " + varName);
-                return false;
-            }
+            } else return false;
         } catch (CannotCompileException | NotFoundException e) {
             System.err.println("Generation of Print-Statement for Variable/Field " + varName + "failed");
             e.printStackTrace();
@@ -199,30 +163,10 @@ public class FieldVarGenerator extends Generator {
      * @param methodName the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldValue(FieldVarLogger field, Object value, String methodName) {
+    public boolean setFieldVarValue(FieldVarLogger field, String methodName, Object... value) {
         CtMethod method = this.getMethod(methodName);
-        if (method == null || field == null || !this.getClazzLogger().hasVariable(field.getName())) {
-            return false;
-        } else {
-            return assign(field, value, method);
-        }
-    }
+        return assign(field, method, value);
 
-    /**
-     * assigns a value to a variable in the given method
-     *
-     * @param variable   the variable, which's value is set
-     * @param value      the value to be assigned
-     * @param methodName the method in which the variable exists and the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean setLocalVariableValue(FieldVarLogger variable, Object value, String methodName) {
-        CtMethod method = this.getMethod(methodName);
-        if (method == null || variable == null || !this.getClazzLogger().hasVariable(variable.getName(), methodName)) {
-            return false;
-        } else {
-            return assign(variable, value, method);
-        }
     }
 
     /**
@@ -233,25 +177,31 @@ public class FieldVarGenerator extends Generator {
      * @param method   the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    private boolean assign(FieldVarLogger fieldVar, Object value, CtMethod method) {
+    private boolean assign(FieldVarLogger fieldVar, CtMethod method, Object... value) {
         //later: if value is of type Array -> cast to Object[]
-        if (isAssignable(new Object[]{value}, fieldVar.getType()) && !fieldVar.isFinal()) {
+        if (!fieldVar.isFinal()) {
             try {
-                if (fieldVar.getType() == FieldVarType.String) {
-                    method.insertAfter(fieldVar.getName() + " = " + "\"" + value + "\"" + ";");
-                } else if (fieldVar.getType() == FieldVarType.Char) {
-                    method.insertAfter(fieldVar.getName() + " = " + "'" + value + "'" + ";");
-                } else method.insertAfter(fieldVar.getName() + " = " + value + ";");
-                fieldVar.setInitialized();
-                return true;
+                if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
+                    //Objects can be initialized with null
+                    method.insertAfter(fieldVar.getName() + " = " + "null" + ";");
+                    return true;
+                } else if (value.length >= 1) {
+                    if (value.length == 1) {
+                        if (fieldVar.getType() == FieldVarType.String) {
+                            method.insertAfter(fieldVar.getName() + " = " + "\"" + value[0] + "\"" + ";");
+                        } else if (fieldVar.getType() == FieldVarType.Char) {
+                            method.insertAfter(fieldVar.getName() + " = " + "'" + value[0] + "'" + ";");
+                        } else method.insertAfter(fieldVar.getName() + " = " + value[0] + ";");
+                        fieldVar.setInitialized();
+                        return true;
+                    } else return false; //TODO value.length > 1 => Arrays
+                } else return false;
             } catch (CannotCompileException e) {
                 System.err.println("Cannot assign value " + value + "to Variable " + fieldVar.getName());
                 e.printStackTrace();
                 return false;
             }
-        } else {
-            return false;
-        }
+        } else return false;
     }
 
     /**
@@ -263,7 +213,7 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     private boolean assign(FieldVarLogger fieldVar1, FieldVarLogger fieldVar2, CtMethod method) {
-        if (isCompatibleTo(fieldVar1.getType(), fieldVar2.getType()) && !fieldVar1.isFinal() && method != null) {
+        if (!fieldVar1.isFinal()) {
             try {
                 method.insertAfter(fieldVar1.getName() + " = " + fieldVar2.getName() + ";");
                 fieldVar1.setInitialized();
@@ -273,9 +223,7 @@ public class FieldVarGenerator extends Generator {
                 e.printStackTrace();
                 return false;
             }
-        } else {
-            return false;
-        }
+        } else return false;
     }
 
     /**
@@ -284,51 +232,8 @@ public class FieldVarGenerator extends Generator {
      * @param methodName the name of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignFieldToField(FieldVarLogger field1, FieldVarLogger field2, String methodName) {
-        if (!this.getClazzLogger().hasVariable(field1.getName()) || !this.getClazzLogger().hasVariable(field1.getName())) {
-            return false;
-        }
+    public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, String methodName) {
         return assign(field1, field2, this.getMethod(methodName));
-    }
-
-    /**
-     * @param variable   the variable to which the value of field is assigned
-     * @param field      the field, which's value is assigned to variable
-     * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean assignFieldToVar(FieldVarLogger variable, FieldVarLogger field, String methodName) {
-        if (!this.getClazzLogger().hasVariable(variable.getName()) || !this.getClazzLogger().hasVariable(field.getName(), methodName)) {
-            return false;
-        }
-        return assign(variable, field, this.getMethod(methodName));
-    }
-
-    /**
-     * @param field      the field to which the value of variable is assigned
-     * @param variable   the variable, which's value is assigned to field
-     * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean assignVarToField(FieldVarLogger field, FieldVarLogger variable, String methodName) {
-        if (!this.getClazzLogger().hasVariable(field.getName(), methodName) || !this.getClazzLogger().hasVariable(variable.getName())) {
-            return false;
-        }
-        return assign(field, variable, this.getMethod(methodName));
-    }
-
-    /**
-     * @param variable1  the variable to which the value of variable2 is assigned
-     * @param variable2  the variable, which's value is assigned to variable1
-     * @param methodName the name of the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean assignVarToVar(FieldVarLogger variable1, FieldVarLogger variable2, String methodName) {
-        if (!this.getClazzLogger().hasVariable(variable1.getName(), methodName) ||
-                !this.getClazzLogger().hasVariable(variable2.getName(), methodName)) {
-            return false;
-        }
-        return assign(variable1, variable2, this.getMethod(methodName));
     }
 }
 

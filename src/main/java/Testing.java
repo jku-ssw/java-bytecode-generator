@@ -1,5 +1,8 @@
-//import generator.FieldGenerator;
+//
+//import generator.FieldVarGenerator;
+//import generator.MethodGenerator;
 //import javassist.*;
+//import utils.FieldVarLogger;
 //import utils.FieldVarType;
 //import utils.RandomSupplier;
 //
@@ -8,49 +11,22 @@
 //
 //    public static void main(String[] args) throws CannotCompileException {
 //
-//        //TODO handle UserInput Parameters: Probabilities, filename, optionals
-//
-//        FieldVarGenerator fld_generator = new FieldVarGenerator("MyTestClazz");
-//
-//        //generate global field
-//        int[] modifier = {Modifier.STATIC};
-//        boolean gf = fld_generator.generateField("x", FieldVarType.Char, modifier, 'c');
-//        boolean sf = fld_generator.generateField("z", FieldVarType.String, modifier, "Hallo");
-//        boolean sf2 = fld_generator.generateField("a", FieldVarType.String, modifier, null);
-//
-//        //generate local field
-//        Object v = RandomSupplier.getValue(FieldVarType.Char);
-//        System.out.println(v);
-//        boolean lf = fld_generator.generateLocalVariable("y", FieldVarType.Char, "main", v);
-//        boolean lp = fld_generator.generateLocalVariable("m", FieldVarType.Int, "main");
-//
-////        fld_generator.setFieldValue("x", false, "main");
-//        fld_generator.setLocalVariableValue(fld_generator.getClazzLogger().getVariable("y", "main"), 'k', "main");
-////        fld_generator.setFieldValue("a", "Hey", "main");
-//
-//        fld_generator.generatePrintFieldStatement("x", "main");
-//        fld_generator.generatePrintFieldStatement("z", "main");
-//        fld_generator.generatePrintFieldStatement("a", "main");
-//        fld_generator.generatePrintLocalVariableStatement("y", "main");
-//
-//
-//        //fld_generator.getMain().insertAfter("System.out.println(k);");
-//
-//        //generate field access
-////        for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getLocals("main")) {
-////            fld_generator.generatePrintLocalVariableStatement(f.getName(), "main");
-////        }
-//
-//        //write File
-//        fld_generator.writeFile();
-////
-////        for(FieldVarLogger f: fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
-////            System.out.println(f.getName());
-////        }
-//
+//        FieldVarGenerator fv_generator = new FieldVarGenerator("MyTestClazz");
+//        MethodGenerator m_generator = new MethodGenerator(fv_generator.getClazzContainer());
+//        int[] modifiers = new int[]{Modifier.STATIC};
+//        fv_generator.generateField("x", FieldVarType.Int, modifiers);
+//        fv_generator.generateField("y", FieldVarType.Int, modifiers, RandomSupplier.getValue(FieldVarType.Int));
+//        fv_generator.generateField("z", FieldVarType.Double, modifiers, RandomSupplier.getValue(FieldVarType.Double));
+//        FieldVarType[] paramTypes = new FieldVarType[]{FieldVarType.Int, FieldVarType.Double};
+//        m_generator.generateMethod("methodA", FieldVarType.Int, paramTypes, modifiers);
+//        FieldVarLogger[] params = {fv_generator.getClazzLogger().getVariable("y"), fv_generator.getClazzLogger().getVariable("z")};
+//        m_generator.setFieldToReturnValue(fv_generator.getClazzLogger().getVariable("x"), "methodA", "main", params);
+//        m_generator.writeFile();
 //    }
 //}
 //
 ////TODO make simple arithmetik operations and field access
 ////TODO randomize file with FieldVarGenerator
+//
+////TODO merge modifiers from Beginning
 //

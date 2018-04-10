@@ -37,7 +37,7 @@ public class ClazzFileContainer {
             System.err.println("Cannot create minimal executable class");
             e.printStackTrace();
         }
-        MethodLogger ml = new MethodLogger("main");
+        MethodLogger ml = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void);
         clazzLogger.logMethod(ml);
     }
 
@@ -55,6 +55,5 @@ public class ClazzFileContainer {
     public ClazzLogger getClazzLogger() {
         return clazzLogger;
     }
-
 
 }

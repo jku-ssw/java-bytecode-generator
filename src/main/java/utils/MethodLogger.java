@@ -4,7 +4,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * stores information about a Method
@@ -17,20 +16,15 @@ public class MethodLogger extends MyLogger {
 
     private List<FieldVarLogger> params;
 
-    public MethodLogger(String name) {
-        this.name = name;
-        this.variables = new HashMap<>();
-        this.modifiers = 0;
-        this.params = new ArrayList<>();
-    }
 
-    /**
-     * logs the modifiers of the logged method
-     *
-     * @param modifiers
-     */
-    public void setModifiers(int modifiers) {
+    private FieldVarType returnType;
+
+    public MethodLogger(String name, int modifiers, FieldVarType returnType) {
+        this.name = name;
         this.modifiers = modifiers;
+        this.returnType = returnType;
+        this.params = new ArrayList<>();
+        variables = new HashMap<>();
     }
 
     /**
@@ -40,7 +34,7 @@ public class MethodLogger extends MyLogger {
      * @param type
      */
     public void logParam(String paramName, FieldVarType type) {
-        FieldVarLogger l = new FieldVarLogger(name, modifiers, type, false);
+        FieldVarLogger l = new FieldVarLogger(paramName, modifiers, type, false);
         params.add(l);
     }
 
@@ -66,5 +60,13 @@ public class MethodLogger extends MyLogger {
             i++;
         }
         return types;
+    }
+
+    public FieldVarType getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(FieldVarType returnType) {
+        this.returnType = returnType;
     }
 }

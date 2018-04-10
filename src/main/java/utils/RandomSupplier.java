@@ -124,12 +124,11 @@ public class RandomSupplier {
     /**
      * @return returns random modifiers with modifier static always included
      */
-    public static int[] getModifiers() {
+    public static int getModifiers() {
         int numberOfModifiers = 1 + random.nextInt(3);
         int[] modifiers = new int[numberOfModifiers];
         modifiers[0] = Modifier.STATIC;
-        if (numberOfModifiers == 1) return modifiers;
-
+        if (numberOfModifiers == 1) return mergeModifiers(modifiers);
         boolean hasAccessModifier = false;
         boolean isFinal = false;
         for (int i = 1; i < numberOfModifiers; i++) {
@@ -169,6 +168,20 @@ public class RandomSupplier {
             }
 
         }
-        return modifiers;
+        return mergeModifiers(modifiers);
+    }
+
+    /**
+     * megeres the given array of modifiers into one Integer-variable
+     *
+     * @param modifiers the modifiers to merge
+     * @return the merged modifiers
+     */
+    static int mergeModifiers(int[] modifiers) {
+        int merged_modifiers = modifiers[0];
+        for (int i = 1; i < modifiers.length; i++) {
+            merged_modifiers |= modifiers[i];
+        }
+        return merged_modifiers;
     }
 }

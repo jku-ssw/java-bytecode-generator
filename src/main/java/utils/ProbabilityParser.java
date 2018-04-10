@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ProbabilityParser {
 
-    private static final String[] option_signatures = {"h", "f", "v", "ga", "la", "vtv", "m", "mc"};
+    private static final String[] option_signatures = {"h", "f", "v", "ga", "la", "vtv", "m", "mc", "p"};
     private final String[] args;
     private Options options = new Options();
     private Map<String, Integer> probabilities = new HashMap<>();
@@ -23,6 +23,7 @@ public class ProbabilityParser {
         this.options.addOption("vtv", "variable_to_variable_probability", true, "Probability for assigning variables to variables");
         this.options.addOption("m", "method_probability", true, "Probability to generate Methods");
         this.options.addOption("mc", "method_call_probability", true, "Probability to generate Method Calls");
+        this.options.addOption("p", "print_probability", true, "Probability to generate Print-Statements");
     }
 
     /**
@@ -114,4 +115,7 @@ public class ProbabilityParser {
         return probabilities.get("mc");
     }
 
+    public int getPrintProbability() {
+        return probabilities.get("p");
+    }
 }

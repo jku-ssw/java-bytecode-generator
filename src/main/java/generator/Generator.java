@@ -11,7 +11,7 @@ import utils.FieldVarType;
 /**
  * capable of generating the smallest executable class-file
  */
-public class Generator {
+class Generator {
 
     private ClazzFileContainer clazzContainer;
 
@@ -44,80 +44,6 @@ public class Generator {
         return clazzContainer;
     }
 
-
-    /**
-     * checks compatibility of given value and fieldtype
-     *
-     * @param value the value to check compatibility for
-     * @param type  the type to which value is checked for compatibility
-     * @return {@code true} if value is assignable to a field of given type, otherwise {@code false}
-     */
-    static boolean isAssignable(Object[] value, FieldVarType type) {
-        if (value.length == 0) return false;
-        if (value.length == 1) {
-            switch (type) {
-                case Byte:
-                    return value[0] instanceof Byte;
-                case Short:
-                    return value[0] instanceof Short;
-                case Int:
-                    return value[0] instanceof Integer;
-                case Long:
-                    return value[0] instanceof Long;
-                case Float:
-                    return value[0] instanceof Float;
-                case Double:
-                    return value[0] instanceof Double;
-                case Boolean:
-                    return value[0] instanceof Boolean;
-                case Char:
-                    return value[0] instanceof Character;
-                case String:
-                    return value[0] instanceof String;
-                default:
-                    return false;
-            }
-        } else return false;
-    }
-
-    /**
-     * @param type1
-     * @param type2
-     * @return {@code true} if the types are compatible, otherwise {@code false}
-     */
-    static boolean isCompatibleTo(FieldVarType type1, FieldVarType type2) {
-        switch (type1) {
-            case Byte:
-                if (type2 == FieldVarType.Byte) return true;
-                break;
-            case Short:
-                if (FieldVarType.getCompWithShort().contains(type2)) return true;
-                else return false;
-            case Int:
-                if (FieldVarType.getCompWithInt().contains(type2)) return true;
-                else return false;
-            case Long:
-                if (FieldVarType.getCompWithLong().contains(type2)) return true;
-                else return false;
-            case Float:
-                if (type2 == FieldVarType.Float) return true;
-                else return false;
-            case Double:
-                if (FieldVarType.getCompWithDouble().contains(type2)) return true;
-                else return false;
-            case Boolean:
-                if (type2 == FieldVarType.Boolean) return true;
-                else return false;
-            case Char:
-                if (type2 == FieldVarType.Char) return true;
-                else return false;
-            case String:
-                if (type2 == FieldVarType.String) return true;
-                else return false;
-        }
-        return false;
-    }
-
     /**
      * @return the class-file of this generator
      */
@@ -146,37 +72,6 @@ public class Generator {
     }
 
     /**
-     * validates the modifiers
-     *
-     * @param modifiers the modifiers to validate
-     * @return @code{true} if the modifiers are valid, otherwise @code{false}
-     */
-    static boolean validateModifiers(int[] modifiers) {
-        int numberOfAccessModifiers = 0;
-        for (int m : modifiers) {
-            switch (m) {
-                case Modifier.STATIC:
-                    break;
-                case Modifier.PUBLIC:
-                    numberOfAccessModifiers++;
-                    break;
-                case Modifier.PRIVATE:
-                    numberOfAccessModifiers++;
-                    break;
-                case Modifier.PROTECTED:
-                    numberOfAccessModifiers++;
-                    break;
-                case Modifier.FINAL:
-                    break;
-                default:
-                    return false;
-            }
-        }
-        if (numberOfAccessModifiers > 1) return false;
-        else return true;
-    }
-
-    /**
      * @param methodName the name of the method to return
      * @return CtMethod-Object of the method with given name, null if this method does not exist
      */
@@ -193,20 +88,6 @@ public class Generator {
             System.err.println("Method " + methodName + " does not exist in the generated class");
             return null;
         }
-    }
-
-    /**
-     * megeres the given array of modifiers into one Integer-variable
-     *
-     * @param modifiers the modifiers to merge
-     * @return the merged modifiers
-     */
-    static int mergeModifiers(int[] modifiers) {
-        int merged_modifiers = modifiers[0];
-        for (int i = 1; i < modifiers.length; i++) {
-            merged_modifiers |= modifiers[i];
-        }
-        return merged_modifiers;
     }
 }
 

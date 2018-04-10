@@ -5,23 +5,13 @@ import utils.*;
 
 public class MethodGenerator extends Generator {
 
-    public MethodGenerator(String filename) {
-        super(filename);
-    }
-
     public MethodGenerator(ClazzFileContainer cf) {
         super(cf);
     }
 
-    public MethodGenerator() {
-        super();
-    }
-
-    public boolean generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int[] modifiers) {
-        if (returnType == null || paramTypes == null || modifiers == null) return false;
+    public boolean generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
         try {
-            MethodLogger ml = new MethodLogger(name);
-
+            MethodLogger ml = new MethodLogger(name, modifiers, returnType);
             StringBuilder paramsStrB = new StringBuilder("");
             if (paramTypes != null) {
                 String paramName = RandomSupplier.getVarName();
@@ -34,19 +24,13 @@ public class MethodGenerator extends Generator {
                     paramsStrB.append(paramTypes[i].getName() + " " + paramName);
                 }
             }
-
             String returnTypeStr = returnType.getName();
             CtMethod newMethod = CtNewMethod.make(
                     returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
                             generateMethodBody(returnType) + " }", this.getClazzFile());
-
-            int mod = mergeModifiers(modifiers);
-            ml.setModifiers(mod);
-            newMethod.setModifiers(mod);
-
+            newMethod.setModifiers(modifiers);
             this.getClazzFile().addMethod(newMethod);
             this.getClazzLogger().logMethod(ml);
-
             return true;
         } catch (CannotCompileException e) {
             e.printStackTrace();
@@ -63,28 +47,14 @@ public class MethodGenerator extends Generator {
         }
     }
 
-    /**
-     * @param callMethodName
-     * @param insertInMethod
-     * @return
-     */
-    public boolean generateMethodCall(String callMethodName, String insertInMethod, Object... paramValues) {
-        MethodLogger ml = this.getClazzLogger().getMethodLogger(callMethodName);
+
+    public boolean generateMethodCall(String calledMethodName, String methodName, Object... paramValues) {
+        MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
         FieldVarType[] paramTypes = ml.getParamsTypes();
         try {
-            CtMethod m = this.getMethod(insertInMethod);
-            StringBuilder statement = new StringBuilder(callMethodName + "(");
-            if (paramValues.length != 0) {
-                statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
-            }
-            for (int i = 1; i < paramValues.length; i++) {
-                statement.append(", ");
-                statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
-            }
-            statement.append(");");
-            if (ml == null || !this.getClazzLogger().hasMethod(insertInMethod))
-                return false;
-            m.insertAfter(statement.toString());
+            CtMethod m = this.getMethod(methodName);
+            String callString = generateMethodCallString(calledMethodName, paramTypes, paramValues);
+            m.insertAfter(callString);
             return true;
         } catch (CannotCompileException e) {
             e.printStackTrace();
@@ -92,12 +62,27 @@ public class MethodGenerator extends Generator {
         }
     }
 
+    private static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, Object... paramValues) {
+        StringBuilder statement = new StringBuilder(methodName + "(");
+        if (paramValues.length != 0) {
+            statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
+        }
+        for (int i = 1; i < paramValues.length; i++) {
+            statement.append(", ");
+            statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
+        }
+        statement.append(");");
+        return statement.toString();
+    }
+
     private static String paramToCorrectStringFormat(FieldVarType paramType, Object param) {
         if (param instanceof FieldVarLogger) {
             FieldVarLogger fvl = (FieldVarLogger) param;
             if (paramType == fvl.getType()) {
                 return fvl.getName();
-            } else return ""; //TODO exception wrong Type Parameter
+            } else {
+                return null;
+            }
         }
         switch (paramType) {
             case Byte:
@@ -122,6 +107,17 @@ public class MethodGenerator extends Generator {
         return "";
     }
 
+    public void setFieldToReturnValue(FieldVarLogger f, String calledMethodName, String methodName, Object... paramValues) {
+        MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
+        CtMethod m = this.getMethod(methodName);
+        if (!f.isFinal()) {
+            try {
+                m.insertAfter(f.getName() + " = " + generateMethodCallString(calledMethodName, ml.getParamsTypes(), paramValues));
+            } catch (CannotCompileException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 
 //TODO: add some MethodPool with interesting Methods

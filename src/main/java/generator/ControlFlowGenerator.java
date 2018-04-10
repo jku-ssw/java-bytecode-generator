@@ -1,4 +1,4 @@
 package generator;
 
-public class ControlFlowGenerator {
+class ControlFlowGenerator {
 }
