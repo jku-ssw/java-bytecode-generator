@@ -65,8 +65,4 @@ public class MethodLogger extends MyLogger {
     public FieldVarType getReturnType() {
         return returnType;
     }
-
-    public void setReturnType(FieldVarType returnType) {
-        this.returnType = returnType;
-    }
 }

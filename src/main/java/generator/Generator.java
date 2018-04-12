@@ -6,7 +6,6 @@ import utils.ClazzFileContainer;
 import java.io.IOException;
 
 import utils.ClazzLogger;
-import utils.FieldVarType;
 
 /**
  * capable of generating the smallest executable class-file

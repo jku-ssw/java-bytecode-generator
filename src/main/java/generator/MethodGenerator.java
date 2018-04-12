@@ -3,6 +3,8 @@ package generator;
 import javassist.*;
 import utils.*;
 
+import java.util.Random;
+
 public class MethodGenerator extends Generator {
 
     public MethodGenerator(ClazzFileContainer cf) {
@@ -25,28 +27,22 @@ public class MethodGenerator extends Generator {
                 }
             }
             String returnTypeStr = returnType.getName();
+            this.getClazzLogger().logMethod(ml);
             CtMethod newMethod = CtNewMethod.make(
-                    returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") { " +
-                            generateMethodBody(returnType) + " }", this.getClazzFile());
+                    returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") {" + addReturnStatement(name) +
+                            "} ", this.getClazzFile());
             newMethod.setModifiers(modifiers);
             this.getClazzFile().addMethod(newMethod);
-            this.getClazzLogger().logMethod(ml);
             return true;
-        } catch (CannotCompileException e) {
+        } catch (
+                CannotCompileException e)
+
+        {
             e.printStackTrace();
             return false;
         }
-    }
 
-    //TODO: add more MethodBody
-    private String generateMethodBody(FieldVarType returnType) {
-        if (returnType != FieldVarType.Void) {
-            return "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getValue(returnType)) + ";";
-        } else {
-            return "";
-        }
     }
-
 
     public boolean generateMethodCall(String calledMethodName, String methodName, Object... paramValues) {
         MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
@@ -78,11 +74,8 @@ public class MethodGenerator extends Generator {
     private static String paramToCorrectStringFormat(FieldVarType paramType, Object param) {
         if (param instanceof FieldVarLogger) {
             FieldVarLogger fvl = (FieldVarLogger) param;
-            if (paramType == fvl.getType()) {
-                return fvl.getName();
-            } else {
-                return null;
-            }
+            if (paramType == fvl.getType()) return fvl.getName();
+            else return null;
         }
         switch (paramType) {
             case Byte:
@@ -103,19 +96,43 @@ public class MethodGenerator extends Generator {
                 return "'" + param + "'";
             case String:
                 return "\"" + param + "\"";
+            default:
+                return "";
         }
-        return "";
     }
 
-    public void setFieldToReturnValue(FieldVarLogger f, String calledMethodName, String methodName, Object... paramValues) {
+    public boolean setFieldToReturnValue(FieldVarLogger f, String calledMethodName, String methodName, Object... paramValues) {
         MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
         CtMethod m = this.getMethod(methodName);
         if (!f.isFinal()) {
             try {
-                m.insertAfter(f.getName() + " = " + generateMethodCallString(calledMethodName, ml.getParamsTypes(), paramValues));
+                m.insertAfter(f.getName() + " = "
+                        + generateMethodCallString(calledMethodName, ml.getParamsTypes(), paramValues));
+                return true;
             } catch (CannotCompileException e) {
                 e.printStackTrace();
+                return false;
             }
+        }
+        return false;
+    }
+
+    private String addReturnStatement(String methodName) {
+        MethodLogger ml = this.getClazzLogger().getMethodLogger(methodName);
+        FieldVarType returnType = ml.getReturnType();
+        FieldVarLogger l = ml.getRandomVariableOfType(returnType);
+
+        if (returnType != FieldVarType.Void) {
+            if (l != null) return "return " + l.getName() + ";";
+            else {
+                l = this.getClazzLogger().getRandomVariableOfType(returnType);
+                if (l != null) return "return " + l.getName() + ";";
+                else { //return random value if no variable of this returnType is available
+                    return "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getValue(returnType)) + ";";
+                }
+            }
+        } else {
+            return "return;";
         }
     }
 }

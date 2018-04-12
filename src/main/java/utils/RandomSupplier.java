@@ -51,18 +51,35 @@ public class RandomSupplier {
      * @return a random FieldVarType
      */
     public static FieldVarType getFieldVarType() {
-        int r = random.nextInt(FieldVarType.values().length - 1); //exclude voidType
+        int r = random.nextInt(FieldVarType.values().length - 1); //exclude void
         return FieldVarType.values()[r];
     }
 
     /**
-     * @return an random array of FieldVarTypes
+     * @return a random FieldVarType
      */
-    public static FieldVarType[] getFieldVarTypes() {
-        int number = 1 + random.nextInt(FieldVarType.values().length - 2);
+    public static FieldVarType getNumericFieldVarType() {
+        int r = random.nextInt(FieldVarType.values().length - 2); //exclude void and String
+        return FieldVarType.values()[r];
+    }
+
+    /**
+     * @return an random array of ParameterTypes
+     */
+    public static FieldVarType[] getParameterTypes(int maxParameters) {
+        int number = 1 + random.nextInt(maxParameters);
         FieldVarType[] types = new FieldVarType[number];
         for (int i = 0; i < number; i++) {
             types[i] = getFieldVarType();
+        }
+        return types;
+    }
+
+    public static FieldVarType[] getNumericFieldVarTypes() {
+        int number = 1 + random.nextInt(20);
+        FieldVarType[] types = new FieldVarType[number];
+        for (int i = 0; i < number; i++) {
+            types[i] = getNumericFieldVarType();
         }
         return types;
     }

@@ -8,6 +8,7 @@
 //
 //
 //public class Testing {
+//    public static String x;
 //
 //    public static void main(String[] args) throws CannotCompileException {
 //

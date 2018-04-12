@@ -168,12 +168,13 @@ public class ClazzLogger extends MyLogger {
         return ml;
     }
 
-    public MethodLogger getRandomMethod() {
+    public MethodLogger getRandomMethod(String callerMethod) {
         Random rnd = new Random();
         List<FieldVarType> types = new ArrayList<>(methods.keySet());
         Map<String, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
         List<String> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
         keys.remove("main");
+        keys.remove(callerMethod);
         return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
     }
 

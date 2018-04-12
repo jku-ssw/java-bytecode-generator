@@ -83,7 +83,7 @@ abstract class MyLogger {
     /**
      * @return the FieldVarLogger of random logged Variable
      */
-    FieldVarLogger getRandomVariable() {
+    public FieldVarLogger getRandomVariable() {
         if (hasVariables()) {
             List<FieldVarType> types = new ArrayList<>(variables.keySet());
             Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(random.nextInt(types.size())));
