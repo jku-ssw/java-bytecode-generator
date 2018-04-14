@@ -201,4 +201,8 @@ public class RandomSupplier {
         }
         return merged_modifiers;
     }
+
+    public static String getParVarName(int i) {
+        return "$" + i;
+    }
 }

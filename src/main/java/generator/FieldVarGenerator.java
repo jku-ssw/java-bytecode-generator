@@ -4,6 +4,7 @@ import javassist.*;
 import utils.ClazzFileContainer;
 import utils.FieldVarLogger;
 import utils.FieldVarType;
+import utils.MethodLogger;
 
 public class FieldVarGenerator extends Generator {
 
@@ -104,7 +105,8 @@ public class FieldVarGenerator extends Generator {
                 }
                 initialized = true;
             }
-            this.getClazzContainer().getClazzLogger().logVariable(name, type, method.getName(), initialized);
+            MethodLogger ml = this.getClazzLogger().getMethodLogger(methodName);
+            ml.logVariable(name, type, 0, initialized);
             return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of local variable " + name + "  failed");
@@ -167,7 +169,6 @@ public class FieldVarGenerator extends Generator {
     public boolean setFieldVarValue(FieldVarLogger field, String methodName, Object... value) {
         CtMethod method = this.getMethod(methodName);
         return createsetFieldStatement(field, method, value);
-
     }
 
     /**

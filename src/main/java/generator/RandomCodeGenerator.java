@@ -60,7 +60,7 @@ public class RandomCodeGenerator {
     private void generate(Context context) {
         for (int i = 0; i < context.getLengthWeighting(); i++) {
             int r = 1 + random.nextInt(100);
-            if (r <= controller.getFieldProbability()) generateField();
+            if (context == Context.programContext && r <= controller.getFieldProbability()) generateField();
             if (context == Context.programContext && r <= controller.getMethodProbability()) generateMethod();
             if (r <= controller.getVariableToVariableAssignProbability()) {
                 if (r <= controller.getGlobalAssignProbability()) {
@@ -83,10 +83,9 @@ public class RandomCodeGenerator {
                 if (random.nextBoolean()) setLocalVariableValue(context);
                 else setLocalVariableValueToReturnValue();
             }
-            if (r <= controller.getMethodCallProbability()) generateMethodCall(context);
         }
 
-        //print all variables
+//        print all variables
 //        for (FieldVarLogger f : fld_generator.getClazzContainer().getClazzLogger().getVariables()) {
 //            fld_generator.generatePrintFieldStatement(f.getName(), "main");
 //        }
@@ -118,6 +117,7 @@ public class RandomCodeGenerator {
     public void setLocalVariableValue(Context context) {
         if (fv_generator.getClazzLogger().hasLocals(context.getContextMethod())) {
             FieldVarLogger f = fv_generator.getClazzLogger().getRandomVariable(context.getContextMethod());
+            if (f == null) return;
             fv_generator.setFieldVarValue(f, context.getContextMethod(), RandomSupplier.getValue(f.getType()));
         }
     }

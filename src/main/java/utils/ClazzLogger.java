@@ -61,19 +61,19 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    /**
-     * checks if a variable exists in a given Method
-     *
-     * @param fieldName  the name of the Variable
-     * @param methodName the name of the Method
-     * @return {@code true} if the Variable exists, else {@code false}
-     */
-    public boolean hasVariable(String fieldName, String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) {
-            return ml.hasVariable(fieldName);
-        } else return false;
-    }
+//    /**
+//     * checks if a variable exists in a given Method
+//     *
+//     * @param fieldName  the name of the Variable
+//     * @param methodName the name of the Method
+//     * @return {@code true} if the Variable exists, else {@code false}
+//     */
+//    public boolean hasVariable(String fieldName, String methodName) {
+//        MethodLogger ml = getMethodLogger(methodName);
+//        if (ml != null) {
+//            return ml.hasVariable(fieldName);
+//        } else return false;
+//    }
 
     /**
      * @param varName

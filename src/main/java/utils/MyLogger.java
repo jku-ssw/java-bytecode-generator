@@ -36,18 +36,18 @@ abstract class MyLogger {
         return allVariables;
     }
 
-    /**
-     * @param varName the name of the Variable
-     * @return @code{true} if the logger contains information about this Variable, otherwise @code{false}
-     */
-    public boolean hasVariable(String varName) {
-        for (FieldVarType type : FieldVarType.values()) {
-            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * @param varName the name of the Variable
+//     * @return @code{true} if the logger contains information about this Variable, otherwise @code{false}
+//     */
+//    public boolean hasVariable(String varName) {
+//        for (FieldVarType type : FieldVarType.values()) {
+//            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * @param varName the name of the Variable
@@ -88,7 +88,7 @@ abstract class MyLogger {
             List<FieldVarType> types = new ArrayList<>(variables.keySet());
             Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(random.nextInt(types.size())));
             List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return oneTypeGlobals.get(keys.get(random.nextInt(keys.size())));
+            return keys.size() > 0 ? oneTypeGlobals.get(keys.get(random.nextInt(keys.size()))) : null;
         } else {
             //TODO: maybe add to Logger
             //System.out.println("Cannot return random Variable: no Variables available");
@@ -104,7 +104,7 @@ abstract class MyLogger {
         if (hasVariables(type)) {
             Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
             List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return oneTypeGlobals.get(keys.get(random.nextInt(keys.size())));
+            return keys.size() > 0 ? oneTypeGlobals.get(keys.get(random.nextInt(keys.size()))) : null;
         } else {
             //TODO: maybe add to Logger
             //System.out.println("Cannot return random Variable: no Variables available");

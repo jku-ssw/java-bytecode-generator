@@ -37,7 +37,9 @@ public class ClazzFileContainer {
             System.err.println("Cannot create minimal executable class");
             e.printStackTrace();
         }
-        MethodLogger ml = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void);
+
+        //TODO Add paramtypes, when Arrays enabled => then use args in Program too
+        MethodLogger ml = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void, null);
         clazzLogger.logMethod(ml);
     }
 

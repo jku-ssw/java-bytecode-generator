@@ -50,13 +50,13 @@ public class FieldVarLogger {
      * @return @code{true} if this Field or Variable is final, otherwise @code{false}
      */
     public boolean isFinal() {
-        return (modifiers & Modifier.FINAL) != 0;
+      return Modifier.isFinal(modifiers);
     }
 
     /**
      * @return @code{true} if this Field or Variable is static, otherwise @code{false}
      */
     public boolean isStatic() {
-        return (modifiers & Modifier.STATIC) != 0;
+        return Modifier.isStatic(modifiers);
     }
 }
