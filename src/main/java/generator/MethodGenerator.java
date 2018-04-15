@@ -3,8 +3,6 @@ package generator;
 import javassist.*;
 import utils.*;
 
-import java.util.Random;
-
 public class MethodGenerator extends Generator {
 
     public MethodGenerator(ClazzFileContainer cf) {
@@ -38,8 +36,6 @@ public class MethodGenerator extends Generator {
             }
             String returnTypeStr = returnType.getName();
             this.getClazzLogger().logMethod(ml);
-            System.out.println(modifiersToString(modifiers) + returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") {" + returnStatement +
-                    "} ");
             CtMethod newMethod = CtNewMethod.make(modifiersToString(modifiers) +
                     returnTypeStr + " " + name + "(" + paramsStrB.toString() + ") {" + returnStatement +
                     "} ", this.getClazzFile());
@@ -62,11 +58,11 @@ public class MethodGenerator extends Generator {
         return b.toString();
     }
 
-    public boolean generateMethodCall(String calledMethodName, String methodName, Object... paramValues) {
+    public boolean generateMethodCall(String calledMethodName, MethodLogger method, Object... paramValues) {
         MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
         FieldVarType[] paramTypes = ml.getParamsTypes();
         try {
-            CtMethod m = this.getMethod(methodName);
+            CtMethod m = this.getCtMethod(method);
             String callString = generateMethodCallString(calledMethodName, paramTypes, paramValues);
             m.insertAfter(callString);
             return true;
@@ -122,13 +118,12 @@ public class MethodGenerator extends Generator {
         }
     }
 
-    public boolean setFieldToReturnValue(FieldVarLogger f, String calledMethodName, String methodName, Object... paramValues) {
-        MethodLogger ml = this.getClazzLogger().getMethodLogger(calledMethodName);
-        CtMethod m = this.getMethod(methodName);
+    public boolean setFieldToReturnValue(FieldVarLogger f, MethodLogger calledMethodName, MethodLogger method, Object... paramValues) {
+        CtMethod m = this.getCtMethod(method);
         if (!f.isFinal()) {
             try {
                 m.insertAfter(f.getName() + " = "
-                        + generateMethodCallString(calledMethodName, ml.getParamsTypes(), paramValues));
+                        + generateMethodCallString(calledMethodName.getName(), calledMethodName.getParamsTypes(), paramValues));
                 return true;
             } catch (CannotCompileException e) {
                 e.printStackTrace();
@@ -137,35 +132,35 @@ public class MethodGenerator extends Generator {
         }
         return false;
     }
-
-    private String addReturnStatement(String methodName) {
-        MethodLogger ml = this.getClazzLogger().getMethodLogger(methodName);
-        FieldVarType returnType = ml.getReturnType();
-        FieldVarLogger l = ml.getRandomVariableOfType(returnType);
-        if (returnType != FieldVarType.Void) {
-            if (l != null) {
-                String name = l.getName();
-                name = name.replace(name.charAt(1), (char) (name.charAt(1) - 1));
-                System.out.println(l.getName() + " " + name);
-                System.out.println(methodName + " " + "return " + name + ";");
-                System.out.println(ml.getReturnType() + " " + l.getType());
-                //ml.removeVariable(l.getName(), l.getType());
-                if (returnType == FieldVarType.Double || returnType == FieldVarType.Long) {
-                    System.out.println("return (" + name + "<<32 + ) " + l.getName() + ";");
-                    return "return (" + name + "<<32) + " + l.getName() + ";";
-                }
-                return "return " + name + ";";
-            } else {
-                //l = this.getClazzLogger().getRandomVariableOfType(returnType);
-                //if (l != null) return "return " + l.getName() + ";";
-                //else { //return random value if no variable of this returnType is available
-                return "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getValue(returnType)) + ";";
-                //}
-            }
-        } else {
-            return "return;";
-        }
-    }
+//
+//    private String addReturnStatement(String methodName) {
+//        MethodLogger ml = this.getClazzLogger().getMethodLogger(methodName);
+//        FieldVarType returnType = ml.getReturnType();
+//        FieldVarLogger l = ml.getRandomVariableOfType(returnType);
+//        if (returnType != FieldVarType.Void) {
+//            if (l != null) {
+//                String name = l.getName();
+//                name = name.replace(name.charAt(1), (char) (name.charAt(1) - 1));
+//                System.out.println(l.getName() + " " + name);
+//                System.out.println(methodName + " " + "return " + name + ";");
+//                System.out.println(ml.getReturnType() + " " + l.getType());
+//                //ml.removeVariable(l.getName(), l.getType());
+//                if (returnType == FieldVarType.Double || returnType == FieldVarType.Long) {
+//                    System.out.println("return (" + name + "<<32 + ) " + l.getName() + ";");
+//                    return "return (" + name + "<<32) + " + l.getName() + ";";
+//                }
+//                return "return " + name + ";";
+//            } else {
+//                //l = this.getClazzLogger().getRandomVariableOfType(returnType);
+//                //if (l != null) return "return " + l.getName() + ";";
+//                //else { //return random value if no variable of this returnType is available
+//                return "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getValue(returnType)) + ";";
+//                //}
+//            }
+//        } else {
+//            return "return;";
+//        }
+//    }
 }
 
 //TODO: add some MethodPool with interesting Methods

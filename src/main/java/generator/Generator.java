@@ -6,6 +6,7 @@ import utils.ClazzFileContainer;
 import java.io.IOException;
 
 import utils.ClazzLogger;
+import utils.MethodLogger;
 
 /**
  * capable of generating the smallest executable class-file
@@ -71,20 +72,15 @@ class Generator {
     }
 
     /**
-     * @param methodName the name of the method to return
+     * @param method the logger of the method to return
      * @return CtMethod-Object of the method with given name, null if this method does not exist
      */
-    public CtMethod getMethod(String methodName) {
-        if (this.getClazzLogger().hasMethod(methodName)) {
-            try {
-                return this.getClazzFile().getDeclaredMethod(methodName);
-            } catch (NotFoundException e) {
-                System.err.println("Method " + methodName + " not found");
-                e.printStackTrace();
-                return null;
-            }
-        } else {
-            System.err.println("Method " + methodName + " does not exist in the generated class");
+    public CtMethod getCtMethod(MethodLogger method) {
+        try {
+            return this.getClazzFile().getDeclaredMethod(method.getName());
+        } catch (NotFoundException e) {
+            System.err.println("Method " + method.getName() + " not found");
+            e.printStackTrace();
             return null;
         }
     }

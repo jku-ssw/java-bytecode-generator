@@ -38,7 +38,6 @@ public class ClazzFileContainer {
             e.printStackTrace();
         }
 
-        //TODO Add paramtypes, when Arrays enabled => then use args in Program too
         MethodLogger ml = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void, null);
         clazzLogger.logMethod(ml);
     }

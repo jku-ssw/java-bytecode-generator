@@ -113,6 +113,17 @@ abstract class MyLogger {
 
     }
 
+
+    /**
+     * @param type the Type of which a compatible Field is returned
+     * @return returns a random Field, that is compatible to the given Type
+     */
+    public FieldVarLogger getRandomCompatibleField(FieldVarType type) {
+        FieldVarType randomType = getRandomCompatibleType(type);
+        return this.getRandomVariableOfType(randomType);
+    }
+
+
     /**
      * @param type
      * @return a random FieldVarType that is compatible to type

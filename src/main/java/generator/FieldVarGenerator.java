@@ -1,7 +1,6 @@
 package generator;
 
 import javassist.*;
-import utils.ClazzFileContainer;
 import utils.FieldVarLogger;
 import utils.FieldVarType;
 import utils.MethodLogger;
@@ -77,36 +76,31 @@ public class FieldVarGenerator extends Generator {
 
 
     /**
-     * @param name       the name of the generated variable
-     * @param type       the dataType of the generated variable
-     * @param value      the value to be assigned to the field, null if the field should not be initialized
-     * @param methodName the method in which the variable is generated
+     * @param name   the name of the generated variable
+     * @param type   the dataType of the generated variable
+     * @param value  the value to be assigned to the field, null if the field should not be initialized
+     * @param method the logger of the method in which the variable is generated
      * @return {@code true} if the variable was generated successfully, otherwise {@code false}
      */
-    public boolean generateLocalVariable(String name, FieldVarType type, String methodName, Object... value) {
+    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
         boolean initialized = false;
-        CtMethod method = this.getMethod(methodName);
-        if (method == null) {
-            System.err.println("Generation of local variable " + name + "  failed: Method " + methodName + " does not exist");
-            return false;
-        }
+        CtMethod ctMethod = this.getCtMethod(method);
         try {
-            method.addLocalVariable(name, type.getClazzType());
+            ctMethod.addLocalVariable(name, type.getClazzType());
             if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
                 //Objects can be initialized with null
-                method.insertBefore(name + " = " + "null" + ";");
+                ctMethod.insertBefore(name + " = " + "null" + ";");
             } else if (value.length != 0) {
                 if (value.length == 1) {
                     if (type == FieldVarType.String) {
-                        method.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
+                        ctMethod.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
                     } else if (type == FieldVarType.Char) {
-                        method.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
-                    } else method.insertBefore(name + " = " + value[0] + ";");
+                        ctMethod.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
+                    } else ctMethod.insertBefore(name + " = " + value[0] + ";");
                 }
                 initialized = true;
             }
-            MethodLogger ml = this.getClazzLogger().getMethodLogger(methodName);
-            ml.logVariable(name, type, 0, initialized);
+            method.logVariable(name, type, 0, initialized);
             return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of local variable " + name + "  failed");
@@ -119,19 +113,19 @@ public class FieldVarGenerator extends Generator {
     /**
      * generates a System.out.println-Statement in the given Method for this field
      *
-     * @param fieldName the name of the field
+     * @param variable the logged Variable
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean generatePrintFieldStatement(String fieldName, String methodName) {
+    public boolean generatePrintFieldStatement(FieldVarLogger variable, MethodLogger method) {
         try {
-            if (this.getClazzLogger().getVariable(fieldName).isStatic() ||
-                    !this.getClazzLogger().getMethodLogger(methodName).isStatic()) {
-                CtMethod m = this.getMethod(methodName);
-                m.insertAfter("System.out.println(\"" + fieldName + " = \" + " + fieldName + ");");
+            if (variable.isStatic() ||
+                    method.isStatic()) {
+                CtMethod ctMethod = this.getCtMethod(method);
+                ctMethod.insertAfter("System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");");
                 return true;
             } else return false;
         } catch (CannotCompileException e) {
-            System.err.println("Generation of PrintField-Statement for Field + " + fieldName + " failed");
+            System.err.println("Generation of PrintField-Statement for Field + " + variable.getName() + " failed");
             e.printStackTrace();
             return false;
         }
@@ -140,19 +134,19 @@ public class FieldVarGenerator extends Generator {
     /**
      * generates a System.out.println-Statement in the given Method for this variable
      *
-     * @param varName    the name of the variable
-     * @param methodName the method in which the variable is declared and where the statement is generated
+     * @param variable the logged Variabl
+     * @param method   the logger of the method in which the variable is declared and where the statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean generatePrintLocalVariableStatement(String varName, String methodName) {
+    public boolean generatePrintLocalVariableStatement(FieldVarLogger variable, MethodLogger method) {
         try {
-            if (this.getClazzLogger().getVariable(varName, methodName).isInitialized()) {
-                CtMethod m = this.getClazzFile().getDeclaredMethod(methodName);
-                m.insertAfter("System.out.println(\"" + varName + " = \" + " + varName + ");");
+            if (variable.isInitialized()) {
+                CtMethod m = this.getCtMethod(method);
+                m.insertAfter("System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");");
                 return true;
             } else return false;
-        } catch (CannotCompileException | NotFoundException e) {
-            System.err.println("Generation of Print-Statement for Variable/Field " + varName + "failed");
+        } catch (CannotCompileException e) {
+            System.err.println("Generation of Print-Statement for Variable/Field " + variable.getName() + "failed");
             e.printStackTrace();
             return false;
         }
@@ -161,14 +155,14 @@ public class FieldVarGenerator extends Generator {
     /**
      * assigns a value to a field in the given method
      *
-     * @param field      the field, which's value is set
-     * @param value      the value to be assigned
-     * @param methodName the method in which the assign-statement is generated
+     * @param field  the field, which's value is set
+     * @param value  the value to be assigned
+     * @param method the logger of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldVarValue(FieldVarLogger field, String methodName, Object... value) {
-        CtMethod method = this.getMethod(methodName);
-        return createsetFieldStatement(field, method, value);
+    public boolean setFieldVarValue(FieldVarLogger field, MethodLogger method, Object... value) {
+        CtMethod ctMethod = this.getCtMethod(method);
+        return createsetFieldStatement(field, ctMethod, value);
     }
 
     /**
@@ -228,13 +222,13 @@ public class FieldVarGenerator extends Generator {
     }
 
     /**
-     * @param field1     the field to which the value of field2is assigned
-     * @param field2     the field, which's value is assigned to field1
-     * @param methodName the name of the method in which the assign-statement is generated
+     * @param field1 the field to which the value of field2is assigned
+     * @param field2 the field, which's value is assigned to field1
+     * @param method the logger of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, String methodName) {
-        return createAssignStatement(field1, field2, this.getMethod(methodName));
+    public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, MethodLogger method) {
+        return createAssignStatement(field1, field2, this.getCtMethod(method));
     }
 }
 
