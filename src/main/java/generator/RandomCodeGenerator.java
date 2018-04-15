@@ -9,8 +9,8 @@ import java.util.Random;
 public class RandomCodeGenerator {
     private enum Context {
         programContext,
-        methodContext,
-        controlContext;
+        methodContext;
+        //controlContext;
         private int lengthWeighting;
         private MethodLogger contextMethod;
 
