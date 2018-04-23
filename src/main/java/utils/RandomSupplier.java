@@ -56,30 +56,13 @@ public class RandomSupplier {
     }
 
     /**
-     * @return a random FieldVarType
-     */
-    public static FieldVarType getNumericFieldVarType() {
-        int r = random.nextInt(FieldVarType.values().length - 2); //exclude void and String
-        return FieldVarType.values()[r];
-    }
-
-    /**
      * @return an random array of ParameterTypes
      */
     public static FieldVarType[] getParameterTypes(int maxParameters) {
-        int number = 1 + random.nextInt(maxParameters);
+        int number = random.nextInt(maxParameters);
         FieldVarType[] types = new FieldVarType[number];
         for (int i = 0; i < number; i++) {
             types[i] = getFieldVarType();
-        }
-        return types;
-    }
-
-    public static FieldVarType[] getNumericFieldVarTypes() {
-        int number = 1 + random.nextInt(20);
-        FieldVarType[] types = new FieldVarType[number];
-        for (int i = 0; i < number; i++) {
-            types[i] = getNumericFieldVarType();
         }
         return types;
     }
@@ -138,55 +121,103 @@ public class RandomSupplier {
     }
 
 
+//    /**
+//     * @return returns random modifiers with modifier static always included
+//     */
+//    public static int getModifiers() {
+//        int numberOfModifiers = 1 + random.nextInt(3);
+//        int[] modifiers = new int[numberOfModifiers];
+//        modifiers[0] = Modifier.STATIC;
+//        if (numberOfModifiers == 1) return mergeModifiers(modifiers);
+//        boolean hasAccessModifier = false;
+//        boolean isFinal = false;
+//        for (int i = 1; i < numberOfModifiers; i++) {
+//            boolean final_ = random.nextBoolean();
+//            if (final_) {
+//                if (!isFinal) {
+//                    modifiers[i] = Modifier.FINAL;
+//                    continue;
+//                }
+//            }
+//            int r = random.nextInt(3);
+//            switch (r) {
+//                case 0:
+//                    if (hasAccessModifier) {
+//                        modifiers[i] = Modifier.FINAL;
+//                        break;
+//                    }
+//                    modifiers[i] = Modifier.PUBLIC;
+//                    hasAccessModifier = true;
+//                    break;
+//                case 1:
+//                    if (hasAccessModifier) {
+//                        modifiers[i] = Modifier.FINAL;
+//                        break;
+//                    }
+//                    modifiers[i] = Modifier.PRIVATE;
+//                    hasAccessModifier = true;
+//                    break;
+//                case 2:
+//                    if (hasAccessModifier) {
+//                        modifiers[i] = Modifier.FINAL;
+//                        break;
+//                    }
+//                    modifiers[i] = Modifier.PROTECTED;
+//                    hasAccessModifier = true;
+//                    break;
+//            }
+//
+//        }
+//        return mergeModifiers(modifiers);
+//    }
+
     /**
-     * @return returns random modifiers with modifier static always included
+     * @return returns random modifiers
      */
     public static int getModifiers() {
-        int numberOfModifiers = 1 + random.nextInt(3);
+        int numberOfModifiers = random.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
-        modifiers[0] = Modifier.STATIC;
-        if (numberOfModifiers == 1) return mergeModifiers(modifiers);
-        boolean hasAccessModifier = false;
-        boolean isFinal = false;
+
+        int r = random.nextInt(5);
+        int[] exclude_access = {2, 3, 4};
         for (int i = 1; i < numberOfModifiers; i++) {
-            boolean final_ = random.nextBoolean();
-            if (final_) {
-                if (!isFinal) {
-                    modifiers[i] = Modifier.FINAL;
-                    continue;
-                }
-            }
-            int r = random.nextInt(3);
             switch (r) {
                 case 0:
-                    if (hasAccessModifier) {
-                        modifiers[i] = Modifier.FINAL;
-                        break;
-                    }
-                    modifiers[i] = Modifier.PUBLIC;
-                    hasAccessModifier = true;
+                    modifiers[i] = Modifier.STATIC;
+                    r = nextIntWithExcludes(5, 0);
                     break;
                 case 1:
-                    if (hasAccessModifier) {
-                        modifiers[i] = Modifier.FINAL;
-                        break;
-                    }
-                    modifiers[i] = Modifier.PRIVATE;
-                    hasAccessModifier = true;
+                    modifiers[i] = Modifier.FINAL;
+                    r = nextIntWithExcludes(5, 1);
                     break;
                 case 2:
-                    if (hasAccessModifier) {
-                        modifiers[i] = Modifier.FINAL;
-                        break;
-                    }
+                    modifiers[i] = Modifier.PUBLIC;
+                    r = nextIntWithExcludes(5, exclude_access);
+                    break;
+                case 3:
+                    modifiers[i] = Modifier.PRIVATE;
+                    r = nextIntWithExcludes(5, exclude_access);
+                    break;
+                case 4:
                     modifiers[i] = Modifier.PROTECTED;
-                    hasAccessModifier = true;
+                    r = nextIntWithExcludes(5, exclude_access);
                     break;
             }
-
         }
         return mergeModifiers(modifiers);
     }
+
+    private static int nextIntWithExcludes(int range, int... excludes) {
+        int r = +random.nextInt(range);
+        for (int i = 0; i < excludes.length; i++) {
+            if (excludes[i] > r) {
+                return r;
+            }
+            r++;
+        }
+        return r;
+    }
+
 
     /**
      * megeres the given array of modifiers into one Integer-variable
@@ -195,6 +226,8 @@ public class RandomSupplier {
      * @return the merged modifiers
      */
     static int mergeModifiers(int[] modifiers) {
+        if (modifiers.length == 0) return 0;
+
         int merged_modifiers = modifiers[0];
         for (int i = 1; i < modifiers.length; i++) {
             merged_modifiers |= modifiers[i];

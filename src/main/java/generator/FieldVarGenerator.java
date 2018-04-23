@@ -12,13 +12,12 @@ public class FieldVarGenerator extends Generator {
     }
 
     /**
-     * generates a global field with optional default value
+     * generates a global field with given modifiers and optional default value
      *
      * @param name      the name of the generated field
-     * @param type      the dataType of the generated field
-     * @param value     the value to be assigned to the field, null if the field should not be initialized
-     * @param modifiers array of Modifiers for the new field (from javassist class Modifier)
-     *                  null for no modifiers
+     * @param type      the FieldVarType of the generated field
+     * @param value     the value to be assigned to the field
+     * @param modifiers merged modifiers for the new field (from javassist class Modifier)
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
     public boolean generateField(String name, FieldVarType type, int modifiers, Object... value) {
@@ -77,9 +76,9 @@ public class FieldVarGenerator extends Generator {
 
     /**
      * @param name   the name of the generated variable
-     * @param type   the dataType of the generated variable
-     * @param value  the value to be assigned to the field, null if the field should not be initialized
-     * @param method the logger of the method in which the variable is generated
+     * @param type   the FieldVarType of the generated variable
+     * @param value  the value to be assigned to the field
+     * @param method the logger of the method, in which the variable is generated
      * @return {@code true} if the variable was generated successfully, otherwise {@code false}
      */
     public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
@@ -111,21 +110,20 @@ public class FieldVarGenerator extends Generator {
 
 
     /**
-     * generates a System.out.println-Statement in the given Method for this field
+     * generates a System.out.println-Statement in the given method for this field
      *
      * @param variable the logged Variable
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean generatePrintFieldStatement(FieldVarLogger variable, MethodLogger method) {
         try {
-            if (variable.isStatic() ||
-                    method.isStatic()) {
+            if (variable.isStatic() || !method.isStatic()) {
                 CtMethod ctMethod = this.getCtMethod(method);
                 ctMethod.insertAfter("System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");");
                 return true;
             } else return false;
         } catch (CannotCompileException e) {
-            System.err.println("Generation of PrintField-Statement for Field + " + variable.getName() + " failed");
+            System.err.println("Generation of System.out.println-Statement for field + " + variable.getName() + " failed");
             e.printStackTrace();
             return false;
         }
@@ -161,8 +159,10 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean setFieldVarValue(FieldVarLogger field, MethodLogger method, Object... value) {
-        CtMethod ctMethod = this.getCtMethod(method);
-        return createsetFieldStatement(field, ctMethod, value);
+        if (field.isStatic() || !method.isStatic()) {
+            CtMethod ctMethod = this.getCtMethod(method);
+            return createSetFieldStatement(field, ctMethod, value);
+        } else return false;
     }
 
     /**
@@ -173,7 +173,7 @@ public class FieldVarGenerator extends Generator {
      * @param method   the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    private boolean createsetFieldStatement(FieldVarLogger fieldVar, CtMethod method, Object... value) {
+    private boolean createSetFieldStatement(FieldVarLogger fieldVar, CtMethod method, Object... value) {
         if (!fieldVar.isFinal()) {
             try {
                 if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
@@ -222,13 +222,16 @@ public class FieldVarGenerator extends Generator {
     }
 
     /**
-     * @param field1 the field to which the value of field2is assigned
+     * @param field1 the field to which the value of field2 is assigned
      * @param field2 the field, which's value is assigned to field1
      * @param method the logger of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, MethodLogger method) {
-        return createAssignStatement(field1, field2, this.getCtMethod(method));
+        if (!method.isStatic() || ((method.hasVariable(field1) || field1.isStatic()) &&
+                (method.hasVariable(field2) || field2.isStatic()))) {
+            return createAssignStatement(field1, field2, this.getCtMethod(method));
+        } else return false;
     }
 }
 

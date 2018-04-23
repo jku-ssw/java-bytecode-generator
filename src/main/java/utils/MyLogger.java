@@ -36,30 +36,9 @@ abstract class MyLogger {
         return allVariables;
     }
 
-//    /**
-//     * @param varName the name of the Variable
-//     * @return @code{true} if the logger contains information about this Variable, otherwise @code{false}
-//     */
-//    public boolean hasVariable(String varName) {
-//        for (FieldVarType type : FieldVarType.values()) {
-//            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-    /**
-     * @param varName the name of the Variable
-     * @return the FieldVarLogger of this Variable
-     */
-    public FieldVarLogger getVariable(String varName) {
-        for (FieldVarType type : FieldVarType.values()) {
-            if (this.variables.get(type) != null && this.variables.get(type).get(varName) != null) {
-                return this.variables.get(type).get(varName);
-            }
-        }
-        return null;
+    public boolean hasVariable(FieldVarLogger l) {
+        if(variables.get(l.getType()) == null) return false;
+        return variables.get(l.getType()).containsKey(l.getName());
     }
 
     /**
@@ -106,8 +85,7 @@ abstract class MyLogger {
             List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
             return keys.size() > 0 ? oneTypeGlobals.get(keys.get(random.nextInt(keys.size()))) : null;
         } else {
-            //TODO: maybe add to Logger
-            //System.out.println("Cannot return random Variable: no Variables available");
+            //no Variables logged
             return null;
         }
 

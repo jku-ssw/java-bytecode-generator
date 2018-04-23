@@ -1,10 +1,10 @@
 package utils;
 
+import javassist.CtClass;
+
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * stores information about a Method
@@ -42,8 +42,20 @@ public class MethodLogger extends MyLogger {
         return paramTypes;
     }
 
+    public CtClass[] getCtParamsTypes() {
+        return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
+    }
+
     public FieldVarType getReturnType() {
         return returnType;
     }
 
+    public boolean isVoid() {
+        return returnType == FieldVarType.Void;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() + paramTypes.hashCode();
+    }
 }

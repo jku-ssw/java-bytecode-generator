@@ -7,11 +7,13 @@ import java.util.*;
  */
 public class ClazzLogger extends MyLogger {
 
-    private Map<FieldVarType, Map<String, MethodLogger>> methods;
+    private Map<FieldVarType, Map<Integer, MethodLogger>> methods;
+    private MethodLogger main;
 
-    public ClazzLogger() {
+    public ClazzLogger(MethodLogger main) {
         methods = new HashMap<>();
         variables = new HashMap<>();
+        this.main = main;
     }
 
     /**
@@ -20,75 +22,24 @@ public class ClazzLogger extends MyLogger {
      * @param ml the MethodLogger in which the Information is stored
      */
     public void logMethod(MethodLogger ml) {
-        Map<String, MethodLogger> sameReturnTypeMethods = methods.get(ml.getReturnType());
+        Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(ml.getReturnType());
         if (sameReturnTypeMethods == null) {
             sameReturnTypeMethods = new HashMap<>();
             methods.put(ml.getReturnType(), sameReturnTypeMethods);
         }
-        sameReturnTypeMethods.put(ml.getName(), ml);
+        sameReturnTypeMethods.put(ml.hashCode(), ml);
+    }
+
+    public MethodLogger getMain() {
+        return main;
     }
 
     /**
-     * logs Information about a generated Variable
-     *
-     * @param name       the name of the Variable
-     * @param type       the type of the Variable
-     * @param methodName the Method in which the Variable is declared
+     * @param method the logger of the method, which's local variables are returned
+     * @return a list of all FieldVarLogger-Objects of the variables and parameters of the Method
      */
-    public void logVariable(String name, FieldVarType type, String methodName, boolean initialized) {
-        for (Map<String, MethodLogger> sameReturnTypeMethods : methods.values()) {
-            if (sameReturnTypeMethods.get(methodName) != null) {
-                sameReturnTypeMethods.get(methodName).logVariable(name, type, 0, initialized);
-                return;
-            }
-        }
-        System.err.println("Failed to log Variable " + name + "in Method " + methodName + ". Method does not exist");
-        return;
-    }
-
-    /**
-     * @param methodName the Method, which's local Variables are returned
-     * @return a List of all FieldVarLogger-Objects of the Variables and Parameters of the Method
-     */
-    public List<FieldVarLogger> getLocals(String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) {
-            return ml.getVariables();
-        } else {
-            System.err.println("Failed to get Locals of Method " + methodName + ": " +
-                    "Method does not exist");
-            return null;
-        }
-    }
-
-//    /**
-//     * checks if a variable exists in a given Method
-//     *
-//     * @param fieldName  the name of the Variable
-//     * @param methodName the name of the Method
-//     * @return {@code true} if the Variable exists, else {@code false}
-//     */
-//    public boolean hasVariable(String fieldName, String methodName) {
-//        MethodLogger ml = getMethodLogger(methodName);
-//        if (ml != null) {
-//            return ml.hasVariable(fieldName);
-//        } else return false;
-//    }
-
-    /**
-     * @param varName
-     * @param methodName
-     * @return the FieldVarLogger-Object of the Variable
-     */
-    public FieldVarLogger getVariable(String varName, String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) {
-            return ml.getVariable(varName);
-        } else {
-            System.err.println("Failed to get Variable of Method " + methodName + ": " +
-                    "Method does not exist");
-            return null;
-        }
+    public List<FieldVarLogger> getLocals(MethodLogger method) {
+        return method.getVariables();
     }
 
     /**
@@ -99,17 +50,11 @@ public class ClazzLogger extends MyLogger {
     }
 
     /**
-     * @param methodName the name of the Method
+     * @param method the logger of the method
      * @return a random variable of the given Method
      */
-    public FieldVarLogger getRandomVariable(String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) {
-            return ml.getRandomVariable();
-        } else {
-            System.err.println("Failed to get random Variable: Method " + methodName + "does not exist");
-            return null;
-        }
+    public FieldVarLogger getRandomVariable(MethodLogger method) {
+        return method.getRandomVariable();
     }
 
     /**
@@ -122,59 +67,39 @@ public class ClazzLogger extends MyLogger {
     }
 
     /**
-     * @param type       the Type of which a compatible Variable is returned
-     * @param methodName the Method of which a random local Variable is returned
+     * @param type   the Type of which a compatible Variable is returned
+     * @param method the logger of the method of which a random local variable is returned
      * @return a random Variable, that is compatible to the given Type
      */
-    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type, String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) {
-            FieldVarType randomType = getRandomCompatibleType(type);
-            return ml.getRandomVariableOfType(randomType);
-        } else {
-            System.err.println("Failed to get random compatible Variable: Method " + methodName + "does not exist");
-            return null;
-        }
+    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type, MethodLogger method) {
+        FieldVarType randomType = getRandomCompatibleType(type);
+        return method.getRandomVariableOfType(randomType);
     }
 
     /**
-     * @param methodName the name of the Method
+     * @param method the logger of the method
      * @return {@code true} if this Method has no local Variables, otherwise {@code false}
      */
-    public boolean hasLocals(String methodName) {
-        MethodLogger ml = getMethodLogger(methodName);
-        if (ml != null) return ml.hasVariables();
-        else return false;
+    public boolean hasLocals(MethodLogger method) {
+        return method.hasVariables();
     }
 
-    /**
-     * @param methodName the name of the Method
-     * @return {@code true} if the Method exists in the generated Class, otherwise {@code false}
-     */
-    public boolean hasMethod(String methodName) {
-        return getMethodLogger(methodName) != null;
-    }
-
-    /**
-     * @param methodName the name of the Method
-     * @return returns the MethodLogger of this Method
-     */
-    public MethodLogger getMethodLogger(String methodName) {
-        MethodLogger ml = null;
-        for (Map<String, MethodLogger> sameReturnTypeMethods : methods.values()) {
-            ml = sameReturnTypeMethods.get(methodName);
-            if (ml != null) break;
-        }
-        return ml;
-    }
-
-    public MethodLogger getRandomMethod(String callerMethod) {
+    public MethodLogger getRandomMethod(MethodLogger callerMethod) {
         Random rnd = new Random();
         List<FieldVarType> types = new ArrayList<>(methods.keySet());
-        Map<String, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
-        List<String> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
-        keys.remove("main");
-        keys.remove(callerMethod);
+        Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
+        List<Integer> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
+        if (keys.isEmpty()) return null;
+        keys.remove(Integer.valueOf(callerMethod.hashCode()));
+        return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
+    }
+
+    public MethodLogger getRandomMethod() {
+        Random rnd = new Random();
+        List<FieldVarType> types = new ArrayList<>(methods.keySet());
+        if (types.size() == 0) return null;
+        Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
+        List<Integer> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
         return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
     }
 
@@ -182,13 +107,12 @@ public class ClazzLogger extends MyLogger {
         return !methods.isEmpty();
     }
 
-    //TODO
+
     public MethodLogger getMethodWithReturnType(FieldVarType type) {
         Random rnd = new Random();
-        Map<String, MethodLogger> sameReturnTypeMethods = methods.get(type);
+        Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(type);
         if (sameReturnTypeMethods == null) return null;
-        List<String> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
-        keys.remove("main");
+        List<Integer> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
         return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
     }
 }

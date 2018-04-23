@@ -22,10 +22,14 @@ public enum FieldVarType {
     String("String"),
     Void("void");
 
-    private static final List<FieldVarType> compWithShort = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
-    private static final List<FieldVarType> compWithInt = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
-    private static final List<FieldVarType> compWithLong = Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int, FieldVarType.Long);
-    private static final List<FieldVarType> compWithDouble = Arrays.asList(FieldVarType.Float, FieldVarType.Double);
+    private static final List<FieldVarType> compWithShort =
+            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
+    private static final List<FieldVarType> compWithInt =
+            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
+    private static final List<FieldVarType> compWithLong =
+            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int, FieldVarType.Long);
+    private static final List<FieldVarType> compWithDouble =
+            Arrays.asList(FieldVarType.Float, FieldVarType.Double);
 
     private CtClass clazzType;
     private final String name;

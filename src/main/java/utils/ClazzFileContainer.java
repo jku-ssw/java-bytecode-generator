@@ -20,7 +20,6 @@ public class ClazzFileContainer {
     public ClazzFileContainer(String file_name) {
         ClassPool pool = ClassPool.getDefault();
         this.clazz = pool.makeClass(file_name);
-        this.clazzLogger = new ClazzLogger();
         createMinExecutableClazz();
     }
 
@@ -38,8 +37,9 @@ public class ClazzFileContainer {
             e.printStackTrace();
         }
 
-        MethodLogger ml = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void, null);
-        clazzLogger.logMethod(ml);
+        //TODO add correct parameter-logging for main, when arrays enabled
+        MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void, new FieldVarType[0]);
+        this.clazzLogger = new ClazzLogger(main);
     }
 
     /**

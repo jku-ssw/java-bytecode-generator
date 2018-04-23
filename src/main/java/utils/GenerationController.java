@@ -74,4 +74,8 @@ public class GenerationController {
     public int getMaximumMethodParamters() {
         return controlValues.get("mp");
     }
+
+    public int getMethodOverloadPropability() {
+        return controlValues.get("mo");
+    }
 }
