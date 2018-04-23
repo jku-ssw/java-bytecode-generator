@@ -71,8 +71,8 @@ public class RandomCodeGenerator {
             if (context == Context.programContext && r <= controller.getMethodProbability()) generateMethod();
 
             if (r <= controller.getGlobalAssignProbability()) {
-                if (random.nextBoolean()) setFieldToReturnValue(context);
-                else setFieldValue(context);
+                if (random.nextBoolean()) setFieldValue(context);
+                else setFieldToReturnValue(context);
                 if (r <= controller.getVariableToVariableAssignProbability()) {
                     if (random.nextBoolean()) assignFieldToField(context);
                     else assignVarToField(context);

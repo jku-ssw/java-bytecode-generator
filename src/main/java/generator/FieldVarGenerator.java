@@ -153,15 +153,15 @@ public class FieldVarGenerator extends Generator {
     /**
      * assigns a value to a field in the given method
      *
-     * @param field  the field, which's value is set
+     * @param fieldVar  the field or variable, which's value is set
      * @param value  the value to be assigned
      * @param method the logger of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldVarValue(FieldVarLogger field, MethodLogger method, Object... value) {
-        if (field.isStatic() || !method.isStatic()) {
+    public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
+        if (method.hasVariable(fieldVar) || fieldVar.isStatic() || !method.isStatic()) {
             CtMethod ctMethod = this.getCtMethod(method);
-            return createSetFieldStatement(field, ctMethod, value);
+            return createSetFieldStatement(fieldVar, ctMethod, value);
         } else return false;
     }
 

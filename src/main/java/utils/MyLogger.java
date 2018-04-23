@@ -37,7 +37,7 @@ abstract class MyLogger {
     }
 
     public boolean hasVariable(FieldVarLogger l) {
-        if(variables.get(l.getType()) == null) return false;
+        if (variables.get(l.getType()) == null) return false;
         return variables.get(l.getType()).containsKey(l.getName());
     }
 
@@ -144,4 +144,10 @@ abstract class MyLogger {
         return randomType;
     }
 
+    public FieldVarLogger getVariable(String name) {
+        for (Map<String, FieldVarLogger> m : variables.values()) {
+            if (m.containsKey(name)) return m.get(name);
+        }
+        return null;
+    }
 }

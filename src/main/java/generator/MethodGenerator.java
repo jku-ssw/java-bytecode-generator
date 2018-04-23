@@ -158,9 +158,11 @@ public class MethodGenerator extends Generator {
         CtMethod m = this.getCtMethod(method);
         if (!field.isFinal()) {
             try {
-                if (!calledMethod.isVoid() && (calledMethod.isStatic() || !method.isStatic()) && (field.isStatic() || !method.isStatic())) {
+                if (!calledMethod.isVoid() && (calledMethod.isStatic() || !method.isStatic()) &&
+                        (method.hasVariable(field) || field.isStatic() || !method.isStatic())) {
                     m.insertAfter(field.getName() + " = "
                             + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), paramValues));
+                    field.setInitialized();
                     return true;
                 } else return false;
             } catch (CannotCompileException e) {
@@ -188,8 +190,10 @@ public class MethodGenerator extends Generator {
         } else return false;
     }
 
-    public void Ju(char x, int m) {}
+    public void Ju(char x, int m) {
+    }
 
-    public void Ju(int m, char x) {}
+    public void Ju(int m, char x) {
+    }
 
 }
