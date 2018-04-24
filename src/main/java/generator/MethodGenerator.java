@@ -190,10 +190,4 @@ public class MethodGenerator extends Generator {
         } else return false;
     }
 
-    public void Ju(char x, int m) {
-    }
-
-    public void Ju(int m, char x) {
-    }
-
 }

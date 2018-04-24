@@ -71,11 +71,11 @@ public class GenerationController {
         return controlValues.get("ml");
     }
 
-    public int getMaximumMethodParamters() {
+    public int getMaximumMethodParameters() {
         return controlValues.get("mp");
     }
 
-    public int getMethodOverloadPropability() {
+    public int getMethodOverloadProbability() {
         return controlValues.get("mo");
     }
 }

@@ -32,7 +32,7 @@ public class MethodLogger extends MyLogger {
     }
 
     /**
-     * @return @code{true} if the logged method is Static
+     * @return @code{true} if the logged method is static, otherwise @code{false}
      */
     public boolean isStatic() {
         return (modifiers & Modifier.STATIC) != 0;
@@ -46,10 +46,16 @@ public class MethodLogger extends MyLogger {
         return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
     }
 
+    /**
+     * @return the return-type of this method, given by its FieldVarType
+     */
     public FieldVarType getReturnType() {
         return returnType;
     }
 
+    /**
+     * @return @code{true} if the logged method is void, otherwise @code{false}
+     */
     public boolean isVoid() {
         return returnType == FieldVarType.Void;
     }

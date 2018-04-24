@@ -120,57 +120,6 @@ public class RandomSupplier {
         return sb.toString();
     }
 
-
-//    /**
-//     * @return returns random modifiers with modifier static always included
-//     */
-//    public static int getModifiers() {
-//        int numberOfModifiers = 1 + random.nextInt(3);
-//        int[] modifiers = new int[numberOfModifiers];
-//        modifiers[0] = Modifier.STATIC;
-//        if (numberOfModifiers == 1) return mergeModifiers(modifiers);
-//        boolean hasAccessModifier = false;
-//        boolean isFinal = false;
-//        for (int i = 1; i < numberOfModifiers; i++) {
-//            boolean final_ = random.nextBoolean();
-//            if (final_) {
-//                if (!isFinal) {
-//                    modifiers[i] = Modifier.FINAL;
-//                    continue;
-//                }
-//            }
-//            int r = random.nextInt(3);
-//            switch (r) {
-//                case 0:
-//                    if (hasAccessModifier) {
-//                        modifiers[i] = Modifier.FINAL;
-//                        break;
-//                    }
-//                    modifiers[i] = Modifier.PUBLIC;
-//                    hasAccessModifier = true;
-//                    break;
-//                case 1:
-//                    if (hasAccessModifier) {
-//                        modifiers[i] = Modifier.FINAL;
-//                        break;
-//                    }
-//                    modifiers[i] = Modifier.PRIVATE;
-//                    hasAccessModifier = true;
-//                    break;
-//                case 2:
-//                    if (hasAccessModifier) {
-//                        modifiers[i] = Modifier.FINAL;
-//                        break;
-//                    }
-//                    modifiers[i] = Modifier.PROTECTED;
-//                    hasAccessModifier = true;
-//                    break;
-//            }
-//
-//        }
-//        return mergeModifiers(modifiers);
-//    }
-
     /**
      * @return returns random modifiers
      */
@@ -218,7 +167,6 @@ public class RandomSupplier {
         return r;
     }
 
-
     /**
      * megeres the given array of modifiers into one Integer-variable
      *
@@ -235,6 +183,10 @@ public class RandomSupplier {
         return merged_modifiers;
     }
 
+    /**
+     * @param i the unique index of this parameter-variable-name
+     * @return a unique parameter-variable-name, that is directly usable javassist's insertBefore/insertAfter-methods
+     */
     public static String getParVarName(int i) {
         return "$" + i;
     }

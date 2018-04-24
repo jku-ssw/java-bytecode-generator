@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 abstract class MyLogger {
     Map<FieldVarType, Map<String, FieldVarLogger>> variables;
@@ -75,6 +76,14 @@ abstract class MyLogger {
         }
     }
 
+    public FieldVarLogger getRandomAccessibleVariable() {
+        List<FieldVarLogger> initialized_variables = variables.values().stream().flatMap(
+                x -> x.values().stream().filter(
+                        v -> v.isInitialized())).collect(Collectors.toList());
+
+        return initialized_variables.get(random.nextInt(initialized_variables.size()));
+    }
+
     /**
      * @param type the type of the Variable
      * @return the FieldVarLogger of random logged Variable of this type
@@ -144,6 +153,10 @@ abstract class MyLogger {
         return randomType;
     }
 
+    /**
+     * @param name the name of the variable
+     * @return the FieldVarLogger of the variable with given name, that is logged in this Logger
+     */
     public FieldVarLogger getVariable(String name) {
         for (Map<String, FieldVarLogger> m : variables.values()) {
             if (m.containsKey(name)) return m.get(name);

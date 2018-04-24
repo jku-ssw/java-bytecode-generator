@@ -1,6 +1,8 @@
 package utils;
 
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * logs Information about a generated class
@@ -42,20 +44,14 @@ public class ClazzLogger extends MyLogger {
         return method.getVariables();
     }
 
-    /**
-     * @return a random FieldVarLogger
-     */
-    public FieldVarLogger getRandomField() {
-        return this.getRandomVariable();
-    }
 
-    /**
-     * @param method the logger of the method
-     * @return a random variable of the given Method
-     */
-    public FieldVarLogger getRandomVariable(MethodLogger method) {
-        return method.getRandomVariable();
-    }
+//    /**
+//     * @param method the logger of the method
+//     * @return a random variable of the given Method
+//     */
+//    public FieldVarLogger getRandomVariable(MethodLogger method, List<String> excludedVariables) {
+//        return method.getRandomVariable(excludedVariables);
+//    }
 
     /**
      * @param type the Type of which a compatible Field is returned
@@ -84,30 +80,74 @@ public class ClazzLogger extends MyLogger {
         return method.hasVariables();
     }
 
-    public MethodLogger getRandomMethod(MethodLogger callerMethod) {
-        Random rnd = new Random();
-        List<FieldVarType> types = new ArrayList<>(methods.keySet());
-        Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
-        List<Integer> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
-        if (keys.isEmpty()) return null;
-        keys.remove(Integer.valueOf(callerMethod.hashCode()));
-        return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
-    }
 
+    /**
+     * @return the MethodLogger of a randomly chosen method, that is logged in the clazzLogger
+     */
     public MethodLogger getRandomMethod() {
         Random rnd = new Random();
         List<FieldVarType> types = new ArrayList<>(methods.keySet());
-        if (types.size() == 0) return null;
         Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(types.get(rnd.nextInt(types.size())));
         List<Integer> keys = new ArrayList<>(sameReturnTypeMethods.keySet());
         return keys.isEmpty() ? null : sameReturnTypeMethods.get(keys.get(rnd.nextInt(keys.size())));
     }
 
+    public MethodLogger getRandomCallableMethod(MethodLogger callerMethod) {
+        if (!callerMethod.isStatic()) return getRandomMethod();
+        else {
+            List<MethodLogger> staticMethods = getStaticMethods(callerMethod);
+            return staticMethods.get(random.nextInt(staticMethods.size()));
+        }
+    }
+
+    private List<MethodLogger> getStaticMethods(MethodLogger callerMethod) {
+        return methods.values().stream().flatMap(
+                ms -> ms.values().stream().filter(
+                        m -> m.hashCode() == callerMethod.hashCode()).filter( //exclude callerMethod
+                        m -> m.isStatic())).collect(Collectors.toList());
+    }
+
+
+//    public MethodLogger getRandomCallableMethod(MethodLogger callerMethod) {
+//        List<MethodLogger> methodsToExclude = new ArrayList<>();
+//        methodsToExclude.add(callerMethod);
+//        MethodLogger execMethod = getRandomMethod(methodsToExclude);
+//        while (execMethod != null && !execMethod.isStatic() && callerMethod.isStatic()) {
+//            methodsToExclude.add(execMethod);
+//            execMethod = getRandomMethod(methodsToExclude);
+//        }
+//        return execMethod;
+//    }
+
+//    public FieldVarLogger getRandomAccessibleVariable(MethodLogger method) {
+//        FieldVarLogger fvl = getRandomVariable(method, null);
+//        List<String> excludedVariables = new ArrayList<>();
+//        while (fvl != null && !fvl.isInitialized()) {
+//            excludedVariables.add(fvl.getName());
+//            fvl = getRandomVariable(method, excludedVariables);
+//        }
+//        return fvl;
+//    }
+
+//    /**
+//     * @return the MethodLogger of a randomly chosen method, that is logged in the clazzLogger
+//     */
+//    public MethodLogger getRandomMethod() {
+//        return getRandomMethod(null);
+//    }
+
+    /**
+     * @return @code{true} if there are logged methods in this clazzLogger, otherwise @code{false}
+     */
     public boolean hasMethods() {
         return !methods.isEmpty();
     }
 
 
+    /**
+     * @param type the return-type of the randomly choosen method
+     * @return the MethodLogger of a randomly chosen method with given return-type
+     */
     public MethodLogger getMethodWithReturnType(FieldVarType type) {
         Random rnd = new Random();
         Map<Integer, MethodLogger> sameReturnTypeMethods = methods.get(type);
