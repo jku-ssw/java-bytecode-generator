@@ -15,23 +15,6 @@ public class RandomCodeGenerator {
         //controlContext;
         private int lengthWeighting;
         private MethodLogger contextMethod;
-
-        private void setContextMethod(MethodLogger contextMethod) {
-            this.contextMethod = contextMethod;
-        }
-
-        private void setLengthWeighting(int lengthWeighting) {
-            this.lengthWeighting = lengthWeighting;
-        }
-
-        public int getLengthWeighting() {
-            return lengthWeighting;
-        }
-
-        public MethodLogger getContextMethod() {
-            return contextMethod;
-        }
-
     }
 
     private final FieldVarGenerator fv_generator;
@@ -50,9 +33,9 @@ public class RandomCodeGenerator {
         //cf_generator
         //math_generator
         this.controller = controller;
-        Context.programContext.setLengthWeighting(controller.getProgramLengthWeighting());
-        Context.programContext.setContextMethod(getClazzLogger().getMain());
-        Context.methodContext.setLengthWeighting(controller.getMethodLengthWeighting());
+        Context.programContext.lengthWeighting = controller.getProgramLengthWeighting();
+        Context.programContext.contextMethod = getClazzLogger().getMain();
+        Context.methodContext.lengthWeighting = controller.getMethodLengthWeighting();
     }
 
 
@@ -65,7 +48,7 @@ public class RandomCodeGenerator {
     }
 
     private void generate(Context context) {
-        for (int i = 0; i < context.getLengthWeighting(); i++) {
+        for (int i = 0; i < context.lengthWeighting; i++) {
             int r = 1 + random.nextInt(100);
             if (context == Context.programContext && r <= controller.getFieldProbability()) generateField();
             if (r <= controller.getVariableProbability()) generateLocalVariable(context);
@@ -108,80 +91,75 @@ public class RandomCodeGenerator {
 
     private void generateField() {
         FieldVarType ft = randomSupplier.getFieldVarType();
-        Object value = randomSupplier.getValue(ft);
+        Object value = randomSupplier.getRandomValue(ft);
         fv_generator.generateField(randomSupplier.getVarName(), ft, randomSupplier.getModifiers(), value);
     }
 
     private void generateLocalVariable(Context context) {
         FieldVarType ft = randomSupplier.getFieldVarType();
-        Object value = randomSupplier.getValue(ft);
+        Object value = randomSupplier.getRandomValue(ft);
         fv_generator.generateLocalVariable(randomSupplier.getVarName(), ft, context.contextMethod, value);
     }
 
     private void setFieldValue(Context context) {
-        if (getClazzLogger().hasVariables()) {
-            FieldVarLogger f = getClazzLogger().getRandomVariable();
-            fv_generator.setFieldVarValue(f, context.getContextMethod(), RandomSupplier.getValue(f.getType()));
-        } else return;
+        // fieldVar.isStatic() || !method.isStatic()
+        if (!getClazzLogger().hasVariables()) return;
+        FieldVarLogger f;
+        if (context.contextMethod.isStatic()) f = getClazzLogger().getStaticNonFinalVariable();
+        else f = getClazzLogger().getNonFinalVariable();
+        if (f == null) return;
+        fv_generator.setFieldVarValue(f, context.contextMethod, RandomSupplier.getRandomValue(f.getType()));
+
     }
 
     private void setLocalVariableValue(Context context) {
-        if (getClazzLogger().hasLocals(context.getContextMethod())) {
-            FieldVarLogger f = context.contextMethod.getRandomVariable();
-            if (f == null) return;
-            fv_generator.setFieldVarValue(f, context.getContextMethod(), RandomSupplier.getValue(f.getType()));
-        }
+        if (!context.contextMethod.hasVariables()) return;
+        FieldVarLogger f = context.contextMethod.getNonFinalVariable();
+        if (f == null) return;
+        fv_generator.setFieldVarValue(f, context.contextMethod, RandomSupplier.getRandomValue(f.getType()));
     }
 
     private void assignFieldToField(Context context) {
-        //assign value of a field to another field
-        FieldVarLogger f1 = getClazzLogger().getRandomVariable();
-        if (f1 != null && !f1.isFinal()) {
-            FieldVarLogger f2 = getClazzLogger().getRandomCompatibleField(f1.getType());
-            if (f2 != null && f2.isInitialized()) {
-                fv_generator.assignVariableToVariable(f1, f2, context.getContextMethod());
-            }
+        if (!getClazzLogger().hasVariables()) return;
+        FieldVarLogger f1, f2;
+        if (context.contextMethod.isStatic()) {
+            f1 = getClazzLogger().getStaticNonFinalVariable();
+            f2 = getClazzLogger().getCompatibleStaticInitializedVariable(f1.getType());
+        } else {
+            f1 = getClazzLogger().getNonFinalVariable();
+            f2 = getClazzLogger().getCompatibleInitializedVariable(f1.getType());
         }
+        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void assignVarToField(Context context) {
-        //assign value of a variable to a field
-        FieldVarLogger f1 = getClazzLogger().getRandomVariable();
-        if (f1 != null && !f1.isFinal()) {
-            FieldVarLogger f2 = getClazzLogger().getRandomCompatibleVariable(f1.getType(), context.getContextMethod());
-            if (f2 != null && f2.isInitialized()) {
-                fv_generator.assignVariableToVariable(f1, f2, context.getContextMethod());
-            }
-        }
+        if (!getClazzLogger().hasVariables() || !context.contextMethod.hasVariables()) return;
+        FieldVarLogger f1, f2;
+        if (context.contextMethod.isStatic()) f1 = getClazzLogger().getStaticNonFinalVariable();
+        else f1 = getClazzLogger().getNonFinalVariable();
+        f2 = context.contextMethod.getCompatibleInitializedVariable(f1.getType());
+        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void assignVarToVar(Context context) {
-        //assign value of a variable to another variable
-        FieldVarLogger f1 = context.contextMethod.getRandomVariable();
-        if (f1 != null && !f1.isFinal()) {
-            FieldVarLogger f2 = getClazzLogger().getRandomCompatibleVariable(f1.getType(), context.getContextMethod());
-            if (f2 != null && f2.isInitialized()) {
-                fv_generator.assignVariableToVariable(f1, f2, context.getContextMethod());
-            }
-        }
+        if (!context.contextMethod.hasVariables()) return;
+        FieldVarLogger f1 = context.contextMethod.getNonFinalVariable();
+        FieldVarLogger f2 = context.contextMethod.getCompatibleInitializedVariable(f1.getType());
+        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void assignFieldToVar(Context context) {
-        //assign value of a field to a variable
-        FieldVarLogger f1 = context.contextMethod.getRandomVariable();
-        if (f1 != null && !f1.isFinal()) {
-            FieldVarLogger f2 = getClazzLogger().getRandomCompatibleField(f1.getType());
-            if (f2 != null && f2.isInitialized()) {
-                fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
-            }
-        }
+        if (!context.contextMethod.hasVariables()) return;
+        FieldVarLogger f1 = context.contextMethod.getNonFinalVariable();
+        FieldVarLogger f2 = getClazzLogger().getRandomCompatibleVariable(f1.getType());
+        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void generateMethod() {
         String methodName = RandomSupplier.getMethodName();
         MethodLogger method = m_generator.generateMethod(methodName, RandomSupplier.getReturnType(),
                 RandomSupplier.getParameterTypes(controller.getMaximumMethodParameters()), RandomSupplier.getModifiers());
-        Context.methodContext.setContextMethod(method);
+        Context.methodContext.contextMethod = method;
         this.generate(Context.methodContext);
     }
 
@@ -196,7 +174,7 @@ public class RandomCodeGenerator {
         }
         MethodLogger method = m_generator.generateMethod(methodToOverload.getName(), RandomSupplier.getReturnType(),
                 paramTypes, RandomSupplier.getModifiers());
-        Context.methodContext.setContextMethod(method);
+        Context.methodContext.contextMethod = method;
         this.generate(Context.methodContext);
     }
 
@@ -205,65 +183,20 @@ public class RandomCodeGenerator {
             MethodLogger calledMethod = getClazzLogger().getRandomCallableMethod(context.contextMethod);
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-            List<Object> values = getParamValues(paramTypes, context.contextMethod);
-            m_generator.generateMethodCall(calledMethod, context.getContextMethod(), values.toArray());
+            List<Object> values = RandomSupplier.getParamValues(paramTypes, context.contextMethod, getClazzLogger());
+            m_generator.generateMethodCall(calledMethod, context.contextMethod, values.toArray());
         } else return;
-    }
-
-    private List<Object> getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
-        List<Object> values = new ArrayList<>();
-        for (FieldVarType t : paramTypes) {
-            if (random.nextBoolean()) { //add global variable
-                if (!addFieldToParamValues(values, method, t)) {
-                    //add local variable if no global variable available
-                    if (!addLocalVariableToParamValues(values, method, t)) {
-                        //add random value if no variables available
-                        values.add(RandomSupplier.getValue(t));
-                    }
-                }
-            } else { //add local variable
-                if (!addLocalVariableToParamValues(values, method, t)) {
-                    //add global variable if no local variable available
-                    if (!addFieldToParamValues(values, method, t)) {
-                        //add random value if no variables available
-                        values.add(RandomSupplier.getValue(t));
-                    }
-                }
-            }
-        }
-        return values;
-    }
-
-    private boolean addFieldToParamValues(List<Object> values, MethodLogger method, FieldVarType t) {
-        FieldVarLogger fvl = getClazzLogger().getRandomVariableOfType(t);
-        if (fvl != null && (fvl.isStatic() || !method.isStatic())) {
-            values.add(fvl);
-            return true;
-        } else return false;
-    }
-
-    private boolean addLocalVariableToParamValues(List<Object> values, MethodLogger method, FieldVarType t) {
-        FieldVarLogger fvl = method.getRandomVariableOfType(t);
-        if (fvl != null) {
-            values.add(fvl);
-            return true;
-        } else return false;
-    }
-
-
-    public void writeFile() {
-        fv_generator.writeFile();
     }
 
     private void generatePrintStatement(Context context) {
         if (random.nextBoolean()) { //print local Variable
-            FieldVarLogger fvl = context.getContextMethod().getRandomAccessibleVariable();
+            FieldVarLogger fvl = context.contextMethod.getInitializedVariable();
             if (fvl == null) return;
-            fv_generator.generatePrintLocalVariableStatement(fvl, context.getContextMethod());
+            fv_generator.generatePrintLocalVariableStatement(fvl, context.contextMethod);
         } else { //print global Variable
-            FieldVarLogger fvl = getClazzLogger().getRandomVariable();
+            FieldVarLogger fvl = getClazzLogger().getVariable();
             if (fvl != null && fvl.isInitialized() && fvl.isStatic() || !context.contextMethod.isStatic()) {
-                fv_generator.generatePrintFieldStatement(fvl, context.getContextMethod());
+                fv_generator.generatePrintFieldStatement(fvl, context.contextMethod);
             }
         }
     }
@@ -271,26 +204,30 @@ public class RandomCodeGenerator {
 
     private void setFieldToReturnValue(Context context) {
         if (m_generator.getClazzLogger().hasVariables()) {
-            FieldVarLogger f = getClazzLogger().getRandomVariable();
+            FieldVarLogger f = getClazzLogger().getVariable();
             MethodLogger calledMethod = getClazzLogger().getMethodWithReturnType(f.getType());
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-            List<Object> values = getParamValues(paramTypes, context.contextMethod);
+            List<Object> values = RandomSupplier.getParamValues(paramTypes, context.contextMethod, getClazzLogger());
             m_generator.setFieldVarToReturnValue(
-                    f, calledMethod, context.getContextMethod(), values.toArray());
+                    f, calledMethod, context.contextMethod, values.toArray());
         } else return;
     }
 
     private void setVariableToReturnValue(Context context) {
         if (context.contextMethod.hasVariables()) {
-            FieldVarLogger f = context.contextMethod.getRandomVariable();
+            FieldVarLogger f = context.contextMethod.getVariable();
             MethodLogger calledMethod = getClazzLogger().getMethodWithReturnType(f.getType());
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-            List<Object> values = getParamValues(paramTypes, context.contextMethod);
+            List<Object> values = RandomSupplier.getParamValues(paramTypes, context.contextMethod, getClazzLogger());
             m_generator.setFieldVarToReturnValue(
-                    f, calledMethod, context.getContextMethod(), values.toArray());
+                    f, calledMethod, context.contextMethod, values.toArray());
         }
+    }
+
+    public void writeFile() {
+        fv_generator.writeFile();
     }
 }
 

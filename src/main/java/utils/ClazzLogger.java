@@ -54,32 +54,13 @@ public class ClazzLogger extends MyLogger {
 //    }
 
     /**
-     * @param type the Type of which a compatible Field is returned
+     * @param type the FieldVarType of which a compatible field is returned
      * @return returns a random Field, that is compatible to the given Type
      */
-    public FieldVarLogger getRandomCompatibleField(FieldVarType type) {
-        FieldVarType randomType = getRandomCompatibleType(type);
-        return this.getRandomVariableOfType(randomType);
+    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type) {
+        FieldVarType randomType = getCompatibleType(type);
+        return this.getVariableOfType(randomType);
     }
-
-    /**
-     * @param type   the Type of which a compatible Variable is returned
-     * @param method the logger of the method of which a random local variable is returned
-     * @return a random Variable, that is compatible to the given Type
-     */
-    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type, MethodLogger method) {
-        FieldVarType randomType = getRandomCompatibleType(type);
-        return method.getRandomVariableOfType(randomType);
-    }
-
-    /**
-     * @param method the logger of the method
-     * @return {@code true} if this Method has no local Variables, otherwise {@code false}
-     */
-    public boolean hasLocals(MethodLogger method) {
-        return method.hasVariables();
-    }
-
 
     /**
      * @return the MethodLogger of a randomly chosen method, that is logged in the clazzLogger

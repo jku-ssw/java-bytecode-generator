@@ -16,7 +16,7 @@ public class FieldVarGenerator extends Generator {
      *
      * @param name      the name of the generated field
      * @param type      the FieldVarType of the generated field
-     * @param value     the value to be assigned to the field
+     * @param value     the value to be assigned to the field, if initialized
      * @param modifiers merged modifiers for the new field (from javassist class Modifier)
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
@@ -79,7 +79,7 @@ public class FieldVarGenerator extends Generator {
      * @param type   the FieldVarType of the generated variable
      * @param value  the value to be assigned to the field
      * @param method the logger of the method, in which the variable is generated
-     * @return {@code true} if the variable was generated successfully, otherwise {@code false}
+     * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
     public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
         boolean initialized = false;
@@ -153,16 +153,14 @@ public class FieldVarGenerator extends Generator {
     /**
      * assigns a value to a field in the given method
      *
-     * @param fieldVar  the field or variable, which's value is set
-     * @param value  the value to be assigned
-     * @param method the logger of the method in which the assign-statement is generated
+     * @param fieldVar the field or variable, which's value is set
+     * @param value    the value to be assigned
+     * @param method   the logger of the method, in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
-        if (method.hasVariable(fieldVar) || fieldVar.isStatic() || !method.isStatic()) {
-            CtMethod ctMethod = this.getCtMethod(method);
-            return createSetFieldStatement(fieldVar, ctMethod, value);
-        } else return false;
+        CtMethod ctMethod = this.getCtMethod(method);
+        return createSetFieldVarStatement(fieldVar, ctMethod, value);
     }
 
     /**
@@ -173,7 +171,7 @@ public class FieldVarGenerator extends Generator {
      * @param method   the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    private boolean createSetFieldStatement(FieldVarLogger fieldVar, CtMethod method, Object... value) {
+    private boolean createSetFieldVarStatement(FieldVarLogger fieldVar, CtMethod method, Object... value) {
         if (!fieldVar.isFinal()) {
             try {
                 if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
@@ -208,7 +206,7 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     private boolean createAssignStatement(FieldVarLogger fieldVar1, FieldVarLogger fieldVar2, CtMethod method) {
-        if (!fieldVar1.isFinal()) {
+        if (!fieldVar1.isFinal() && fieldVar2.isInitialized()) {
             try {
                 method.insertAfter(fieldVar1.getName() + " = " + fieldVar2.getName() + ";");
                 fieldVar1.setInitialized();
@@ -228,10 +226,7 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
     public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, MethodLogger method) {
-        if (!method.isStatic() || ((method.hasVariable(field1) || field1.isStatic()) &&
-                (method.hasVariable(field2) || field2.isStatic()))) {
-            return createAssignStatement(field1, field2, this.getCtMethod(method));
-        } else return false;
+        return createAssignStatement(field1, field2, this.getCtMethod(method));
     }
 }
 

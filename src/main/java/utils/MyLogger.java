@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 abstract class MyLogger {
-    Map<FieldVarType, Map<String, FieldVarLogger>> variables;
+    Map<String, FieldVarLogger> variables;
     static Random random = new Random();
 
     /**
@@ -17,97 +17,93 @@ abstract class MyLogger {
      */
     public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
         FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
-        if (variables.get(type) == null) {
-            Map<String, FieldVarLogger> m = new HashMap<>();
-            m.put(name, f);
-            variables.put(type, m);
-        } else {
-            variables.get(type).put(name, f);
-        }
+        variables.put(name, f);
     }
 
     /**
      * @return all logged Variables
      */
     public List<FieldVarLogger> getVariables() {
-        List<FieldVarLogger> allVariables = new ArrayList<>();
-        for (Map<String, FieldVarLogger> m : variables.values()) {
-            allVariables.addAll(m.values());
-        }
-        return allVariables;
+        return variables.values().stream().collect(Collectors.toList());
     }
 
-    public boolean hasVariable(FieldVarLogger l) {
-        if (variables.get(l.getType()) == null) return false;
-        return variables.get(l.getType()).containsKey(l.getName());
+    public boolean hasVariable(String name) {
+        return variables.containsKey(name);
     }
 
     /**
      * @return @code{true} if there are logged Variables
      */
     public boolean hasVariables() {
-        for (FieldVarType t : variables.keySet()) {
-            if (variables.get(t) != null) return true;
-        }
-        return false;
-    }
-
-    /**
-     * @return @code{true} if there are logged Variables of this type
-     */
-    public boolean hasVariables(FieldVarType type) {
-        if (variables.get(type) != null) return true;
-        return false;
+        return !variables.isEmpty();
     }
 
     /**
      * @return the FieldVarLogger of random logged Variable
      */
-    public FieldVarLogger getRandomVariable() {
+    public FieldVarLogger getVariable() {
         if (hasVariables()) {
-            List<FieldVarType> types = new ArrayList<>(variables.keySet());
-            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(types.get(random.nextInt(types.size())));
-            List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return keys.size() > 0 ? oneTypeGlobals.get(keys.get(random.nextInt(keys.size()))) : null;
-        } else {
-            //TODO: maybe add to Logger
-            //System.out.println("Cannot return random Variable: no Variables available");
-            return null;
-        }
+            List<String> keys = new ArrayList<>(variables.keySet());
+            return keys.size() > 0 ? variables.get(keys.get(random.nextInt(keys.size()))) : null;
+        } else return null; //no variables available
     }
 
-    public FieldVarLogger getRandomAccessibleVariable() {
-        List<FieldVarLogger> initialized_variables = variables.values().stream().flatMap(
-                x -> x.values().stream().filter(
-                        v -> v.isInitialized())).collect(Collectors.toList());
+    public FieldVarLogger getStaticNonFinalVariable() {
+        List<FieldVarLogger> staticNonFinalVariables = variables.values().stream().filter(
+                v -> v.isFinal() && v.isStatic()).collect(Collectors.toList());
+        if (staticNonFinalVariables.isEmpty()) return null;
+        else return staticNonFinalVariables.get(random.nextInt(staticNonFinalVariables.size()));
+    }
 
+    public FieldVarLogger getNonFinalVariable() {
+        List<FieldVarLogger> nonFinalVariables = variables.values().stream().filter(
+                v -> v.isFinal()).collect(Collectors.toList());
+        if (nonFinalVariables.isEmpty()) return null;
+        return nonFinalVariables.get(random.nextInt(nonFinalVariables.size()));
+    }
+
+    public FieldVarLogger getInitializedVariable() {
+        List<FieldVarLogger> initialized_variables = variables.values().stream().filter(
+                v -> v.isInitialized()).collect(Collectors.toList());
+        if(initialized_variables.isEmpty()) return null;
         return initialized_variables.get(random.nextInt(initialized_variables.size()));
+    }
+
+    public FieldVarLogger getCompatibleStaticInitializedVariable(FieldVarType type) {
+        FieldVarType randomType = getCompatibleType(type);
+        List<FieldVarLogger> compatible_variables = variables.values().stream().filter(
+                v -> v.getType() == randomType && v.isStatic() && v.isInitialized()).collect(Collectors.toList());
+        if(compatible_variables.isEmpty()) return null;
+        return compatible_variables.get(random.nextInt(compatible_variables.size()));
+    }
+
+    public FieldVarLogger getCompatibleInitializedVariable(FieldVarType type) {
+        FieldVarType randomType = getCompatibleType(type);
+        List<FieldVarLogger> compatible_variables = variables.values().stream().filter(
+                v -> v.getType() == randomType && v.isInitialized()).collect(Collectors.toList());
+        if(compatible_variables.isEmpty()) return null;
+        return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
 
     /**
      * @param type the type of the Variable
      * @return the FieldVarLogger of random logged Variable of this type
      */
-    public FieldVarLogger getRandomVariableOfType(FieldVarType type) {
-        if (hasVariables(type)) {
-            Map<String, FieldVarLogger> oneTypeGlobals = variables.get(type);
-            List<String> keys = new ArrayList<>(oneTypeGlobals.keySet());
-            return keys.size() > 0 ? oneTypeGlobals.get(keys.get(random.nextInt(keys.size()))) : null;
-        } else {
-            //no Variables logged
-            return null;
-        }
-
+    public FieldVarLogger getVariableOfType(FieldVarType type) {
+        if (!hasVariables()) return null;
+        List<FieldVarLogger> onetype_variables = variables.values().stream().filter(
+                v -> v.getType() == type).collect(Collectors.toList());
+        if(onetype_variables.isEmpty()) return null;
+        return onetype_variables.get(random.nextInt(onetype_variables.size()));
     }
-
 
     /**
      * @param type the Type of which a compatible Field is returned
      * @return returns a random Field, that is compatible to the given Type
      */
-    public FieldVarLogger getRandomCompatibleField(FieldVarType type) {
-        FieldVarType randomType = getRandomCompatibleType(type);
-        return this.getRandomVariableOfType(randomType);
+    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type) {
+        FieldVarType randomType = getCompatibleType(type);
+        return this.getVariableOfType(randomType);
     }
 
 
@@ -115,7 +111,7 @@ abstract class MyLogger {
      * @param type
      * @return a random FieldVarType that is compatible to type
      */
-    static FieldVarType getRandomCompatibleType(FieldVarType type) {
+    static FieldVarType getCompatibleType(FieldVarType type) {
         FieldVarType randomType = null;
         int i;
         switch (type) {
@@ -158,9 +154,6 @@ abstract class MyLogger {
      * @return the FieldVarLogger of the variable with given name, that is logged in this Logger
      */
     public FieldVarLogger getVariable(String name) {
-        for (Map<String, FieldVarLogger> m : variables.values()) {
-            if (m.containsKey(name)) return m.get(name);
-        }
-        return null;
+        return variables.get(name);
     }
 }

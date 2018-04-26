@@ -39,7 +39,7 @@ public class MethodGenerator extends Generator {
             if (returnType == FieldVarType.Void) {
                 returnStatement = "";
             } else if (returnStatement == null) {
-                returnStatement = "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getValue(returnType)) + ";";
+                returnStatement = "return " + paramToCorrectStringFormat(returnType, RandomSupplier.getRandomValue(returnType)) + ";";
             }
             String returnTypeStr = returnType.getName();
             this.getClazzLogger().logMethod(ml);
@@ -159,7 +159,7 @@ public class MethodGenerator extends Generator {
         if (!field.isFinal()) {
             try {
                 if (!calledMethod.isVoid() && (calledMethod.isStatic() || !method.isStatic()) &&
-                        (method.hasVariable(field) || field.isStatic() || !method.isStatic())) {
+                        (method.hasVariable(field.getName()) || field.isStatic() || !method.isStatic())) {
                     m.insertAfter(field.getName() + " = "
                             + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), paramValues));
                     field.setInitialized();
