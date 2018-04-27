@@ -1,12 +1,14 @@
 package generator;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 import utils.ClazzFileContainer;
-
-import java.io.IOException;
-
 import utils.ClazzLogger;
 import utils.MethodLogger;
+
+import java.io.IOException;
 
 /**
  * super-Class of all generators
@@ -19,7 +21,7 @@ class Generator {
     /**
      * Takes an existing utils.ClazzFileContainer to extend
      *
-     * @param cf the container for the class-file with additional information
+     * @param clazzContainer the container for the class-file with additional information
      */
     public Generator(ClazzFileContainer clazzContainer) {
         this.clazzContainer = clazzContainer;

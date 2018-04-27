@@ -3,8 +3,8 @@ package utils;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * stores information about a Method

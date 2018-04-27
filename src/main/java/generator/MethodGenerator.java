@@ -1,12 +1,19 @@
 package generator;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.Modifier;
 import utils.*;
 
 public class MethodGenerator extends Generator {
 
     public MethodGenerator(ClazzFileContainer cf) {
         super(cf);
+    }
+
+    public MethodGenerator(String filename) {
+        super(filename);
     }
 
     /**

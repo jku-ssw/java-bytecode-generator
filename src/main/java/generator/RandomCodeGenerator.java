@@ -2,9 +2,6 @@ package generator;
 
 import utils.*;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -22,16 +19,16 @@ public class RandomCodeGenerator {
     private final RandomSupplier randomSupplier;
     private final Random random = new Random();
     private final GenerationController controller;
+    private MathGenerator math_generator;
 //    private ControlFlowGenerator cf_generator;
-//    private MathGenerator math_generator;
 
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         this.randomSupplier = new RandomSupplier();
         this.fv_generator = new FieldVarGenerator(fileName);
         this.m_generator = new MethodGenerator(fv_generator.getClazzContainer());
+        this.math_generator = new MathGenerator(fv_generator.getClazzContainer());
         //cf_generator
-        //math_generator
         this.controller = controller;
         Context.programContext.lengthWeighting = controller.getProgramLengthWeighting();
         Context.programContext.contextMethod = getClazzLogger().getMain();
@@ -72,7 +69,12 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (r <= controller.getMethodCallProbability()) generateMethodCall(context);
+            if (r <= controller.getMethodCallProbability()) {
+                generateMethodCall(context);
+                if (r <= controller.getJavaLangMathProbalility()) {
+                    callJavaLangMathMethod(context);
+                }
+            }
             if (context == Context.programContext && r <= controller.getMethodOverloadProbability()) {
                 overloadMethod();
             }
@@ -121,13 +123,13 @@ public class RandomCodeGenerator {
 
     private void assignFieldToField(Context context) {
         if (!getClazzLogger().hasVariables()) return;
-        FieldVarLogger f1, f2;
+        FieldVarLogger f1, f2 = null;
         if (context.contextMethod.isStatic()) {
             f1 = getClazzLogger().getStaticNonFinalVariable();
-            f2 = getClazzLogger().getCompatibleStaticInitializedVariable(f1.getType());
+            if (f1 != null) f2 = getClazzLogger().getCompatibleStaticInitializedVariable(f1.getType());
         } else {
             f1 = getClazzLogger().getNonFinalVariable();
-            f2 = getClazzLogger().getCompatibleInitializedVariable(f1.getType());
+            if (f1 != null) f2 = getClazzLogger().getCompatibleInitializedVariable(f1.getType());
         }
         if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
@@ -137,22 +139,25 @@ public class RandomCodeGenerator {
         FieldVarLogger f1, f2;
         if (context.contextMethod.isStatic()) f1 = getClazzLogger().getStaticNonFinalVariable();
         else f1 = getClazzLogger().getNonFinalVariable();
+        if (f1 == null) return;
         f2 = context.contextMethod.getCompatibleInitializedVariable(f1.getType());
-        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
+        if (f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void assignVarToVar(Context context) {
         if (!context.contextMethod.hasVariables()) return;
         FieldVarLogger f1 = context.contextMethod.getNonFinalVariable();
+        if (f1 == null) return;
         FieldVarLogger f2 = context.contextMethod.getCompatibleInitializedVariable(f1.getType());
-        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
+        if (f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void assignFieldToVar(Context context) {
         if (!context.contextMethod.hasVariables()) return;
         FieldVarLogger f1 = context.contextMethod.getNonFinalVariable();
+        if (f1 == null) return;
         FieldVarLogger f2 = getClazzLogger().getRandomCompatibleVariable(f1.getType());
-        if (f1 != null && f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
+        if (f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
     private void generateMethod() {
@@ -224,6 +229,24 @@ public class RandomCodeGenerator {
             m_generator.setFieldVarToReturnValue(
                     f, calledMethod, context.contextMethod, values.toArray());
         }
+    }
+
+    private void callJavaLangMathMethod(Context context) {
+        math_generator.callJavaLangMathMethod(context.contextMethod, getClazzLogger());
+//        FieldVarLogger f;
+//        //call Sqrt
+//        if (random.nextBoolean()) {
+//            if (context.contextMethod.isStatic()) {
+//                f = getClazzLogger().getStaticVariableOfType(FieldVarType.Double);
+//            } else f = getClazzLogger().getVariableOfType(FieldVarType.Double);
+//            if (f == null) return;
+//            math_generator.computeSqrt(f, context.contextMethod);
+//        } else {
+//            f = context.contextMethod.getVariableOfType(FieldVarType.Double);
+//            if (f == null) return;
+//            math_generator.computeSqrt(f, context.contextMethod);
+//        }
+
     }
 
     public void writeFile() {

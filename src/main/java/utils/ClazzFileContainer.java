@@ -18,9 +18,12 @@ public class ClazzFileContainer {
      * @param file_name the name of the generated Class
      */
     public ClazzFileContainer(String file_name) {
-        ClassPool pool = ClassPool.getDefault();
-        this.clazz = pool.makeClass(file_name);
+        this.clazz = getClazzPool().makeClass(file_name);
         createMinExecutableClazz();
+    }
+
+    public ClassPool getClazzPool() {
+        return ClassPool.getDefault();
     }
 
     /**

@@ -1,6 +1,10 @@
 package utils;
 
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 abstract class MyLogger {
@@ -65,23 +69,25 @@ abstract class MyLogger {
     public FieldVarLogger getInitializedVariable() {
         List<FieldVarLogger> initialized_variables = variables.values().stream().filter(
                 v -> v.isInitialized()).collect(Collectors.toList());
-        if(initialized_variables.isEmpty()) return null;
+        if (initialized_variables.isEmpty()) return null;
         return initialized_variables.get(random.nextInt(initialized_variables.size()));
     }
 
     public FieldVarLogger getCompatibleStaticInitializedVariable(FieldVarType type) {
-        FieldVarType randomType = getCompatibleType(type);
-        List<FieldVarLogger> compatible_variables = variables.values().stream().filter(
-                v -> v.getType() == randomType && v.isStatic() && v.isInitialized()).collect(Collectors.toList());
-        if(compatible_variables.isEmpty()) return null;
+        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
+        List<FieldVarLogger> compatible_variables =
+                variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
+                        r -> r == v.getType()) && v.isStatic() && v.isInitialized()).collect(Collectors.toList());
+        if (compatible_variables.isEmpty()) return null;
         return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
 
     public FieldVarLogger getCompatibleInitializedVariable(FieldVarType type) {
-        FieldVarType randomType = getCompatibleType(type);
-        List<FieldVarLogger> compatible_variables = variables.values().stream().filter(
-                v -> v.getType() == randomType && v.isInitialized()).collect(Collectors.toList());
-        if(compatible_variables.isEmpty()) return null;
+        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
+        List<FieldVarLogger> compatible_variables =
+                variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
+                        r -> r == v.getType()) && v.isInitialized()).collect(Collectors.toList());
+        if (compatible_variables.isEmpty()) return null;
         return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
 
@@ -91,10 +97,10 @@ abstract class MyLogger {
      */
     public FieldVarLogger getVariableOfType(FieldVarType type) {
         if (!hasVariables()) return null;
-        List<FieldVarLogger> onetype_variables = variables.values().stream().filter(
+        List<FieldVarLogger> oneType_variables = variables.values().stream().filter(
                 v -> v.getType() == type).collect(Collectors.toList());
-        if(onetype_variables.isEmpty()) return null;
-        return onetype_variables.get(random.nextInt(onetype_variables.size()));
+        if (oneType_variables.isEmpty()) return null;
+        return oneType_variables.get(random.nextInt(oneType_variables.size()));
     }
 
     /**
@@ -102,52 +108,22 @@ abstract class MyLogger {
      * @return returns a random Field, that is compatible to the given Type
      */
     public FieldVarLogger getRandomCompatibleVariable(FieldVarType type) {
-        FieldVarType randomType = getCompatibleType(type);
-        return this.getVariableOfType(randomType);
+        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
+        List<FieldVarLogger> compatible_variables =
+                variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
+                        r -> r == v.getType())).collect(Collectors.toList());
+        if (compatible_variables.isEmpty()) return null;
+        return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
 
-
-    /**
-     * @param type
-     * @return a random FieldVarType that is compatible to type
-     */
-    static FieldVarType getCompatibleType(FieldVarType type) {
-        FieldVarType randomType = null;
-        int i;
-        switch (type) {
-            case Byte:
-                randomType = FieldVarType.Byte;
-                break;
-            case Short:
-                i = random.nextInt(FieldVarType.getCompWithShort().size());
-                randomType = FieldVarType.getCompWithShort().get(i);
-                break;
-            case Int:
-                i = random.nextInt(FieldVarType.getCompWithInt().size());
-                randomType = FieldVarType.getCompWithInt().get(i);
-                break;
-            case Long:
-                i = random.nextInt(FieldVarType.getCompWithLong().size());
-                randomType = FieldVarType.getCompWithLong().get(i);
-                break;
-            case Float:
-                randomType = FieldVarType.Float;
-                break;
-            case Double:
-                i = random.nextInt(FieldVarType.getCompWithDouble().size());
-                randomType = FieldVarType.getCompWithDouble().get(i);
-                break;
-            case Boolean:
-                randomType = FieldVarType.Boolean;
-                break;
-            case Char:
-                randomType = FieldVarType.Char;
-                break;
-            case String:
-                randomType = FieldVarType.String;
-        }
-        return randomType;
+    public FieldVarLogger getStaticVariableOfType(FieldVarType type) {
+        List<FieldVarLogger> compatible_variables =
+                variables.values().stream().filter(
+                        v -> v.getType() == type && v.isStatic()).collect(Collectors.toList());
+        if (compatible_variables.isEmpty()) return null;
+        return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
+
 
     /**
      * @param name the name of the variable

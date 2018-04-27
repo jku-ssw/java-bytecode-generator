@@ -80,34 +80,6 @@ public enum FieldVarType {
     }
 
     /**
-     * @return all FieldVarTypes compatible with Short
-     */
-    public static List<FieldVarType> getCompWithShort() {
-        return compWithShort;
-    }
-
-    /**
-     * @return all FieldVarTypes compatible with Int
-     */
-    public static List<FieldVarType> getCompWithInt() {
-        return compWithInt;
-    }
-
-    /**
-     * @return all FieldVarTypes compatible with Long
-     */
-    public static List<FieldVarType> getCompWithLong() {
-        return compWithLong;
-    }
-
-    /**
-     * @return all FieldVarTypes compatible with Double
-     */
-    public static List<FieldVarType> getCompWithDouble() {
-        return compWithDouble;
-    }
-
-    /**
      * @return returns the CtClass of this FieldVarType
      */
     public CtClass getClazzType() {
@@ -119,6 +91,35 @@ public enum FieldVarType {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * @param type
+     * @return a random FieldVarType that is compatible to type
+     */
+    public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {
+        switch (type) {
+            case Byte:
+                return Arrays.asList(FieldVarType.Byte);
+            case Short:
+                return compWithShort;
+            case Int:
+                return compWithInt;
+            case Long:
+                return compWithLong;
+            case Float:
+                return Arrays.asList(FieldVarType.Float);
+            case Double:
+                return compWithDouble;
+            case Boolean:
+                return Arrays.asList(FieldVarType.Boolean);
+            case Char:
+                return Arrays.asList(FieldVarType.Char);
+            case String:
+                return Arrays.asList(FieldVarType.String);
+            default:
+                return Arrays.asList(type);
+        }
     }
 
 }

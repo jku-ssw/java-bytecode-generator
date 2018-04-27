@@ -23,6 +23,7 @@ public class ControlValueParser {
         this.options.addOption("mp", "maximum_parameters", true, "The maximum number of parameters a Method can have");
         this.options.addOption("mo", "method_overload", true, "The Probability for overloading methods");
         this.options.addOption("p", "print_probability", true, "The Probability to generate Print-Statements");
+        this.options.addOption("jlm", "java_lang_math_probability", true, "The Probability to call methods of java.lang.Math");
         this.parse();
     }
 
@@ -42,7 +43,6 @@ public class ControlValueParser {
             }
             for (Option option : this.options.getOptions()) {
                 String signature = option.getOpt();
-                if (signature.equals("h")) continue;
                 if (cmd.hasOption(signature)) {
                     System.out.println("Using argument " + options.getOption(signature).getLongOpt() + " = " + cmd.getOptionValue(signature));
                     int value = Integer.parseInt(cmd.getOptionValue(signature));

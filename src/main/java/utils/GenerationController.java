@@ -78,4 +78,8 @@ public class GenerationController {
     public int getMethodOverloadProbability() {
         return controlValues.get("mo");
     }
+
+    public int getJavaLangMathProbalility() {
+        return controlValues.get("jlm");
+    }
 }

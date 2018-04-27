@@ -1,6 +1,8 @@
 package generator;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.CtField;
+import javassist.CtMethod;
 import utils.FieldVarLogger;
 import utils.FieldVarType;
 import utils.MethodLogger;

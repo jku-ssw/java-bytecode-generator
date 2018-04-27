@@ -1,10 +1,4 @@
-
-import generator.FieldVarGenerator;
-        import generator.MethodGenerator;
-        import javassist.*;
-        import utils.FieldVarLogger;
-        import utils.FieldVarType;
-        import utils.RandomSupplier;
+import javassist.CannotCompileException;
 
 
 public class Testing {
