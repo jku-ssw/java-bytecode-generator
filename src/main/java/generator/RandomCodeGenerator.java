@@ -176,6 +176,7 @@ public class RandomCodeGenerator {
                 RandomSupplier.getParameterTypes(controller.getMaximumMethodParameters()), RandomSupplier.getModifiers());
         Context.methodContext.contextMethod = method;
         this.generate(Context.methodContext);
+        m_generator.overrideReturnStatement(method);
     }
 
     private void overloadMethod() {

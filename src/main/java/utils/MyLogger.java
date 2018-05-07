@@ -58,20 +58,21 @@ abstract class MyLogger {
      */
     public FieldVarLogger getCompatibleVariable(FieldVarType type) {
         if (!hasVariables()) return null;
-        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
-        List<FieldVarLogger> compatible_variables =
-                variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
-                        r -> r == v.getType())).collect(Collectors.toList());
+        List<FieldVarLogger> compatible_variables = getCompatibleVariables(type);
         if (compatible_variables.isEmpty()) return null;
         return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }
 
+    private List<FieldVarLogger> getCompatibleVariables(FieldVarType type) {
+        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
+        return variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
+                r -> r == v.getType())).collect(Collectors.toList());
+    }
+
     public FieldVarLogger getCompatibleVariableWithPredicate(Predicate<FieldVarLogger> predicate, FieldVarType type) {
         if (!hasVariables()) return null;
-        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
-        List<FieldVarLogger> compatible_variables =
-                variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(
-                        r -> r == v.getType())).filter(predicate).collect(Collectors.toList());
+        List<FieldVarLogger> compatible_variables = getCompatibleVariables(type).
+                stream().filter(predicate).collect(Collectors.toList());
         if (compatible_variables.isEmpty()) return null;
         return compatible_variables.get(random.nextInt(compatible_variables.size()));
     }

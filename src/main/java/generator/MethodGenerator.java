@@ -4,7 +4,14 @@ import javassist.CannotCompileException;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
+import javassist.bytecode.AttributeInfo;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.CodeIterator;
+import javassist.bytecode.MethodInfo;
 import utils.*;
+
+import java.util.List;
+import java.util.Random;
 
 public class MethodGenerator extends Generator {
 
@@ -15,6 +22,8 @@ public class MethodGenerator extends Generator {
     public MethodGenerator(String filename) {
         super(filename);
     }
+
+    private Random random = new Random();
 
     /**
      * @param name       the name of the generated method
@@ -59,8 +68,55 @@ public class MethodGenerator extends Generator {
             e.printStackTrace();
             return null;
         }
-
     }
+
+//    public boolean overrideReturnStatement(MethodLogger method) {
+//        CtMethod m = this.getCtMethod(method);
+//        MethodInfo minfo = m.getMethodInfo();
+//        CodeAttribute codeAttribute = minfo.getCodeAttribute();
+//        CodeIterator iterator = codeAttribute.iterator();
+//        iterator
+//        codeAttribute.set
+//        minfo.removeAttribute(lastAttribute.getName());
+//    }
+
+    public boolean overrideReturnStatement(MethodLogger method) {
+        CtMethod ctMethod = this.getCtMethod(method);
+        FieldVarType returnType = method.getReturnType();
+        FieldVarLogger f = null;
+        if (random.nextBoolean()) {
+            f = fetchLocalReturnValue(method, returnType);
+            if (f != null) fetchGlobalReturnValue(method, returnType);
+        } else {
+            System.out.println("heeeerrreee");
+            f = fetchGlobalReturnValue(method, returnType);
+            if (f != null) {
+                fetchLocalReturnValue(method, returnType);
+                System.out.println(f.getName());
+            }
+        }
+        try {
+            if (f != null) ctMethod.insertAfter("return " + f.getName() + ";");
+            else ctMethod.insertAfter("return " + RandomSupplier.getRandomValueAsString(returnType) + ";");
+            return true;
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private FieldVarLogger fetchLocalReturnValue(MethodLogger method, FieldVarType returnType) {
+        return method.getVariableWithPredicate(v -> v.getType() == returnType);
+    }
+
+    private FieldVarLogger fetchGlobalReturnValue(MethodLogger method, FieldVarType returnType) {
+        if (method.isStatic()) {
+            return this.getClazzLogger().getVariableWithPredicate(v -> v.isInitialized() && v.isStatic());
+        } else {
+            return this.getClazzLogger().getVariableWithPredicate(v -> v.isInitialized());
+        }
+    }
+
 
     /**
      * @param modifiers the Integer-Representation of the modifiers

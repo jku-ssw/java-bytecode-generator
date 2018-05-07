@@ -110,8 +110,10 @@ public class ClazzLogger extends MyLogger {
     }
 
     private boolean addFieldToParamValues(List<Object> values, MethodLogger method, FieldVarType type) {
-        FieldVarLogger fvl = this.getVariableWithPredicate(v -> v.getType() == type);
-        if (fvl != null && (fvl.isStatic() || !method.isStatic())) {
+        FieldVarLogger fvl;
+        if(method.isStatic()) fvl  = this.getVariableWithPredicate(v -> v.getType() == type && v.isStatic());
+        else fvl = this.getVariableWithPredicate(v -> v.getType() == type);
+        if (fvl != null) {
             values.add(fvl);
             return true;
         } else return false;
