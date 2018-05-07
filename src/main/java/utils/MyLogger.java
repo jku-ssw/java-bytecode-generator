@@ -107,7 +107,7 @@ abstract class MyLogger {
      * @param type the Type of which a compatible Field is returned
      * @return returns a random Field, that is compatible to the given Type
      */
-    public FieldVarLogger getRandomCompatibleVariable(FieldVarType type) {
+    public FieldVarLogger getCompatibleVariable(FieldVarType type) {
         List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(type);
         List<FieldVarLogger> compatible_variables =
                 variables.values().stream().filter(v -> compatibleTypes.stream().anyMatch(

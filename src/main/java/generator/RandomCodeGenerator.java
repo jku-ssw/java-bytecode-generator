@@ -156,7 +156,7 @@ public class RandomCodeGenerator {
         if (!context.contextMethod.hasVariables()) return;
         FieldVarLogger f1 = context.contextMethod.getNonFinalVariable();
         if (f1 == null) return;
-        FieldVarLogger f2 = getClazzLogger().getRandomCompatibleVariable(f1.getType());
+        FieldVarLogger f2 = getClazzLogger().getCompatibleVariable(f1.getType());
         if (f2 != null) fv_generator.assignVariableToVariable(f1, f2, context.contextMethod);
     }
 
@@ -206,10 +206,10 @@ public class RandomCodeGenerator {
         }
     }
 
-
     private void setFieldToReturnValue(Context context) {
         if (m_generator.getClazzLogger().hasVariables()) {
             FieldVarLogger f = getClazzLogger().getVariable();
+            double d = 0;
             MethodLogger calledMethod = getClazzLogger().getMethodWithReturnType(f.getType());
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
@@ -232,21 +232,11 @@ public class RandomCodeGenerator {
     }
 
     private void callJavaLangMathMethod(Context context) {
-        math_generator.callJavaLangMathMethod(context.contextMethod, getClazzLogger());
-//        FieldVarLogger f;
-//        //call Sqrt
-//        if (random.nextBoolean()) {
-//            if (context.contextMethod.isStatic()) {
-//                f = getClazzLogger().getStaticVariableOfType(FieldVarType.Double);
-//            } else f = getClazzLogger().getVariableOfType(FieldVarType.Double);
-//            if (f == null) return;
-//            math_generator.computeSqrt(f, context.contextMethod);
-//        } else {
-//            f = context.contextMethod.getVariableOfType(FieldVarType.Double);
-//            if (f == null) return;
-//            math_generator.computeSqrt(f, context.contextMethod);
-//        }
-
+        if(random.nextBoolean()) {
+            math_generator.callJavaLangMathMethod(context.contextMethod, getClazzLogger(), false);
+        } else {
+            math_generator.callJavaLangMathMethod(context.contextMethod, getClazzLogger(), true);
+        }
     }
 
     public void writeFile() {

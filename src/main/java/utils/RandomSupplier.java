@@ -110,6 +110,35 @@ public class RandomSupplier {
         }
     }
 
+    public static String getRandomValueAsString(FieldVarType fieldVarType) {
+        if (fieldVarType.getClazzType().getName().startsWith("java.lang")) {
+            //for Objects 25% chance to be initialized with null
+            if (random.nextInt(4) == 0) return "null";
+        }
+        switch (fieldVarType) {
+            case Byte:
+                return "" + (byte) random.nextInt();
+            case Short:
+                return "" + (short) random.nextInt();
+            case Int:
+                return "" + random.nextInt();
+            case Long:
+                return random.nextLong() + "L";
+            case Float:
+                return random.nextFloat() + "f";
+            case Double:
+                return random.nextDouble() + "d";
+            case Boolean:
+                return "" + random.nextBoolean();
+            case Char:
+                return "\' " + stringCandidates.charAt(random.nextInt(stringCandidates.length())) + "\'";
+            case String:
+                return "\"" + getString() + "\"";
+            default:
+                return null;
+        }
+    }
+
     /**
      * @return a randomly generated String
      */

@@ -14,7 +14,7 @@ import java.io.IOException;
  * super-Class of all generators
  * capable of generating the smallest executable class-file
  */
-class Generator {
+public abstract class Generator {
 
     private ClazzFileContainer clazzContainer;
 

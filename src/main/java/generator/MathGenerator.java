@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 
 class MathGenerator extends Generator {
@@ -27,12 +26,17 @@ class MathGenerator extends Generator {
     public MathGenerator(String filename) {
         super(filename);
         this.getClazzContainer().getClazzPool().importPackage("java.lang.Math");
+        try {
+            mathClazz = this.getClazzContainer().getClazzPool().get("java.lang.Math");
+        } catch (NotFoundException e) {
+            System.err.println("Cannot fetch CtClass-Object of java.lang.Math");
+            e.printStackTrace();
+        }
     }
 
-    public boolean callJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, FieldVarLogger... assignVar) {
+    public boolean callJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
         CtMethod[] methods = mathClazz.getDeclaredMethods();
         methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
-        methods =Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
         Random random = new Random();
         CtMethod ctMethod = methods[random.nextInt(methods.length)];
         String methodName = ctMethod.getName();
@@ -41,19 +45,34 @@ class MathGenerator extends Generator {
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         List<Object> parameters = new ArrayList<>();
         for (FieldVarType t : paramTypes) {
-            Object p;
-            if (random.nextBoolean()) {
-                p = getGlobalUsableVariable(method, t, clazzLogger);
+            Object p = null;
+            if (random.nextBoolean()) { //try to fetch field
+                p = getGlobalUsableVariableOfType(method, t, clazzLogger);
                 if (p == null) p = method.getVariableOfType(t);
-                if (p == null) p = RandomSupplier.getRandomValue(t);
-            } else {
+                if (p == null) p = RandomSupplier.getRandomValueAsString(t);
+            } else { //try to fetch local variable
                 p = method.getVariableOfType(t);
-                if (p == null) p = getGlobalUsableVariable(method, t, clazzLogger);
-                if (p == null) p = RandomSupplier.getRandomValue(t);
+                if (p == null) p = getGlobalUsableVariableOfType(method, t, clazzLogger);
+                if (p == null) p = RandomSupplier.getRandomValueAsString(t);
             }
             parameters.add(p);
         }
-        StringBuilder callString = new StringBuilder("Math." + methodName + "(");
+        StringBuilder callString = null;
+        if (assignToFieldOrVar) {
+            FieldVarLogger l = null;
+            if (random.nextBoolean()) { //fetch field
+                if(method.isStatic()) {
+                    //TODO need not be initialized
+                    clazzLogger.getCompatibleStaticInitializedVariable(returnType);
+                } else {
+                    l = clazzLogger.getCompatibleVariable(returnType);
+                }
+            } else { //fetch local variable
+                l = method.getCompatibleVariable(returnType);
+            }
+            if (l != null) callString = new StringBuilder(l.getName() + " = " + "Math." + methodName + "(");
+        }
+        if(callString == null) callString = new StringBuilder("Math." + methodName + "(");
         boolean first = true;
         for (Object o : parameters) {
             if (!first) callString.append(", ");
@@ -73,7 +92,7 @@ class MathGenerator extends Generator {
         return true;
     }
 
-    private FieldVarLogger getGlobalUsableVariable(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
+    private FieldVarLogger getGlobalUsableVariableOfType(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
         FieldVarLogger l;
         if (method.isStatic()) l = clazzLogger.getStaticVariableOfType(type);
         else l = clazzLogger.getVariableOfType(type);
