@@ -84,4 +84,44 @@ public class ClazzLogger extends MyLogger {
             return retTypeMethods.get(random.nextInt(retTypeMethods.size()));
         } else return null;
     }
+
+    public List<Object> getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
+        List<Object> values = new ArrayList<>();
+        for (FieldVarType t : paramTypes) {
+            if (random.nextBoolean()) { //add global variable
+                if (!addFieldToParamValues(values, method, t)) {
+                    //add local variable if no global variable available
+                    if (!addLocalVariableToParamValues(values, method, t)) {
+                        //add random value if no variables available
+                        values.add(RandomSupplier.getRandomValue(t));
+                    }
+                }
+            } else { //add local variable
+                if (!addLocalVariableToParamValues(values, method, t)) {
+                    //add global variable if no local variable available
+                    if (!addFieldToParamValues(values, method, t)) {
+                        //add random value if no variables available
+                        values.add(RandomSupplier.getRandomValue(t));
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    private boolean addFieldToParamValues(List<Object> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = this.getVariableWithPredicate(v -> v.getType() == type);
+        if (fvl != null && (fvl.isStatic() || !method.isStatic())) {
+            values.add(fvl);
+            return true;
+        } else return false;
+    }
+
+    private boolean addLocalVariableToParamValues(List<Object> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = method.getVariableWithPredicate(v -> v.getType() == type);
+        if (fvl != null) {
+            values.add(fvl);
+            return true;
+        } else return false;
+    }
 }

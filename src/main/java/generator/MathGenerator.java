@@ -48,10 +48,10 @@ class MathGenerator extends Generator {
             Object p = null;
             if (random.nextBoolean()) { //try to fetch field
                 p = getGlobalUsableVariableOfType(method, t, clazzLogger);
-                if (p == null) p = method.getVariableOfType(t);
+                if (p == null) p = method.getVariableWithPredicate(v -> v.getType() == t);
                 if (p == null) p = RandomSupplier.getRandomValueAsString(t);
             } else { //try to fetch local variable
-                p = method.getVariableOfType(t);
+                p = method.getVariableWithPredicate(v -> v.getType() == t);
                 if (p == null) p = getGlobalUsableVariableOfType(method, t, clazzLogger);
                 if (p == null) p = RandomSupplier.getRandomValueAsString(t);
             }
@@ -61,9 +61,9 @@ class MathGenerator extends Generator {
         if (assignToFieldOrVar) {
             FieldVarLogger l = null;
             if (random.nextBoolean()) { //fetch field
-                if(method.isStatic()) {
+                if (method.isStatic()) {
                     //TODO need not be initialized
-                    clazzLogger.getCompatibleStaticInitializedVariable(returnType);
+                    clazzLogger.getCompatibleVariableWithPredicate(v -> v.isStatic() && v.isInitialized(), returnType);
                 } else {
                     l = clazzLogger.getCompatibleVariable(returnType);
                 }
@@ -72,7 +72,7 @@ class MathGenerator extends Generator {
             }
             if (l != null) callString = new StringBuilder(l.getName() + " = " + "Math." + methodName + "(");
         }
-        if(callString == null) callString = new StringBuilder("Math." + methodName + "(");
+        if (callString == null) callString = new StringBuilder("Math." + methodName + "(");
         boolean first = true;
         for (Object o : parameters) {
             if (!first) callString.append(", ");
@@ -94,8 +94,8 @@ class MathGenerator extends Generator {
 
     private FieldVarLogger getGlobalUsableVariableOfType(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
         FieldVarLogger l;
-        if (method.isStatic()) l = clazzLogger.getStaticVariableOfType(type);
-        else l = clazzLogger.getVariableOfType(type);
+        if (method.isStatic()) l = clazzLogger.getVariableWithPredicate(v -> v.isStatic() && v.getType() == type);
+        else l = clazzLogger.getVariableWithPredicate(v -> v.getType() == type);
         return l;
     }
 

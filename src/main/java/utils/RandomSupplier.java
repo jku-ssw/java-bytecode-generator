@@ -228,44 +228,4 @@ public class RandomSupplier {
         return "$" + i;
     }
 
-    public static List<Object> getParamValues(FieldVarType[] paramTypes, MethodLogger method, ClazzLogger logger) {
-        List<Object> values = new ArrayList<>();
-        for (FieldVarType t : paramTypes) {
-            if (random.nextBoolean()) { //add global variable
-                if (!addFieldToParamValues(values, method, t, logger)) {
-                    //add local variable if no global variable available
-                    if (!addLocalVariableToParamValues(values, method, t)) {
-                        //add random value if no variables available
-                        values.add(RandomSupplier.getRandomValue(t));
-                    }
-                }
-            } else { //add local variable
-                if (!addLocalVariableToParamValues(values, method, t)) {
-                    //add global variable if no local variable available
-                    if (!addFieldToParamValues(values, method, t, logger)) {
-                        //add random value if no variables available
-                        values.add(RandomSupplier.getRandomValue(t));
-                    }
-                }
-            }
-        }
-        return values;
-    }
-
-    private static boolean addFieldToParamValues(List<Object> values, MethodLogger method, FieldVarType t, ClazzLogger logger) {
-        FieldVarLogger fvl = logger.getVariableOfType(t);
-        if (fvl != null && (fvl.isStatic() || !method.isStatic())) {
-            values.add(fvl);
-            return true;
-        } else return false;
-    }
-
-    private static boolean addLocalVariableToParamValues(List<Object> values, MethodLogger method, FieldVarType t) {
-        FieldVarLogger fvl = method.getVariableOfType(t);
-        if (fvl != null) {
-            values.add(fvl);
-            return true;
-        } else return false;
-    }
-
 }
