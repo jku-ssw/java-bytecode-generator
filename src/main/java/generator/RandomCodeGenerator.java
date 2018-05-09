@@ -4,7 +4,6 @@ import utils.*;
 
 import java.util.List;
 import java.util.Random;
-import java.util.function.Predicate;
 
 public class RandomCodeGenerator {
     private enum Context {
@@ -208,11 +207,14 @@ public class RandomCodeGenerator {
         if (random.nextBoolean()) { //print local Variable
             FieldVarLogger fvl = context.contextMethod.getVariableWithPredicate(v -> v.isInitialized());
             if (fvl == null) return;
-            fv_generator.generatePrintLocalVariableStatement(fvl, context.contextMethod);
+            fv_generator.generatePrintStatement(fvl, context.contextMethod);
         } else { //print global Variable
-            FieldVarLogger fvl = getClazzLogger().getVariable();
-            if (fvl != null && fvl.isInitialized() && fvl.isStatic() || !context.contextMethod.isStatic()) {
-                fv_generator.generatePrintFieldStatement(fvl, context.contextMethod);
+            FieldVarLogger fvl;
+            if(context.contextMethod.isStatic()) fvl = getClazzLogger().getVariableWithPredicate(
+                    v -> v.isInitialized() && v.isStatic());
+            else fvl = getClazzLogger().getVariableWithPredicate(v -> v.isInitialized());
+            if (fvl != null) {
+                fv_generator.generatePrintStatement(fvl, context.contextMethod);
             }
         }
     }

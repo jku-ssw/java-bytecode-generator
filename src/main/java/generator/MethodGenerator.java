@@ -19,9 +19,9 @@ public class MethodGenerator extends Generator {
         super(cf);
     }
 
-    public MethodGenerator(String filename) {
-        super(filename);
-    }
+//    public MethodGenerator(String filename) {
+//        super(filename);
+//    }
 
     private Random random = new Random();
 
@@ -88,12 +88,8 @@ public class MethodGenerator extends Generator {
             f = fetchLocalReturnValue(method, returnType);
             if (f != null) fetchGlobalReturnValue(method, returnType);
         } else {
-            System.out.println("heeeerrreee");
             f = fetchGlobalReturnValue(method, returnType);
-            if (f != null) {
-                fetchLocalReturnValue(method, returnType);
-                System.out.println(f.getName());
-            }
+            if (f != null) fetchLocalReturnValue(method, returnType);
         }
         try {
             if (f != null) ctMethod.insertAfter("return " + f.getName() + ";");

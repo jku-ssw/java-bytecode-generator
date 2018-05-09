@@ -84,29 +84,67 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
     public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
+        String src = srcGenerateLocalVariable(name, type, method, value);
+        if (src == null) return false;
+        else if (src.equals("")) return true;
+        else {
+            CtMethod ctMethod = this.getCtMethod(method);
+            if (insertIntoMethod(ctMethod, src)) return true;
+            else return false;
+        }
+    }
+//    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
+//        boolean initialized = false;
+//        CtMethod ctMethod = this.getCtMethod(method);
+//        try {
+//            ctMethod.addLocalVariable(name, type.getClazzType());
+//            if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
+//                //Objects can be initialized with null
+//                ctMethod.insertBefore(name + " = " + "null" + ";");
+//            } else if (value.length != 0) {
+//                if (value.length == 1) {
+//                    if (type == FieldVarType.String) {
+//                        ctMethod.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
+//                    } else if (type == FieldVarType.Char) {
+//                        ctMethod.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
+//                    } else ctMethod.insertBefore(name + " = " + value[0] + ";");
+//                }
+//                initialized = true;
+//            }
+//            method.logVariable(name, type, 0, initialized);
+//            return true;
+//        } catch (CannotCompileException e) {
+//            System.err.println("Generation of local variable " + name + "  failed");
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+
+    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
         boolean initialized = false;
         CtMethod ctMethod = this.getCtMethod(method);
+        String src = "";
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
             if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
                 //Objects can be initialized with null
-                ctMethod.insertBefore(name + " = " + "null" + ";");
+                src = name + " = " + "null" + ";";
             } else if (value.length != 0) {
                 if (value.length == 1) {
                     if (type == FieldVarType.String) {
-                        ctMethod.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
+                        src = name + " = " + "\"" + value[0] + "\"" + ";";
                     } else if (type == FieldVarType.Char) {
-                        ctMethod.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
-                    } else ctMethod.insertBefore(name + " = " + value[0] + ";");
+                        src = name + " = " + "'" + value[0] + "'" + ";";
+                    } else src = name + " = " + value[0] + ";";
                 }
                 initialized = true;
             }
             method.logVariable(name, type, 0, initialized);
-            return true;
+            return src;
         } catch (CannotCompileException e) {
             System.err.println("Generation of local variable " + name + "  failed");
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
@@ -117,13 +155,11 @@ public class FieldVarGenerator extends Generator {
      * @param variable the logged Variable
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean generatePrintFieldStatement(FieldVarLogger variable, MethodLogger method) {
+    public boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
         try {
-            if (variable.isStatic() || !method.isStatic()) {
-                CtMethod ctMethod = this.getCtMethod(method);
-                ctMethod.insertAfter("System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");");
-                return true;
-            } else return false;
+            CtMethod ctMethod = this.getCtMethod(method);
+            ctMethod.insertAfter(srcGeneratePrintStatement(variable));
+            return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of System.out.println-Statement for field + " + variable.getName() + " failed");
             e.printStackTrace();
@@ -131,25 +167,8 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    /**
-     * generates a System.out.println-Statement in the given Method for this variable
-     *
-     * @param variable the logged Variabl
-     * @param method   the logger of the method in which the variable is declared and where the statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean generatePrintLocalVariableStatement(FieldVarLogger variable, MethodLogger method) {
-        try {
-            if (variable.isInitialized()) {
-                CtMethod m = this.getCtMethod(method);
-                m.insertAfter("System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");");
-                return true;
-            } else return false;
-        } catch (CannotCompileException e) {
-            System.err.println("Generation of Print-Statement for Variable/Field " + variable.getName() + "failed");
-            e.printStackTrace();
-            return false;
-        }
+    public String srcGeneratePrintStatement(FieldVarLogger variable) {
+        return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
     }
 
     /**
@@ -162,73 +181,60 @@ public class FieldVarGenerator extends Generator {
      */
     public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
         CtMethod ctMethod = this.getCtMethod(method);
-        return createSetFieldVarStatement(fieldVar, ctMethod, value);
-    }
-
-    /**
-     * assigns the value to the given field or variable
-     *
-     * @param fieldVar the field or variable to which value is assigned
-     * @param value    the value to be assigned
-     * @param method   the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    private boolean createSetFieldVarStatement(FieldVarLogger fieldVar, CtMethod method, Object... value) {
-        if (!fieldVar.isFinal()) {
-            try {
-                if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
-                    //Objects can be initialized with null
-                    method.insertAfter(fieldVar.getName() + " = " + "null" + ";");
-                    return true;
-                } else if (value.length >= 1) {
-                    if (value.length == 1) {
-                        if (fieldVar.getType() == FieldVarType.String) {
-                            method.insertAfter(fieldVar.getName() + " = " + "\"" + value[0] + "\"" + ";");
-                        } else if (fieldVar.getType() == FieldVarType.Char) {
-                            method.insertAfter(fieldVar.getName() + " = " + "'" + value[0] + "'" + ";");
-                        } else method.insertAfter(fieldVar.getName() + " = " + value[0] + ";");
-                        fieldVar.setInitialized();
-                        return true;
-                    } else return false; //TODO value.length > 1 => Arrays
-                } else return false;
-            } catch (CannotCompileException e) {
-                System.err.println("Cannot assign value " + value + "to Variable " + fieldVar.getName());
-                e.printStackTrace();
-                return false;
-            }
-        } else return false;
-    }
-
-    /**
-     * assigns the value of a field or variable to another field or variable
-     *
-     * @param fieldVar1 the field or variable to which the value of fieldVar2 is assigned
-     * @param fieldVar2 the field or variable, which's value is assigned to fieldVar1
-     * @param method    the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    private boolean createAssignStatement(FieldVarLogger fieldVar1, FieldVarLogger fieldVar2, CtMethod method) {
-        if (!fieldVar1.isFinal() && fieldVar2.isInitialized()) {
-            try {
-                method.insertAfter(fieldVar1.getName() + " = " + fieldVar2.getName() + ";");
-                fieldVar1.setInitialized();
+        String src = srcSetFieldVarValue(fieldVar, method, value);
+        if (src == null) return false;
+        else {
+            if (insertIntoMethod(ctMethod, src)) {
+                fieldVar.setInitialized();
                 return true;
-            } catch (CannotCompileException e) {
-                System.err.println("Cannot assign value of " + fieldVar2.getName() + "to " + fieldVar1.getName());
-                e.printStackTrace();
-                return false;
-            }
-        } else return false;
+            } else return false;
+        }
+    }
+
+    private boolean insertIntoMethod(CtMethod ctMethod, String src) {
+        try {
+            ctMethod.insertAfter(src);
+            return true;
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String srcSetFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object[] value) {
+
+        if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
+            //Objects can be initialized with null
+            return fieldVar.getName() + " = " + "null" + ";";
+        } else if (value.length >= 1) {
+            if (value.length == 1) {
+                if (fieldVar.getType() == FieldVarType.String) {
+                    return fieldVar.getName() + " = " + "\"" + value[0] + "\"" + ";";
+                } else if (fieldVar.getType() == FieldVarType.Char) {
+                    return fieldVar.getName() + " = " + "'" + value[0] + "'" + ";";
+                } else return fieldVar.getName() + " = " + value[0] + ";";
+            } else return null; //TODO value.length > 1 => Arrays
+        } else return null;
     }
 
     /**
-     * @param field1 the field to which the value of field2 is assigned
-     * @param field2 the field, which's value is assigned to field1
+     * @param var1   the field to which the value of field2 is assigned
+     * @param var2   the field, which's value is assigned to field1
      * @param method the logger of the method in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean assignVariableToVariable(FieldVarLogger field1, FieldVarLogger field2, MethodLogger method) {
-        return createAssignStatement(field1, field2, this.getCtMethod(method));
+    public boolean assignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2, MethodLogger method) {
+        String src = srcAssignVariableToVariable(var1, var2);
+        CtMethod ctMethod = this.getCtMethod(method);
+        if (insertIntoMethod(ctMethod, src)) {
+            var1.setInitialized();
+            return true;
+        } else return false;
+
+    }
+
+    public String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
+        return var1.getName() + " = " + var2.getName() + ";";
     }
 }
 

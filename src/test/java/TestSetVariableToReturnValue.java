@@ -24,7 +24,7 @@ public class TestSetVariableToReturnValue {
         FieldVarLogger x = main.getVariable("x");
         MethodLogger calledMethod = m_generator.generateMethod("testMethod", FieldVarType.Int, new FieldVarType[0], Modifier.STATIC);
         assertEquals(m_generator.setFieldVarToReturnValue(x, calledMethod, fv_generator.getClazzLogger().getMain()), true);
-        assertEquals(fv_generator.generatePrintLocalVariableStatement(x, main), true);
+        assertEquals(fv_generator.generatePrintStatement(x, main), true);
         m_generator.writeFile();
         //TODO run file and check for expected output
     }
@@ -38,7 +38,7 @@ public class TestSetVariableToReturnValue {
         FieldVarLogger x = fv_generator.getClazzLogger().getVariable("x");
         MethodLogger calledMethod = m_generator.generateMethod("testMethod", FieldVarType.Int, new FieldVarType[0], Modifier.STATIC);
         assertEquals(m_generator.setFieldVarToReturnValue(x, calledMethod, fv_generator.getClazzLogger().getMain()), true);
-        assertEquals(fv_generator.generatePrintLocalVariableStatement(x, main), true);
+        assertEquals(fv_generator.generatePrintStatement(x, main), true);
         m_generator.writeFile();
     }
 }
