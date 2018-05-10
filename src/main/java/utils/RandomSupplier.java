@@ -117,11 +117,11 @@ public class RandomSupplier {
         }
         switch (fieldVarType) {
             case Byte:
-                return "" + (byte) random.nextInt();
+                return "(byte)" + random.nextInt();
             case Short:
-                return "" + (short) random.nextInt();
+                return "(short)" + random.nextInt();
             case Int:
-                return "" + random.nextInt();
+                return "(int)" + random.nextInt();
             case Long:
                 return random.nextLong() + "L";
             case Float:

@@ -62,8 +62,7 @@ class MathGenerator extends Generator {
             FieldVarLogger l = null;
             if (random.nextBoolean()) { //fetch field
                 if (method.isStatic()) {
-                    //TODO need not be initialized
-                    clazzLogger.getCompatibleVariableWithPredicate(v -> v.isStatic() && v.isInitialized(), returnType);
+                    clazzLogger.getCompatibleVariableWithPredicate(v -> v.isStatic(), returnType);
                 } else {
                     l = clazzLogger.getCompatibleVariable(returnType);
                 }
@@ -92,6 +91,7 @@ class MathGenerator extends Generator {
         return true;
     }
 
+    //TODO in clazzLogger geben
     private FieldVarLogger getGlobalUsableVariableOfType(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
         FieldVarLogger l;
         if (method.isStatic()) l = clazzLogger.getVariableWithPredicate(v -> v.isStatic() && v.getType() == type);

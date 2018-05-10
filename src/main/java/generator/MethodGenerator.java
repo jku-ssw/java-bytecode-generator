@@ -19,9 +19,9 @@ public class MethodGenerator extends Generator {
         super(cf);
     }
 
-//    public MethodGenerator(String filename) {
-//        super(filename);
-//    }
+    public MethodGenerator(String filename) {
+        super(filename);
+    }
 
     private Random random = new Random();
 
@@ -83,7 +83,7 @@ public class MethodGenerator extends Generator {
     public boolean overrideReturnStatement(MethodLogger method) {
         CtMethod ctMethod = this.getCtMethod(method);
         FieldVarType returnType = method.getReturnType();
-        FieldVarLogger f = null;
+        FieldVarLogger f;
         if (random.nextBoolean()) {
             f = fetchLocalReturnValue(method, returnType);
             if (f != null) fetchGlobalReturnValue(method, returnType);
@@ -107,9 +107,10 @@ public class MethodGenerator extends Generator {
 
     private FieldVarLogger fetchGlobalReturnValue(MethodLogger method, FieldVarType returnType) {
         if (method.isStatic()) {
-            return this.getClazzLogger().getVariableWithPredicate(v -> v.isInitialized() && v.isStatic());
+            return this.getClazzLogger().getVariableWithPredicate(
+                    v -> v.isInitialized() && v.isStatic() && v.getType() == returnType);
         } else {
-            return this.getClazzLogger().getVariableWithPredicate(v -> v.isInitialized());
+            return this.getClazzLogger().getVariableWithPredicate(v -> v.isInitialized() && v.getType() == returnType);
         }
     }
 

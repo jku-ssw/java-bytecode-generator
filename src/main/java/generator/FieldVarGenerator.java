@@ -83,7 +83,7 @@ public class FieldVarGenerator extends Generator {
      * @param method the logger of the method, in which the variable is generated
      * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
-    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
+    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String... value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (src == null) return false;
         else if (src.equals("")) return true;
@@ -93,56 +93,30 @@ public class FieldVarGenerator extends Generator {
             else return false;
         }
     }
-//    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
-//        boolean initialized = false;
-//        CtMethod ctMethod = this.getCtMethod(method);
-//        try {
-//            ctMethod.addLocalVariable(name, type.getClazzType());
-//            if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
-//                //Objects can be initialized with null
-//                ctMethod.insertBefore(name + " = " + "null" + ";");
-//            } else if (value.length != 0) {
-//                if (value.length == 1) {
-//                    if (type == FieldVarType.String) {
-//                        ctMethod.insertBefore(name + " = " + "\"" + value[0] + "\"" + ";");
-//                    } else if (type == FieldVarType.Char) {
-//                        ctMethod.insertBefore(name + " = " + "'" + value[0] + "'" + ";");
-//                    } else ctMethod.insertBefore(name + " = " + value[0] + ";");
-//                }
-//                initialized = true;
-//            }
-//            method.logVariable(name, type, 0, initialized);
-//            return true;
-//        } catch (CannotCompileException e) {
-//            System.err.println("Generation of local variable " + name + "  failed");
-//            e.printStackTrace();
-//            return false;
-//        }
-//    }
 
-    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, Object... value) {
+    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String... value) {
         boolean initialized = false;
         CtMethod ctMethod = this.getCtMethod(method);
         String src = "";
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
-            if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
-                //Objects can be initialized with null
-                src = name + " = " + "null" + ";";
-            } else if (value.length != 0) {
-                if (value.length == 1) {
-                    if (type == FieldVarType.String) {
-                        src = name + " = " + "\"" + value[0] + "\"" + ";";
-                    } else if (type == FieldVarType.Char) {
-                        src = name + " = " + "'" + value[0] + "'" + ";";
-                    } else src = name + " = " + value[0] + ";";
-                }
+            src = name + " = " + value[0] + ";";
+//            if (value.equals("null") && type.getClazzType().getName().startsWith("java.lang")) {
+//                //Objects can be initialized with null
+//                src = name + " = " + "null" + ";";
+//            } else {
+//                    if (type == FieldVarType.String) {
+//                        src = name + " = " + "\"" + value[0] + "\"" + ";";
+//                    } else if (type == FieldVarType.Char) {
+//                        src = name + " = " + "'" + value[0] + "'" + ";";
+//                    } else src = name + " = " + value[0] + ";";
+
                 initialized = true;
-            }
+           // }
             method.logVariable(name, type, 0, initialized);
             return src;
         } catch (CannotCompileException e) {
-            System.err.println("Generation of local variable " + name + "  failed");
+            //System.err.println("Generation of local variable " + name + "  failed");
             e.printStackTrace();
             return null;
         }
@@ -158,7 +132,9 @@ public class FieldVarGenerator extends Generator {
     public boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
         try {
             CtMethod ctMethod = this.getCtMethod(method);
-            ctMethod.insertAfter(srcGeneratePrintStatement(variable));
+            String printStatement = srcGeneratePrintStatement(variable);
+            System.out.println(printStatement);
+            ctMethod.insertAfter(printStatement);
             return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of System.out.println-Statement for field + " + variable.getName() + " failed");
@@ -201,8 +177,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcSetFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object[] value) {
-
+    public String srcSetFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
         if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
             //Objects can be initialized with null
             return fieldVar.getName() + " = " + "null" + ";";
