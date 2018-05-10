@@ -1,16 +1,29 @@
-import javassist.CannotCompileException;
+import javassist.*;
+import utils.ClazzFileContainer;
+
+import java.io.IOException;
 
 
 public class Testing {
-    public static String x;
 
     public static void main(String[] args) throws CannotCompileException {
-        //x = super;
+       ClazzFileContainer container = new ClazzFileContainer("MyTestingClazz");
+       CtClass myClazz = container.getClazzFile();
+        try {
+            CtMethod main = myClazz.getDeclaredMethod("main");
+            main.insertAfter("if(true){if(true){}}");
+            //main.insertAfter("System.out.println(x);");
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            myClazz.writeFile();
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
-//TODO make simple arithmetik operations and field access
-//TODO randomize file with FieldVarGenerator
-
-//TODO merge modifiers from Beginning
 

@@ -122,4 +122,8 @@ public enum FieldVarType {
         }
     }
 
+    @Override
+    public java.lang.String toString() {
+        return getName();
+    }
 }

@@ -13,7 +13,7 @@ public class ControlValueParser {
         this.options.addOption("l", "program_length_weighting", true, "The maximum number of iterations for program-Generation");
         this.options.addOption("h", "help", false, "Lists all options and how to use them");
         this.options.addOption("f", "field_probability", true, "The probability to generate fields");
-        this.options.addOption("v", "variable_probability", true, "The probability to generate variables");
+        this.options.addOption("lv", "variable_probability", true, "The probability to generate variables");
         this.options.addOption("ga", "global_assign_probability", true, "The probability for assigning values to fields");
         this.options.addOption("la", "local_assign_probability", true, "The probability for assigning values to variables");
         this.options.addOption("vtv", "variable_to_variable_probability", true, "The probability for assigning variables to variables");
@@ -46,6 +46,7 @@ public class ControlValueParser {
             }
             for (Option option : this.options.getOptions()) {
                 String signature = option.getOpt();
+                if(signature.equals("h")) continue;
                 if (cmd.hasOption(signature)) {
                     System.out.println("Using argument " + options.getOption(signature).getLongOpt() + " = " + cmd.getOptionValue(signature));
                     int value = Integer.parseInt(cmd.getOptionValue(signature));

@@ -20,8 +20,8 @@ public class GenerationController {
     /**
      * @return the probability for generating Variables
      */
-    public int getVariableProbability() {
-        return controlValues.get("v");
+    public int getLocalVariableProbability() {
+        return controlValues.get("lv");
     }
 
     /**

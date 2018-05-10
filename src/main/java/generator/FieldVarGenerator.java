@@ -22,47 +22,14 @@ public class FieldVarGenerator extends Generator {
      * @param modifiers merged modifiers for the new field (from javassist class Modifier)
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    public boolean generateField(String name, FieldVarType type, int modifiers, Object... value) {
+    public boolean generateField(String name, FieldVarType type, int modifiers, String value) {
         boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
-            if (value.length == 0) {
+            if (value == null) {
                 this.getClazzFile().addField(f);
-            } else if (value.length == 1 && value[0] == null && type.getClazzType().getName().startsWith("java.lang")) {
-                //Objects can be initialized with null
-                this.getClazzFile().addField(f, "null");
             } else {
-                if (value.length == 1) {
-                    switch (type) {
-                        case Byte:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((byte) value[0]));
-                            break;
-                        case Short:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((short) value[0]));
-                            break;
-                        case Int:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((int) value[0]));
-                            break;
-                        case Long:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((long) value[0]));
-                            break;
-                        case Float:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((float) value[0]));
-                            break;
-                        case Double:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((double) value[0]));
-                            break;
-                        case Boolean:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((boolean) value[0]));
-                            break;
-                        case Char:
-                            this.getClazzFile().addField(f, CtField.Initializer.constant((char) value[0]));
-                            break;
-                        case String:
-                            this.getClazzFile().addField(f, "\"" + value[0] + "\"");
-                            break;
-                    }
-                }
+                this.getClazzFile().addField(f, value);
                 initialized = true;
             }
             f.setModifiers(modifiers);
@@ -83,7 +50,7 @@ public class FieldVarGenerator extends Generator {
      * @param method the logger of the method, in which the variable is generated
      * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
-    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String... value) {
+    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (src == null) return false;
         else if (src.equals("")) return true;
@@ -94,29 +61,22 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String... value) {
+    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         boolean initialized = false;
         CtMethod ctMethod = this.getCtMethod(method);
-        String src = "";
+        String src;
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
-            src = name + " = " + value[0] + ";";
-//            if (value.equals("null") && type.getClazzType().getName().startsWith("java.lang")) {
-//                //Objects can be initialized with null
-//                src = name + " = " + "null" + ";";
-//            } else {
-//                    if (type == FieldVarType.String) {
-//                        src = name + " = " + "\"" + value[0] + "\"" + ";";
-//                    } else if (type == FieldVarType.Char) {
-//                        src = name + " = " + "'" + value[0] + "'" + ";";
-//                    } else src = name + " = " + value[0] + ";";
-
+            if (value != null) {
+                src = name + " = " + value + ";";
                 initialized = true;
-           // }
+            } else {
+                src = type.getName() + " " + name + ";";
+            }
             method.logVariable(name, type, 0, initialized);
             return src;
         } catch (CannotCompileException e) {
-            //System.err.println("Generation of local variable " + name + "  failed");
+            System.err.println("Generation of local variable " + name + "  failed");
             e.printStackTrace();
             return null;
         }
@@ -133,11 +93,10 @@ public class FieldVarGenerator extends Generator {
         try {
             CtMethod ctMethod = this.getCtMethod(method);
             String printStatement = srcGeneratePrintStatement(variable);
-            System.out.println(printStatement);
             ctMethod.insertAfter(printStatement);
             return true;
         } catch (CannotCompileException e) {
-            System.err.println("Generation of System.out.println-Statement for field + " + variable.getName() + " failed");
+            System.err.println("Generation of System.out.println-Statement for field " + variable.getName() + " failed + Type: " + variable.getType());
             e.printStackTrace();
             return false;
         }
@@ -155,9 +114,9 @@ public class FieldVarGenerator extends Generator {
      * @param method   the logger of the method, in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
+    public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, String value) {
         CtMethod ctMethod = this.getCtMethod(method);
-        String src = srcSetFieldVarValue(fieldVar, method, value);
+        String src = srcSetFieldVarValue(fieldVar, value);
         if (src == null) return false;
         else {
             if (insertIntoMethod(ctMethod, src)) {
@@ -177,18 +136,9 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcSetFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, Object... value) {
-        if (value.length == 1 && value[0] == null && fieldVar.getType().getName().startsWith("java.lang")) {
-            //Objects can be initialized with null
-            return fieldVar.getName() + " = " + "null" + ";";
-        } else if (value.length >= 1) {
-            if (value.length == 1) {
-                if (fieldVar.getType() == FieldVarType.String) {
-                    return fieldVar.getName() + " = " + "\"" + value[0] + "\"" + ";";
-                } else if (fieldVar.getType() == FieldVarType.Char) {
-                    return fieldVar.getName() + " = " + "'" + value[0] + "'" + ";";
-                } else return fieldVar.getName() + " = " + value[0] + ";";
-            } else return null; //TODO value.length > 1 => Arrays
+    public String srcSetFieldVarValue(FieldVarLogger fieldVar, String value) {
+        if (value != null) {
+            return fieldVar.getName() + " = " + value + ";";
         } else return null;
     }
 

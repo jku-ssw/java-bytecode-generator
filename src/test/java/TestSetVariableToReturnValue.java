@@ -20,7 +20,7 @@ public class TestSetVariableToReturnValue {
         FieldVarGenerator fv_generator = new FieldVarGenerator("testSetLocalVariableToReturnValue");
         MethodGenerator m_generator = new MethodGenerator(fv_generator.getClazzContainer());
         MethodLogger main = fv_generator.getClazzLogger().getMain();
-        assertEquals(fv_generator.generateLocalVariable("x", FieldVarType.Int, main), true);
+        assertEquals(fv_generator.generateLocalVariable("x", FieldVarType.Int, main, "3"), true);
         FieldVarLogger x = main.getVariable("x");
         MethodLogger calledMethod = m_generator.generateMethod("testMethod", FieldVarType.Int, new FieldVarType[0], Modifier.STATIC);
         assertEquals(m_generator.setFieldVarToReturnValue(x, calledMethod, fv_generator.getClazzLogger().getMain()), true);
@@ -29,16 +29,16 @@ public class TestSetVariableToReturnValue {
         //TODO run file and check for expected output
     }
 
-    @Test
-    void testSetGlobalVariableToReturnValue() {
-        FieldVarGenerator fv_generator = new FieldVarGenerator("testSetGlobalVariableToReturnValue");
-        MethodGenerator m_generator = new MethodGenerator(fv_generator.getClazzContainer());
-        MethodLogger main = fv_generator.getClazzLogger().getMain();
-        assertEquals(fv_generator.generateField("x", FieldVarType.Int, Modifier.STATIC), true);
-        FieldVarLogger x = fv_generator.getClazzLogger().getVariable("x");
-        MethodLogger calledMethod = m_generator.generateMethod("testMethod", FieldVarType.Int, new FieldVarType[0], Modifier.STATIC);
-        assertEquals(m_generator.setFieldVarToReturnValue(x, calledMethod, fv_generator.getClazzLogger().getMain()), true);
-        assertEquals(fv_generator.generatePrintStatement(x, main), true);
-        m_generator.writeFile();
-    }
+//    @Test
+//    void testSetGlobalVariableToReturnValue() {
+//        FieldVarGenerator fv_generator = new FieldVarGenerator("testSetGlobalVariableToReturnValue");
+//        MethodGenerator m_generator = new MethodGenerator(fv_generator.getClazzContainer());
+//        MethodLogger main = fv_generator.getClazzLogger().getMain();
+//        assertEquals(fv_generator.generateField("x", FieldVarType.Int, Modifier.STATIC), true);
+//        FieldVarLogger x = fv_generator.getClazzLogger().getVariable("x");
+//        MethodLogger calledMethod = m_generator.generateMethod("testMethod", FieldVarType.Int, new FieldVarType[0], Modifier.STATIC);
+//        assertEquals(m_generator.setFieldVarToReturnValue(x, calledMethod, fv_generator.getClazzLogger().getMain()), true);
+//        assertEquals(fv_generator.generatePrintStatement(x, main), true);
+//        m_generator.writeFile();
+//    }
 }

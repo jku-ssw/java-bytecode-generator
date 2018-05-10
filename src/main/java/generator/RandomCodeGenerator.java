@@ -21,7 +21,6 @@ public class RandomCodeGenerator {
     private final GenerationController controller;
     private MathGenerator math_generator;
     private ControlFlowGenerator cf_generator;
-    private int controlFlowDeepness = 0;
 
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
@@ -51,12 +50,12 @@ public class RandomCodeGenerator {
         for (int i = 0; i < context.lengthWeighting; i++) {
             int r = 1 + random.nextInt(100);
             if (context == Context.programContext && r <= controller.getFieldProbability()) generateField();
-            if (r <= controller.getVariableProbability()) generateLocalVariable(context);
-            if (context == Context.programContext && r <= controller.getMethodProbability()) generateMethod();
-
+            if (r <= controller.getLocalVariableProbability() && context != Context.controlContext)
+                generateLocalVariable(context);
+           if (context == Context.programContext && r <= controller.getMethodProbability()) generateMethod();
             if (r <= controller.getGlobalAssignProbability()) {
                 if (random.nextBoolean()) setFieldValue(context);
-                else  setFieldToReturnValue(context);
+                else setFieldToReturnValue(context);
                 if (r <= controller.getVariableToVariableAssignProbability()) {
                     if (random.nextBoolean()) assignFieldToField(context);
                     else assignVarToField(context);
@@ -66,27 +65,27 @@ public class RandomCodeGenerator {
             if (r <= controller.getLocalAssignProbability()) {
                 if (random.nextBoolean()) setLocalVariableValue(context);
                 else if (context != Context.controlContext)
-                   setVariableToReturnValue(context); //TODO remove if check controlContext
+                    setVariableToReturnValue(context); //TODO remove if check controlContext
                 if (r <= controller.getVariableToVariableAssignProbability()) {
                     if (random.nextBoolean()) assignVarToVar(context);
                     else assignFieldToVar(context);
                 }
             }
 
-//            if (r <= controller.getMethodCallProbability() && context != Context.controlContext) {
-//                generateMethodCall(context); //TODO remove if check controlContext
+            if (r <= controller.getMethodCallProbability() && context != Context.controlContext) {
+                generateMethodCall(context); //TODO remove if check controlContext
 //                if (r <= controller.getJavaLangMathProbalility()) {
 //                    callJavaLangMathMethod(context);
 //                }
-//            }
+            }
 
             //TODO remove if check controlContext
-            if (context != Context.controlContext && context == Context.programContext && r <= controller.getMethodOverloadProbability()) {
+            if (context == Context.programContext && r <= controller.getMethodOverloadProbability()) {
                 overloadMethod();
             }
             if (r <= controller.getPrintProbability()) generatePrintStatement(context);
 
-            if (r <= controller.getControlFlowProbability() && controlFlowDeepness < controller.getControlFlowDeepness()) {
+            if (r <= controller.getControlFlowProbability() && cf_generator.getDeepness() < controller.getControlFlowDeepness()) {
                 generateControlFlow(context);
             }
         }
@@ -103,45 +102,42 @@ public class RandomCodeGenerator {
 
     private void generateField() {
         FieldVarType ft = randomSupplier.getFieldVarType();
-        Object value = randomSupplier.getRandomValue(ft);
+        String value = null;
+        if (random.nextBoolean()) { //50% chance to be initialized
+            value = randomSupplier.getRandomValueAsString(ft);
+        }
         fv_generator.generateField(randomSupplier.getVarName(), ft, randomSupplier.getModifiers(), value);
     }
 
     private void generateLocalVariable(Context context) {
         FieldVarType ft = randomSupplier.getFieldVarType();
-        String value = randomSupplier.getRandomValueAsString(ft);
-        if (context != Context.controlContext) {
-            fv_generator.generateLocalVariable(randomSupplier.getVarName(), ft, context.contextMethod, value);
-        } else {
-            cf_generator.addCodeToControlSrc(
-                    fv_generator.srcGenerateLocalVariable(randomSupplier.getVarName(), ft, context.contextMethod, value));
+        String value = null;
+        if (random.nextBoolean()) { //50% chance to be initialized
+            value = randomSupplier.getRandomValueAsString(ft);
         }
+        fv_generator.generateLocalVariable(randomSupplier.getVarName(), ft, context.contextMethod, value);
     }
 
+
     private void setFieldValue(Context context) {
-        // fieldVar.isStatic() || !method.isStatic()
         if (!getClazzLogger().hasVariables()) return;
-        FieldVarLogger f;
-        if (context.contextMethod.isStatic())
-            f = getClazzLogger().getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
-        else f = getClazzLogger().getVariableWithPredicate(v -> !v.isFinal());
+        FieldVarLogger f = fetchUsableField(context);
         if (f == null) return;
         setFieldVarValue(f, context);
-
     }
 
     private void setFieldVarValue(FieldVarLogger f, Context context) {
         if (context != Context.controlContext) {
-            fv_generator.setFieldVarValue(f, context.contextMethod, RandomSupplier.getRandomValue(f.getType()));
+            fv_generator.setFieldVarValue(f, context.contextMethod, RandomSupplier.getRandomValueAsString(f.getType()));
         } else {
             cf_generator.addCodeToControlSrc(
-                    fv_generator.srcSetFieldVarValue(f, context.contextMethod, RandomSupplier.getRandomValue(f.getType())));
+                    fv_generator.srcSetFieldVarValue(f, RandomSupplier.getRandomValueAsString(f.getType())));
         }
     }
 
     private void setLocalVariableValue(Context context) {
         if (!context.contextMethod.hasVariables()) return;
-        FieldVarLogger f = context.contextMethod.getVariableWithPredicate(v -> !v.isFinal());
+        FieldVarLogger f = fetchUsableLocal(context);
         if (f == null) return;
         setFieldVarValue(f, context);
     }
@@ -157,48 +153,35 @@ public class RandomCodeGenerator {
     private void assignFieldToField(Context context) {
         if (!getClazzLogger().hasVariables()) return;
         FieldVarLogger f1, f2 = null;
-        if (context.contextMethod.isStatic()) {
-            f1 = getClazzLogger().getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
-            if (f1 != null)
-                f2 = getClazzLogger().getCompatibleVariableWithPredicate(v -> v.isStatic() && v.isInitialized(), f1.getType());
-        } else {
-            f1 = getClazzLogger().getVariableWithPredicate(v -> !v.isFinal());
-            if (f1 != null)
-                f2 = getClazzLogger().getCompatibleVariableWithPredicate(v -> v.isInitialized(), f1.getType());
-        }
+        f1 = fetchUsableField(context);
+        if (f1 != null)
+            f2 = fetchUsableInitializedFieldOfType(context, f1.getType());
         if (f1 != null && f2 != null) assignVariableToVariable(f1, f2, context);
     }
 
     private void assignVarToField(Context context) {
         if (!getClazzLogger().hasVariables() || !context.contextMethod.hasVariables()) return;
         FieldVarLogger f1, f2;
-        if (context.contextMethod.isStatic())
-            f1 = getClazzLogger().getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
-        else f1 = getClazzLogger().getVariableWithPredicate(v -> !v.isFinal());
+        f1 = fetchUsableField(context);
         if (f1 == null) return;
-        f2 = context.contextMethod.getCompatibleVariableWithPredicate(v -> v.isInitialized(), f1.getType());
+        f2 = fetchUsableInitializedLocalOfType(context, f1.getType());
         if (f2 != null) assignVariableToVariable(f1, f2, context);
     }
 
     private void assignVarToVar(Context context) {
         if (!context.contextMethod.hasVariables()) return;
-        FieldVarLogger f1 = context.contextMethod.getVariableWithPredicate(v -> !v.isFinal());
+        FieldVarLogger f1 = fetchUsableLocal(context);
         if (f1 == null) return;
-        FieldVarLogger f2 = context.contextMethod.getCompatibleVariableWithPredicate(v -> v.isInitialized(), f1.getType());
+        FieldVarLogger f2 = fetchUsableInitializedLocalOfType(context, f1.getType());
         if (f2 != null) assignVariableToVariable(f1, f2, context);
 
     }
 
     private void assignFieldToVar(Context context) {
         if (!context.contextMethod.hasVariables()) return;
-        FieldVarLogger f1 = context.contextMethod.getVariableWithPredicate(v -> !v.isFinal());
+        FieldVarLogger f1 = fetchUsableLocal(context);
         if (f1 == null) return;
-        FieldVarLogger f2;
-        if (context.contextMethod.isStatic()) {
-            f2 = getClazzLogger().getCompatibleVariableWithPredicate(v -> v.isStatic(), f1.getType());
-        } else {
-            f2 = getClazzLogger().getCompatibleVariable(f1.getType());
-        }
+        FieldVarLogger f2 = fetchUsableInitializedFieldOfType(context, f1.getType());
         if (f2 != null) assignVariableToVariable(f1, f2, context);
     }
 
@@ -259,8 +242,8 @@ public class RandomCodeGenerator {
 
     private void setFieldToReturnValue(Context context) {
         if (m_generator.getClazzLogger().hasVariables()) {
-            FieldVarLogger f = getClazzLogger().getVariable();
-            double d = 0;
+            FieldVarLogger f = fetchUsableField(context);
+            if (f == null) return;
             MethodLogger calledMethod = getClazzLogger().getMethodWithReturnType(f.getType());
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
@@ -272,7 +255,8 @@ public class RandomCodeGenerator {
 
     private void setVariableToReturnValue(Context context) {
         if (context.contextMethod.hasVariables()) {
-            FieldVarLogger f = context.contextMethod.getVariable();
+            FieldVarLogger f = fetchUsableLocal(context);
+            if (f == null) return;
             MethodLogger calledMethod = getClazzLogger().getMethodWithReturnType(f.getType());
             if (calledMethod == null) return;
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
@@ -282,6 +266,8 @@ public class RandomCodeGenerator {
         }
     }
 
+
+    //TODO variables to returnvalue of math
     private void callJavaLangMathMethod(Context context) {
         if (random.nextBoolean()) {
             math_generator.callJavaLangMathMethod(context.contextMethod, getClazzLogger(), false);
@@ -293,15 +279,46 @@ public class RandomCodeGenerator {
     private void generateControlFlow(Context context) {
         //TODO select kind of control flow statement
         cf_generator.openIfStatement(context.contextMethod, getClazzLogger());
-        controlFlowDeepness++;
         Context.controlContext.contextMethod = context.contextMethod;
         this.generate(Context.controlContext);
-        cf_generator.closeAndInsertStatement(context.contextMethod);
-        controlFlowDeepness = 0;
+        cf_generator.closeStatement();
+        if(cf_generator.getDeepness() == 0) {
+            cf_generator.insertBlockSrc(context.contextMethod);
+        }
     }
 
     public void writeFile() {
         fv_generator.writeFile();
+    }
+
+    //==========================================Variable Fetching======================================================//
+
+    private FieldVarLogger fetchUsableField(Context context) {
+        if (context.contextMethod.isStatic()) {
+            return getClazzLogger().getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
+        } else {
+            return getClazzLogger().getVariableWithPredicate(v -> !v.isFinal());
+        }
+    }
+
+    private FieldVarLogger fetchUsableLocal(Context context) {
+        return context.contextMethod.getVariableWithPredicate(v -> !v.isFinal());
+    }
+
+    private FieldVarLogger fetchUsableInitializedFieldOfType(Context context, FieldVarType type) {
+        if (context.contextMethod.isStatic()) {
+            return getClazzLogger().getVariableWithPredicate(
+                    v -> v.isStatic() && !v.isFinal() && v.isInitialized() && v.getType() == type);
+        } else {
+            return getClazzLogger().getVariableWithPredicate(
+                    v -> !v.isFinal() && v.isInitialized() && v.getType() == type);
+        }
+    }
+
+    private FieldVarLogger fetchUsableInitializedLocalOfType(Context context, FieldVarType type) {
+        return context.contextMethod.getVariableWithPredicate(
+                v -> v.isStatic() && !v.isFinal() && v.isInitialized() && v.getType() == type);
+
     }
 }
 

@@ -131,7 +131,7 @@ public class RandomSupplier {
             case Boolean:
                 return "" + random.nextBoolean();
             case Char:
-                return "\' " + stringCandidates.charAt(random.nextInt(stringCandidates.length())) + "\'";
+                return "\'" + stringCandidates.charAt(random.nextInt(stringCandidates.length())) + "\'";
             case String:
                 return "\"" + getString() + "\"";
             default:

@@ -9,13 +9,13 @@ public class FieldVarLogger {
     private final String name;
     private final int modifiers;
     private final FieldVarType type;
-    private boolean initialized = false;
+    private boolean initialized;
 
-    public FieldVarLogger(String name, int modifiers, FieldVarType type, boolean initilized) {
+    public FieldVarLogger(String name, int modifiers, FieldVarType type, boolean initialized) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
-        this.initialized = initilized;
+        this.initialized = initialized;
     }
 
     /**

@@ -2,14 +2,15 @@ package generator;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
-import utils.ClazzFileContainer;
-import utils.ClazzLogger;
-import utils.MethodLogger;
+import utils.*;
+
+import java.util.Random;
 
 class ControlFlowGenerator extends Generator {
     private StringBuilder blockSrc = new StringBuilder();
 
     private boolean openStatement = false;
+    private int deepness = 0;
 
     public ControlFlowGenerator(ClazzFileContainer cf) {
         super(cf);
@@ -21,27 +22,35 @@ class ControlFlowGenerator extends Generator {
 
 
     public void openIfStatement(MethodLogger method, ClazzLogger logger) {
-        blockSrc = new StringBuilder("if(" + getRandomCondition(method, logger) + ") {");
+        blockSrc.append("if(" + getRandomCondition(method, logger) + ") {");
+        deepness++;
         openStatement = true;
     }
-
 
     //TODO condition
     private String getRandomCondition(MethodLogger method, ClazzLogger logger) {
         return "true";
     }
 
-    public boolean closeAndInsertStatement(MethodLogger method) {
+    public void closeStatement() {
         blockSrc.append("}");
+        deepness--;
+    }
+
+    public boolean insertBlockSrc(MethodLogger method) {
+        if(!openStatement && deepness != 0 ) return false;
+        for(int i = 0; i < deepness; i++) blockSrc.append("}");
         CtMethod ctMethod = this.getCtMethod(method);
         try {
-            System.out.println(method.getName() + ":");
-            System.out.println(blockSrc.toString());
             ctMethod.insertAfter(blockSrc.toString());
             openStatement = false;
+            blockSrc = new StringBuilder();
+            deepness = 0;
             return true;
         } catch (CannotCompileException e) {
-            e.printStackTrace();
+            System.out.println(method.getName() + ":");
+            System.out.println("failed: " + blockSrc.toString());
+            //e.printStackTrace();
             return false;
         }
     }
@@ -51,6 +60,10 @@ class ControlFlowGenerator extends Generator {
         else {
             System.err.println("Cannot insert code, no open control-flow-block");
         }
+    }
+
+    public int getDeepness() {
+        return deepness;
     }
 
 
