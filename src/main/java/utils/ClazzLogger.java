@@ -50,18 +50,18 @@ public class ClazzLogger extends MyLogger {
 
 
     public MethodLogger getRandomCallableMethod(MethodLogger callerMethod) {
-        if (!callerMethod.isStatic()) return getRandomMethod();
-        else {
-            List<MethodLogger> staticMethods = getStaticMethods(callerMethod);
-            if(staticMethods.isEmpty()) return null;
-            return staticMethods.get(random.nextInt(staticMethods.size()));
-        }
+        List<MethodLogger> callableMethods;
+        if (callerMethod.isStatic()) callableMethods = getStaticMethods();
+        else callableMethods = new ArrayList<>(methods);
+        //exclude methods that have called the callerMethod and the callerMethod itself
+        callableMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
+        callableMethods.remove(callerMethod);
+        return callableMethods.isEmpty() ? null : callableMethods.get(random.nextInt((callableMethods.size())));
     }
 
-    private List<MethodLogger> getStaticMethods(MethodLogger callerMethod) {
+    private List<MethodLogger> getStaticMethods() {
         if (hasMethods()) {
-            return methods.stream().filter(
-                    m -> m.isStatic() && m.hashCode() != callerMethod.hashCode()).collect(Collectors.toList());
+            return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
         } else return null;
     }
 
@@ -76,24 +76,31 @@ public class ClazzLogger extends MyLogger {
      * @param type the return-type of the randomly choosen method
      * @return the MethodLogger of a randomly chosen method with given return-type
      */
-    public MethodLogger getMethodWithReturnType(FieldVarType type) {
+    public MethodLogger getRandomMethodWithReturnTypeUsableInMethod(MethodLogger callerMethod, FieldVarType type) {
         if (hasMethods()) {
-            List<MethodLogger> retTypeMethods = methods.stream().filter(
-                    m -> m.getReturnType() == type).collect(Collectors.toList());
-            if (retTypeMethods.isEmpty()) return null;
-            return retTypeMethods.get(random.nextInt(retTypeMethods.size()));
+            List<MethodLogger> retTypeMethods;
+            if (callerMethod.isStatic()) {
+                retTypeMethods = methods.stream().filter(
+                        m -> m.getReturnType() == type && m.isStatic()).collect(Collectors.toList());
+            } else {
+                retTypeMethods = methods.stream().filter(
+                        m -> m.getReturnType() == type).collect(Collectors.toList());
+            }
+            retTypeMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
+            retTypeMethods.remove(callerMethod);
+            return retTypeMethods.isEmpty() ? null : retTypeMethods.get(random.nextInt(retTypeMethods.size()));
         } else return null;
     }
 
-    public List<Object> getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
-        List<Object> values = new ArrayList<>();
+    public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
+        List<ParamWrapper> values = new ArrayList<>();
         for (FieldVarType t : paramTypes) {
             if (random.nextBoolean()) { //add global variable
                 if (!addFieldToParamValues(values, method, t)) {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
                         //add random value if no variables available
-                        values.add(RandomSupplier.getRandomValue(t));
+                        values.add(new ParamWrapper(RandomSupplier.getRandomValueAsString(t)));
                     }
                 }
             } else { //add local variable
@@ -101,29 +108,63 @@ public class ClazzLogger extends MyLogger {
                     //add global variable if no local variable available
                     if (!addFieldToParamValues(values, method, t)) {
                         //add random value if no variables available
-                        values.add(RandomSupplier.getRandomValue(t));
+                        values.add(new ParamWrapper(RandomSupplier.getRandomValueAsString(t)));
                     }
                 }
             }
         }
-        return values;
+        ParamWrapper[] paramValues = new ParamWrapper[values.size()];
+        return values.toArray(paramValues);
     }
 
-    private boolean addFieldToParamValues(List<Object> values, MethodLogger method, FieldVarType type) {
-        FieldVarLogger fvl;
-        if(method.isStatic()) fvl  = this.getVariableWithPredicate(v -> v.getType() == type && v.isStatic());
-        else fvl = this.getVariableWithPredicate(v -> v.getType() == type);
+    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = this.getInitializedFieldOfTypeUsableInMethod(method, type);
         if (fvl != null) {
-            values.add(fvl);
+            values.add(new ParamWrapper(fvl));
             return true;
         } else return false;
     }
 
-    private boolean addLocalVariableToParamValues(List<Object> values, MethodLogger method, FieldVarType type) {
-        FieldVarLogger fvl = method.getVariableWithPredicate(v -> v.getType() == type);
+    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = this.getInitializedLocalVarOfType(method, type);
         if (fvl != null) {
-            values.add(fvl);
+            values.add(new ParamWrapper(fvl));
             return true;
         } else return false;
+    }
+
+    public FieldVarLogger getNonFinalFieldUsableInMethod(MethodLogger method) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
+        } else {
+            return this.getVariableWithPredicate(v -> !v.isFinal());
+        }
+    }
+
+    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+        } else {
+            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+        }
+    }
+
+    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, FieldVarType type) {
+        return method.getVariableWithPredicate(
+                v -> v.isInitialized() && v.getType() == type);
+    }
+
+    public FieldVarLogger getNonFinalLocalVar(MethodLogger method) {
+        return method.getVariableWithPredicate(v -> !v.isFinal());
+    }
+
+    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType returnType) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(
+                    v -> v.isInitialized() && v.isStatic() && v.getType() == returnType);
+        } else {
+            return this.getVariableWithPredicate(
+                    v -> v.isInitialized() && v.getType() == returnType);
+        }
     }
 }

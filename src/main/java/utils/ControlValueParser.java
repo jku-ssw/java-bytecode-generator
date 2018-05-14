@@ -16,7 +16,6 @@ public class ControlValueParser {
         this.options.addOption("lv", "variable_probability", true, "The probability to generate variables");
         this.options.addOption("ga", "global_assign_probability", true, "The probability for assigning values to fields");
         this.options.addOption("la", "local_assign_probability", true, "The probability for assigning values to variables");
-        this.options.addOption("vtv", "variable_to_variable_probability", true, "The probability for assigning variables to variables");
         this.options.addOption("m", "method_probability", true, "The probability to generate methods");
         this.options.addOption("mc", "method_call_probability", true, "The probability to generate method-malls");
         this.options.addOption("ml", "method_length_weighting", true, "The maximum number of iterations for method-generation");
@@ -64,7 +63,7 @@ public class ControlValueParser {
     }
 
     /**
-     * Writes information about all Options to the Console
+     * Writes information about all Options to the console
      */
     private void help() {
         HelpFormatter formatter = new HelpFormatter();

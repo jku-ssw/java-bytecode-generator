@@ -9,8 +9,8 @@ import javassist.*;
 public class ClazzFileContainer {
 
     private CtClass clazz;
-
     private ClazzLogger clazzLogger;
+    private RandomSupplier randomSupplier;
 
     /**
      * generates a new minimal executable Class and a new ClazzLogger
@@ -19,6 +19,7 @@ public class ClazzFileContainer {
      */
     public ClazzFileContainer(String file_name) {
         this.clazz = getClazzPool().makeClass(file_name);
+        this.randomSupplier = new RandomSupplier();
         createMinExecutableClazz();
     }
 
@@ -60,4 +61,7 @@ public class ClazzFileContainer {
         return clazzLogger;
     }
 
+    public RandomSupplier getRandomSupplier() {
+        return randomSupplier;
+    }
 }

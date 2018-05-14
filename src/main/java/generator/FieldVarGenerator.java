@@ -13,6 +13,8 @@ public class FieldVarGenerator extends Generator {
         super(filename);
     }
 
+    //===========================================field generation=======================================================
+
     /**
      * generates a global field with given modifiers and optional default value
      *
@@ -22,7 +24,7 @@ public class FieldVarGenerator extends Generator {
      * @param modifiers merged modifiers for the new field (from javassist class Modifier)
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    public boolean generateField(String name, FieldVarType type, int modifiers, String value) {
+    private boolean generateField(String name, FieldVarType type, int modifiers, String value) {
         boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
@@ -42,6 +44,17 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
+    public void generateRandomField() {
+        FieldVarType ft = this.getRandomSupplier().getFieldVarType();
+        String value = null;
+        if (this.random.nextBoolean()) { //50% chance to be initialized
+            value = this.getRandomSupplier().getRandomValueAsString(ft);
+        }
+        this.generateField(
+                getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
+    }
+
+    //==========================================local variable generation===============================================
 
     /**
      * @param name   the name of the generated variable
@@ -50,28 +63,31 @@ public class FieldVarGenerator extends Generator {
      * @param method the logger of the method, in which the variable is generated
      * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
-    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    private boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (src == null) return false;
         else if (src.equals("")) return true;
-        else {
-            CtMethod ctMethod = this.getCtMethod(method);
-            if (insertIntoMethod(ctMethod, src)) return true;
-            else return false;
-        }
+        else return insertIntoMethodBody(method, src);
     }
 
-    public String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    public void generateRandomLocalVariable(MethodLogger method) {
+        FieldVarType ft = getRandomSupplier().getFieldVarType();
+        String value = null;
+        if (random.nextBoolean()) { //50% chance to be initialized
+            value = getRandomSupplier().getRandomValueAsString(ft);
+        }
+        this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
+    }
+
+    private String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         boolean initialized = false;
         CtMethod ctMethod = this.getCtMethod(method);
-        String src;
+        String src = "";
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
             if (value != null) {
                 src = name + " = " + value + ";";
                 initialized = true;
-            } else {
-                src = type.getName() + " " + name + ";";
             }
             method.logVariable(name, type, 0, initialized);
             return src;
@@ -82,29 +98,45 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
+    //=============================================print variables======================================================
 
-    /**
-     * generates a System.out.println-Statement in the given method for this field
-     *
-     * @param variable the logged Variable
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
-        try {
-            CtMethod ctMethod = this.getCtMethod(method);
-            String printStatement = srcGeneratePrintStatement(variable);
-            ctMethod.insertAfter(printStatement);
-            return true;
-        } catch (CannotCompileException e) {
-            System.err.println("Generation of System.out.println-Statement for field " + variable.getName() + " failed + Type: " + variable.getType());
-            e.printStackTrace();
-            return false;
-        }
-    }
+//    /**
+//     * generates a System.out.println-Statement in the given method for this field
+//     *
+//     * @param variable the logged Variable
+//     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
+//     */
+//    private boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
+//        String src = srcGeneratePrintStatement(variable);
+//        return insertIntoMethodBody(
+//                method, src);
+//    }
 
-    public String srcGeneratePrintStatement(FieldVarLogger variable) {
+    private String srcGeneratePrintStatement(FieldVarLogger variable) {
         return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
     }
+
+    public boolean generateRandomPrintStatement(MethodLogger method) {
+        String src = this.srcGenerateRandomPrintStatement(method);
+        return insertIntoMethodBody(
+                method, src);
+    }
+
+    public String srcGenerateRandomPrintStatement(MethodLogger method) {
+        if (random.nextBoolean()) { //print local Variable
+            FieldVarLogger fvl = method.getVariableWithPredicate(v -> v.isInitialized());
+            if (fvl == null) return null;
+            return this.srcGeneratePrintStatement(fvl);
+        } else { //print global Variable
+            FieldVarLogger fvl;
+            if (method.isStatic()) fvl = getClazzLogger().getVariableWithPredicate(
+                    v -> v.isInitialized() && v.isStatic());
+            else fvl = getClazzLogger().getVariableWithPredicate(v -> v.isInitialized());
+            if (fvl != null) return this.srcGeneratePrintStatement(fvl);
+            else return null;
+        }
+    }
+    //==========================================set variable values=====================================================
 
     /**
      * assigns a value to a field in the given method
@@ -114,53 +146,130 @@ public class FieldVarGenerator extends Generator {
      * @param method   the logger of the method, in which the assign-statement is generated
      * @return {@code true} if the statement was generated successfully, otherwise {@code false}
      */
-    public boolean setFieldVarValue(FieldVarLogger fieldVar, MethodLogger method, String value) {
-        CtMethod ctMethod = this.getCtMethod(method);
-        String src = srcSetFieldVarValue(fieldVar, value);
-        if (src == null) return false;
-        else {
-            if (insertIntoMethod(ctMethod, src)) {
-                fieldVar.setInitialized();
-                return true;
-            } else return false;
-        }
+    private boolean setVarValue(FieldVarLogger fieldVar, MethodLogger method, String value) {
+        String src = srcSetVarValue(fieldVar, value);
+        fieldVar.setInitialized();
+        return insertIntoMethodBody(method, src);
     }
 
-    private boolean insertIntoMethod(CtMethod ctMethod, String src) {
-        try {
-            ctMethod.insertAfter(src);
-            return true;
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public String srcSetFieldVarValue(FieldVarLogger fieldVar, String value) {
+    private String srcSetVarValue(FieldVarLogger fieldVar, String value) {
         if (value != null) {
+            fieldVar.setInitialized();
             return fieldVar.getName() + " = " + value + ";";
         } else return null;
     }
 
-    /**
-     * @param var1   the field to which the value of field2 is assigned
-     * @param var2   the field, which's value is assigned to field1
-     * @param method the logger of the method in which the assign-statement is generated
-     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-     */
-    public boolean assignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2, MethodLogger method) {
-        String src = srcAssignVariableToVariable(var1, var2);
-        CtMethod ctMethod = this.getCtMethod(method);
-        if (insertIntoMethod(ctMethod, src)) {
-            var1.setInitialized();
-            return true;
-        } else return false;
-
+    public boolean setRandomFieldValue(MethodLogger method) {
+        if (!getClazzLogger().hasVariables()) return false;
+        FieldVarLogger f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
+        if (f == null) return false;
+        else return setVarValue(f, method, getRandomSupplier().getRandomValueAsString(f.getType()));
     }
+
+    public String srcSetRandomFieldValue(MethodLogger method) {
+        if (!getClazzLogger().hasVariables()) return null;
+        FieldVarLogger f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
+        if (f == null) return null;
+        return this.srcSetVarValue(f, getRandomSupplier().getRandomValueAsString(f.getType()));
+    }
+
+    public boolean setRandomLocalVariableValue(MethodLogger method) {
+        if (!method.hasVariables()) return false;
+        FieldVarLogger f = this.getClazzLogger().getNonFinalLocalVar(method);
+        if (f == null) return false;
+        return setVarValue(f, method, getRandomSupplier().getRandomValueAsString(f.getType()));
+    }
+
+    public String srcSetRandomLocalVariableValue(MethodLogger method) {
+        if (!method.hasVariables()) return null;
+        FieldVarLogger f = this.getClazzLogger().getNonFinalLocalVar(method);
+        if (f == null) return null;
+        return srcSetVarValue(f, getRandomSupplier().getRandomValueAsString(f.getType()));
+    }
+
+
+    //=======================================assign variable to variable================================================
+
+    //field to field
+    public boolean randomlyAssignFieldToField(MethodLogger method) {
+        String src = srcRandomlyAssignFieldToField(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcRandomlyAssignFieldToField(MethodLogger method) {
+        if (!getClazzLogger().hasVariables()) return null;
+        FieldVarLogger f1, f2;
+        f1 = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
+        if (f1 != null) {
+            f2 = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, f1.getType());
+            if (f2 != null) return srcAssignVariableToVariable(f1, f2);
+            else return null;
+        } else return null;
+    }
+
+    //local variable to field
+    public boolean randomlyAssignLocalVarToField(MethodLogger method) {
+        String src = srcRandomlyAssignLocalVarToField(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcRandomlyAssignLocalVarToField(MethodLogger method) {
+        if (!getClazzLogger().hasVariables() || !method.hasVariables()) return null;
+        FieldVarLogger f1, f2;
+        f1 = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
+        if (f1 == null) return null;
+        f2 = this.getClazzLogger().getInitializedLocalVarOfType(method, f1.getType());
+        if (f2 != null) return srcAssignVariableToVariable(f1, f2);
+        else return null;
+    }
+
+    //local variable to local variable
+    public boolean randomlyAssignLocalVarToLocalVar(MethodLogger method) {
+        String src = srcRandomlyAssignLocalVarToLocalVar(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcRandomlyAssignLocalVarToLocalVar(MethodLogger method) {
+        if (!method.hasVariables()) return null;
+        FieldVarLogger f1 = this.getClazzLogger().getNonFinalLocalVar(method);
+        if (f1 == null) return null;
+        FieldVarLogger f2 = this.getClazzLogger().getInitializedLocalVarOfType(method, f1.getType());
+        if (f2 != null) {
+            return srcAssignVariableToVariable(f1, f2);
+        } else return null;
+    }
+
+    public boolean randomlyAssignFieldToLocalVar(MethodLogger method) {
+        String src = srcRandomlyAssignFieldToLocalVar(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcRandomlyAssignFieldToLocalVar(MethodLogger method) {
+        if (!method.hasVariables()) return null;
+        FieldVarLogger f1 = this.getClazzLogger().getNonFinalLocalVar(method);
+        if (f1 == null) return null;
+        FieldVarLogger f2 = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, f1.getType());
+        if (f2 != null) return srcAssignVariableToVariable(f1, f2);
+        else return null;
+    }
+
+//    /**
+//     * @param var1   the field to which the value of field2 is assigned
+//     * @param var2   the field, which's value is assigned to field1
+//     * @param method the logger of the method in which the assign-statement is generated
+//     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
+//     */
+//    private boolean assignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2, MethodLogger method) {
+//        String src = srcAssignVariableToVariable(var1, var2);
+//        var1.setInitialized();
+//        return insertIntoMethodBody(method, src);
+//    }
 
     public String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
+        var1.setInitialized();
         return var1.getName() + " = " + var2.getName() + ";";
     }
+
 }
 
 

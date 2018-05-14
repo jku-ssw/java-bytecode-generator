@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 
-class MathGenerator extends Generator {
+public class MathGenerator extends Generator {
     private CtClass mathClazz;
 
     public MathGenerator(ClazzFileContainer cf) {
@@ -34,7 +34,19 @@ class MathGenerator extends Generator {
         }
     }
 
-    public boolean callJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
+    public boolean callRandomJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
+        String callString = srcCallRandomJavaLangMathMethod(method, clazzLogger, assignToFieldOrVar);
+        CtMethod callerMethod = this.getCtMethod(method);
+        try {
+            callerMethod.insertAfter(callString);
+        } catch (CannotCompileException e) {
+            System.err.println("Cannot insert call: " + callString);
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public String srcCallRandomJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
         CtMethod[] methods = mathClazz.getDeclaredMethods();
         methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
         Random random = new Random();
@@ -42,10 +54,10 @@ class MathGenerator extends Generator {
         String methodName = ctMethod.getName();
         String signature = ctMethod.getSignature();
         List<FieldVarType> paramTypes = getParamTypes(signature);
-        FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
+        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
         List<Object> parameters = new ArrayList<>();
         for (FieldVarType t : paramTypes) {
-            Object p = null;
+            Object p;
             if (random.nextBoolean()) { //try to fetch field
                 p = getGlobalUsableVariableOfType(method, t, clazzLogger);
                 if (p == null) p = method.getVariableWithPredicate(v -> v.getType() == t);
@@ -81,15 +93,9 @@ class MathGenerator extends Generator {
             } else callString.append(o);
         }
         callString.append(");");
-        CtMethod callerMethod = this.getCtMethod(method);
-        try {
-            callerMethod.insertAfter(callString.toString());
-        } catch (CannotCompileException e) {
-            System.err.println("Cannot insert call: " + callString.toString());
-            e.printStackTrace();
-        }
-        return true;
+        return callString.toString();
     }
+
 
     //TODO in clazzLogger geben
     private FieldVarLogger getGlobalUsableVariableOfType(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
@@ -102,24 +108,9 @@ class MathGenerator extends Generator {
     private static List<FieldVarType> getParamTypes(String signature) {
         List<FieldVarType> paramTypes = new ArrayList<>();
         for (int i = 1; i < signature.length() - 2; i++) {
-            paramTypes.add(getType(signature.charAt(i)));
+            paramTypes.add(FieldVarType.getType(signature.charAt(i)));
         }
         return paramTypes;
-    }
-
-    private static FieldVarType getType(char t) {
-        switch (t) {
-            case 'D':
-                return FieldVarType.Double;
-            case 'I':
-                return FieldVarType.Int;
-            case 'F':
-                return FieldVarType.Float;
-            case 'J':
-                return FieldVarType.Long;
-            default:
-                return null;
-        }
     }
 
 }

@@ -39,13 +39,6 @@ public class GenerationController {
     }
 
     /**
-     * @return the probability for generating assignments of Variables to Variables
-     */
-    public int getVariableToVariableAssignProbability() {
-        return controlValues.get("vtv");
-    }
-
-    /**
      * @return the probability for generating Methods
      */
     public int getMethodProbability() {

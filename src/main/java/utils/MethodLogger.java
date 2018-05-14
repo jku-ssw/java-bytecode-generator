@@ -3,8 +3,10 @@ package utils;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * stores information about a Method
@@ -16,12 +18,23 @@ public class MethodLogger extends MyLogger {
     private FieldVarType[] paramTypes;
     private FieldVarType returnType;
 
+    private List<MethodLogger> methodsExcludedForCalling;
+
     public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType paramTypes[]) {
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;
-        variables = new HashMap<>();
+        this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
+        this.methodsExcludedForCalling = new ArrayList<>();
+    }
+
+    public void addMethodToExcludedForCalling(MethodLogger callingMethod) {
+        methodsExcludedForCalling.add(callingMethod);
+    }
+
+    public List<MethodLogger> getMethodsExcludedForCalling() {
+        return methodsExcludedForCalling;
     }
 
     /**

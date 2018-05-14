@@ -126,4 +126,21 @@ public enum FieldVarType {
     public java.lang.String toString() {
         return getName();
     }
+
+
+    //TODO in FieldVarType geben
+    public static FieldVarType getType(char t) {
+        switch (t) {
+            case 'D':
+                return FieldVarType.Double;
+            case 'I':
+                return FieldVarType.Int;
+            case 'F':
+                return FieldVarType.Float;
+            case 'J':
+                return FieldVarType.Long;
+            default:
+                return null;
+        }
+    }
 }

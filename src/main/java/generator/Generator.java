@@ -7,8 +7,10 @@ import javassist.NotFoundException;
 import utils.ClazzFileContainer;
 import utils.ClazzLogger;
 import utils.MethodLogger;
+import utils.RandomSupplier;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * super-Class of all generators
@@ -16,7 +18,8 @@ import java.io.IOException;
  */
 public abstract class Generator {
 
-    private ClazzFileContainer clazzContainer;
+    ClazzFileContainer clazzContainer;
+    Random random = new Random();
 
     /**
      * Takes an existing utils.ClazzFileContainer to extend
@@ -59,6 +62,15 @@ public abstract class Generator {
         }
     }
 
+    public void writeFile(String directoryName) {
+        try {
+            this.getClazzFile().writeFile(directoryName);
+        } catch ( IOException | CannotCompileException e) {
+            System.err.println("Cannot write class-file");
+            e.printStackTrace();
+        }
+    }
+
     /**
      * @return the ClazzLogger of the class, processed by this generator
      */
@@ -78,6 +90,23 @@ public abstract class Generator {
             System.err.println("Method " + method.getName() + " not found");
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public RandomSupplier getRandomSupplier() {
+        return getClazzContainer().getRandomSupplier();
+    }
+
+    //=================================================Utility==========================================================
+    boolean insertIntoMethodBody(MethodLogger method, String src) {
+        if (src == null) return false;
+        try {
+            CtMethod ctMethod = this.getCtMethod(method);
+            ctMethod.insertAfter(src);
+            return true;
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

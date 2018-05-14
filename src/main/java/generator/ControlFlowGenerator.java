@@ -4,12 +4,9 @@ import javassist.CannotCompileException;
 import javassist.CtMethod;
 import utils.*;
 
-import java.util.Random;
-
-class ControlFlowGenerator extends Generator {
+public class ControlFlowGenerator extends Generator {
     private StringBuilder blockSrc = new StringBuilder();
 
-    private boolean openStatement = false;
     private int deepness = 0;
 
     public ControlFlowGenerator(ClazzFileContainer cf) {
@@ -23,8 +20,7 @@ class ControlFlowGenerator extends Generator {
 
     public void openIfStatement(MethodLogger method, ClazzLogger logger) {
         blockSrc.append("if(" + getRandomCondition(method, logger) + ") {");
-        deepness++;
-        openStatement = true;
+        ++deepness;
     }
 
     //TODO condition
@@ -38,26 +34,23 @@ class ControlFlowGenerator extends Generator {
     }
 
     public boolean insertBlockSrc(MethodLogger method) {
-        if(!openStatement && deepness != 0 ) return false;
-        for(int i = 0; i < deepness; i++) blockSrc.append("}");
+        if (deepness != 0) return false;
+        for (int i = 0; i < deepness; i++) blockSrc.append("}");
         CtMethod ctMethod = this.getCtMethod(method);
         try {
             ctMethod.insertAfter(blockSrc.toString());
-            openStatement = false;
             blockSrc = new StringBuilder();
-            deepness = 0;
             return true;
         } catch (CannotCompileException e) {
-            System.out.println(method.getName() + ":");
-            System.out.println("failed: " + blockSrc.toString());
-            //e.printStackTrace();
+            e.printStackTrace();
             return false;
         }
     }
 
     public void addCodeToControlSrc(String code) {
-        if (openStatement) blockSrc.append(code);
-        else {
+        if (deepness > 0) {
+            blockSrc.append(code);
+        } else {
             System.err.println("Cannot insert code, no open control-flow-block");
         }
     }
