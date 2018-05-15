@@ -3,6 +3,7 @@ package generator;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
+import utils.ClazzFileContainer;
 import utils.FieldVarLogger;
 import utils.FieldVarType;
 import utils.MethodLogger;
@@ -11,6 +12,10 @@ public class FieldVarGenerator extends Generator {
 
     public FieldVarGenerator(String filename) {
         super(filename);
+    }
+
+    public FieldVarGenerator(ClazzFileContainer clazzContainer) {
+        super(clazzContainer);
     }
 
     //===========================================field generation=======================================================
@@ -24,7 +29,7 @@ public class FieldVarGenerator extends Generator {
      * @param modifiers merged modifiers for the new field (from javassist class Modifier)
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
-    private boolean generateField(String name, FieldVarType type, int modifiers, String value) {
+    public boolean generateField(String name, FieldVarType type, int modifiers, String value) {
         boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
@@ -63,7 +68,7 @@ public class FieldVarGenerator extends Generator {
      * @param method the logger of the method, in which the variable is generated
      * @return {@code true} if the local variable was generated successfully, otherwise {@code false}
      */
-    private boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    public boolean generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (src == null) return false;
         else if (src.equals("")) return true;
@@ -201,7 +206,7 @@ public class FieldVarGenerator extends Generator {
         FieldVarLogger f1, f2;
         f1 = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
         if (f1 != null) {
-            f2 = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, f1.getType());
+            f2 = this.getClazzLogger().getNonFinalInitializedFieldOfTypeUsableInMethod(method, f1.getType());
             if (f2 != null) return srcAssignVariableToVariable(f1, f2);
             else return null;
         } else return null;
@@ -248,7 +253,7 @@ public class FieldVarGenerator extends Generator {
         if (!method.hasVariables()) return null;
         FieldVarLogger f1 = this.getClazzLogger().getNonFinalLocalVar(method);
         if (f1 == null) return null;
-        FieldVarLogger f2 = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, f1.getType());
+        FieldVarLogger f2 = this.getClazzLogger().getNonFinalInitializedFieldOfTypeUsableInMethod(method, f1.getType());
         if (f2 != null) return srcAssignVariableToVariable(f1, f2);
         else return null;
     }

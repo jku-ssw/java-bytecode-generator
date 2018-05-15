@@ -59,7 +59,7 @@ public class RandomCodeGenerator {
 
             if (r <= controller.getGlobalAssignProbability()) {
                 String src = null;
-                int assignKind = random.nextInt(4);
+                int assignKind = random.nextInt(3);
                 switch (assignKind) {
                     case 0: //set field to random value
                         if (context == Context.controlContext)
@@ -76,11 +76,6 @@ public class RandomCodeGenerator {
                             src = fieldVar_generator.srcRandomlyAssignLocalVarToField(context.contextMethod);
                         else fieldVar_generator.randomlyAssignLocalVarToField(context.contextMethod);
                         break;
-                    case 3: //assign return-value of a method to field
-                        if (context == Context.controlContext)
-                            src = method_generator.srcSetRandomFieldToReturnValue(context.contextMethod);
-                        else method_generator.setRandomFieldToReturnValue(context.contextMethod);
-                        break;
                 }
                 if (src != null) {
                     System.out.println(context);
@@ -88,8 +83,8 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (r <= controller.getLocalAssignProbability()) {
-                int assignKind = random.nextInt(4);
+            if (r <= controller.getLocalAssignProbability() && context != Context.controlContext) {
+                int assignKind = random.nextInt(3);
                 String src = null;
                 switch (assignKind) {
                     case 0: //set local variable to random value
@@ -107,12 +102,6 @@ public class RandomCodeGenerator {
                             src = fieldVar_generator.srcRandomlyAssignFieldToLocalVar(context.contextMethod);
                         } else fieldVar_generator.randomlyAssignFieldToLocalVar(context.contextMethod);
                         break;
-                    case 3: //assign return-value of a method to local variable
-                        if (context == Context.controlContext) {
-                            src = method_generator.srcSetRandomLocalVarToReturnValue(context.contextMethod);
-                        } else method_generator.setRandomLocalVarToReturnValue(context.contextMethod);
-                        method_generator.setRandomFieldToReturnValue(context.contextMethod);
-                        break;
                 }
                 if (src != null) {
                     System.out.println(context);
@@ -124,10 +113,25 @@ public class RandomCodeGenerator {
                 generateMethod();
 
             if (r <= controller.getMethodCallProbability()) {
+                int callKind = random.nextInt(3);
                 String src = null;
-                if (context == Context.controlContext) {
-                    src = method_generator.srcGenerateRandomMethodCall(context.contextMethod);
-                } else method_generator.generateRandomMethodCall(context.contextMethod);
+                switch (callKind) {
+                    case 0: //call method
+                        if (context == Context.controlContext) {
+                            src = method_generator.srcGenerateRandomMethodCall(context.contextMethod);
+                        } else method_generator.generateRandomMethodCall(context.contextMethod);
+                        break;
+                    case 1: //assign return value of called method to field
+                        if (context == Context.controlContext)
+                            src = method_generator.srcSetRandomFieldToReturnValue(context.contextMethod);
+                        else method_generator.setRandomFieldToReturnValue(context.contextMethod);
+                        break;
+                    case 2: //assign return value of called method to local variable
+                        if (context == Context.controlContext) {
+                            src = method_generator.srcSetRandomLocalVarToReturnValue(context.contextMethod);
+                        } else method_generator.setRandomLocalVarToReturnValue(context.contextMethod);
+                        break;
+                }
                 if (src != null) controlFlow_generator.addCodeToControlSrc(src);
             }
 
@@ -184,6 +188,7 @@ public class RandomCodeGenerator {
 
     public void overLoadRandomMethod(Context context) {
         MethodLogger method = method_generator.overloadRandomMethod(controller.getMaximumMethodParameters());
+        if (method == null) return;
         context.contextMethod = method;
         this.generate(RandomCodeGenerator.Context.methodContext);
         method_generator.overrideReturnStatement(method);
@@ -217,6 +222,9 @@ public class RandomCodeGenerator {
 }
 
 
+//TODO only use initialized Local Vars if in controlContext
+//TODO use Sets to generate parameters for Overloading
+
 //TODO Fix Bad Local Variable Bug
 //TODO Fix String top exception
 //TODO prevent Stack Overflow in generation
@@ -224,7 +232,6 @@ public class RandomCodeGenerator {
 //TODO test genration in methodContext
 
 //TODO check for correct Method paramater variable names
-
 
 
 //TODO add main to functions again?

@@ -6,9 +6,13 @@ import javassist.CtNewMethod;
 import javassist.Modifier;
 import utils.*;
 
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class MethodGenerator extends Generator {
+
+    private Random random = new Random();
 
     public MethodGenerator(ClazzFileContainer cf) {
         super(cf);
@@ -18,9 +22,78 @@ public class MethodGenerator extends Generator {
         super(filename);
     }
 
-    private Random random = new Random();
-
     //============================================Method Generation=====================================================
+
+    /**
+     * @param modifiers the Integer-Representation of the modifiers
+     * @return a String-Representation of these modifiers
+     */
+    private static String modifiersToString(int modifiers) {
+        StringBuilder b = new StringBuilder();
+        if (Modifier.isStatic(modifiers)) b.append("static ");
+        if (Modifier.isFinal(modifiers)) b.append("final ");
+        if (Modifier.isPrivate(modifiers)) b.append("private ");
+        if (Modifier.isProtected(modifiers)) b.append("protected ");
+        if (Modifier.isPublic(modifiers)) b.append("public ");
+        return b.toString();
+    }
+
+    /**
+     * @param methodName  the method that gets called
+     * @param paramTypes  the paramTypes of the method that is called given by FieldVarType
+     * @param paramValues the values used to call the method
+     * @return a String-Representation of the methodCall
+     */
+    private static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper... paramValues) {
+        StringBuilder statement = new StringBuilder(methodName + "(");
+        if (paramValues != null && paramValues.length != 0) {
+            statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
+        }
+        for (int i = 1; i < paramValues.length; i++) {
+            statement.append(", ");
+            statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
+        }
+        statement.append(");");
+        return statement.toString();
+    }
+
+    /**
+     * @param paramType the FieldVarType of the given value
+     * @param param     the parameter value to be returned as String
+     * @return the correct String-Format for this value
+     */
+    private static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
+        if (param.isVariable()) {
+            FieldVarLogger fvl = (FieldVarLogger) param.getParam();
+            if (paramType == fvl.getType()) return fvl.getName();
+            else {
+                System.err.println("Invalid parameter value for parameter type " + paramType.getName());
+                return null;
+            }
+        } else if (param.isValue()) return (String) param.getParam();
+        else {
+            System.err.println("Incorrect Parameter type: Can either be of FieldVarLogger or String");
+            return "";
+        }
+    }
+
+    /**
+     * compares two arrays of parameters for equality
+     * used to ensure that methods are not duplicated, when overloading methods
+     *
+     * @param types1
+     * @param types2
+     * @return @code{true} if these FieldVarTypes are equal, otherwise @code{false}
+     */
+    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
+        if (types1.length == types2.length) {
+            for (int i = 0; i < types1.length; i++) {
+                if (types1[i] != types2[i]) return false;
+            }
+            return true;
+        } else return false;
+    }
+
     /**
      * @param name       the name of the generated method
      * @param returnType the returnType of this method given by a FieldVarType
@@ -31,7 +104,7 @@ public class MethodGenerator extends Generator {
     private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
-        if (paramTypes.length != 0) {
+        if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
             paramsStr.append(paramTypes[0].getName() + " " + paramName);
             ml.logVariable(paramName, paramTypes[0], 0, true);
@@ -57,9 +130,27 @@ public class MethodGenerator extends Generator {
             return ml;
         } catch (CannotCompileException e) {
             e.printStackTrace();
+            System.exit(1);
             return null;
         }
     }
+
+//    /**
+//     * @param calledMethod the method that gets called
+//     * @param method       the method in which calledMethod is called
+//     * @param paramValues  the values used to call the method
+//     * @return @code{true} if the methodCall was generated successfully, otherwise @code{false}
+//     */
+//    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
+//        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+//        if (calledMethod.isStatic() || !method.isStatic()) {
+//            CtMethod m = this.getCtMethod(method);
+//            String callString = generateMethodCallString(calledMethod.getName(), paramTypes, paramValues);
+//            return insertIntoMethodBody(method, callString);
+//        } else return false;
+//    }
+
+    //===============================================Method Calling=====================================================
 
     public MethodLogger generateRandomMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
@@ -67,17 +158,24 @@ public class MethodGenerator extends Generator {
                 getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getModifiers());
     }
 
-    public MethodLogger overloadRandomMethod(int maximumParameters) {
+    public MethodLogger overloadRandomMethod(int maximumNumberOfParams) {
         MethodLogger methodToOverload = getClazzLogger().getRandomMethod();
         if (methodToOverload == null) return null;
-        boolean equalParamTypes = true;
-        FieldVarType[] paramTypes = null;
-        while (equalParamTypes) {
-            paramTypes = getRandomSupplier().getParameterTypes(maximumParameters);
-            equalParamTypes = this.compareParametersForEquality(paramTypes, methodToOverload.getParamsTypes());
+        List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
+        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumNumberOfParams);
+        if (paramTypes == null) return null;
+        System.out.println("Overloaded Method");
+        for (int i = 0; i < methodToOverload.getParamsTypes().length; i++) {
+            System.out.print(methodToOverload.getParamsTypes()[i] + " ");
         }
-        MethodLogger method = this.generateMethod(methodToOverload.getName(), getRandomSupplier().getReturnType(),
-                paramTypes, getRandomSupplier().getModifiers());
+        System.out.println();
+        System.out.println("New Method");
+        for (int i = 0; i < paramTypes.length; i++) {
+            System.out.print(paramTypes[i] + " ");
+        }
+        System.out.println();
+        MethodLogger method = this.generateMethod(methodToOverload.getName(), RandomSupplier.getReturnType(),
+                paramTypes, RandomSupplier.getModifiers());
         return method;
     }
 
@@ -100,57 +198,6 @@ public class MethodGenerator extends Generator {
             return false;
         }
     }
-
-    /**
-     * @param modifiers the Integer-Representation of the modifiers
-     * @return a String-Representation of these modifiers
-     */
-    private static String modifiersToString(int modifiers) {
-        StringBuilder b = new StringBuilder();
-        if (Modifier.isStatic(modifiers)) b.append("static ");
-        if (Modifier.isFinal(modifiers)) b.append("final ");
-        if (Modifier.isPrivate(modifiers)) b.append("private ");
-        if (Modifier.isProtected(modifiers)) b.append("protected ");
-        if (Modifier.isPublic(modifiers)) b.append("public ");
-        return b.toString();
-    }
-
-//    /**
-//     * @param calledMethod the method that gets called
-//     * @param method       the method in which calledMethod is called
-//     * @param paramValues  the values used to call the method
-//     * @return @code{true} if the methodCall was generated successfully, otherwise @code{false}
-//     */
-//    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
-//        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-//        if (calledMethod.isStatic() || !method.isStatic()) {
-//            CtMethod m = this.getCtMethod(method);
-//            String callString = generateMethodCallString(calledMethod.getName(), paramTypes, paramValues);
-//            return insertIntoMethodBody(method, callString);
-//        } else return false;
-//    }
-
-    //===============================================Method Calling=====================================================
-
-    /**
-     * @param methodName  the method that gets called
-     * @param paramTypes  the paramTypes of the method that is called given by FieldVarType
-     * @param paramValues the values used to call the method
-     * @return a String-Representation of the methodCall
-     */
-    private static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper... paramValues) {
-        StringBuilder statement = new StringBuilder(methodName + "(");
-        if (paramValues != null && paramValues.length != 0) {
-            statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
-        }
-        for (int i = 1; i < paramValues.length; i++) {
-            statement.append(", ");
-            statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
-        }
-        statement.append(");");
-        return statement.toString();
-    }
-
 
     public boolean generateRandomMethodCall(MethodLogger method) {
         String src = srcGenerateRandomMethodCall(method);
@@ -193,6 +240,19 @@ public class MethodGenerator extends Generator {
         return srcSetVariableToReturnValue(method, fieldVar);
     }
 
+//    /**
+//     * @param field        the field that is set to the return value of the function
+//     * @param calledMethod the method that is called
+//     * @param method       the method, in which the assign-statement is generated
+//     * @param paramValues  the values used to call the method
+//     * @return @code{true} if the statement was generated successfully, otherwise @code{false}
+//     */
+//    public boolean setFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
+//        String src = srcSetFieldVarToReturnValue(field, calledMethod, paramValues);
+//        return insertIntoMethodBody(method, src);
+//    }
+
+    //=================================================Utility==========================================================
 
     private String srcSetVariableToReturnValue(MethodLogger method, FieldVarLogger fieldVar) {
         MethodLogger calledMethod = getClazzLogger().getRandomMethodWithReturnTypeUsableInMethod(method, fieldVar.getType());
@@ -210,55 +270,36 @@ public class MethodGenerator extends Generator {
                 + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), paramValues);
     }
 
-//    /**
-//     * @param field        the field that is set to the return value of the function
-//     * @param calledMethod the method that is called
-//     * @param method       the method, in which the assign-statement is generated
-//     * @param paramValues  the values used to call the method
-//     * @return @code{true} if the statement was generated successfully, otherwise @code{false}
-//     */
-//    public boolean setFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
-//        String src = srcSetFieldVarToReturnValue(field, calledMethod, paramValues);
-//        return insertIntoMethodBody(method, src);
-//    }
-
-    //=================================================Utility==========================================================
-
-    /**
-     * @param paramType the FieldVarType of the given value
-     * @param param     the parameter value to be returned as String
-     * @return the correct String-Format for this value
-     */
-    private static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
-        if (param.isVariable()) {
-            FieldVarLogger fvl = (FieldVarLogger) param.getParam();
-            if (paramType == fvl.getType()) return fvl.getName();
-            else {
-                System.err.println("Invalid parameter value for parameter type " + paramType.getName());
-                return null;
-            }
-        } else if (param.isValue()) return (String) param.getParam();
-        else {
-            System.err.println("Incorrect Parameter type: Can either be of FieldVarLogger or String");
-            return "";
+    private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
+        for (int i = 0; i < overloadedMethods.size(); i++) {
+            FieldVarType[] parameterTypes = RandomSupplier.getParameterTypes(maximumNumberOfParams);
+            List<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
+                    m -> m.getParamsTypes().length == parameterTypes.length).collect(Collectors.toList());
+            if (equalOverloadedParamTypeExists(equalNumberOfParamMethods, parameterTypes)) continue;
+            else return parameterTypes;
         }
+        return null;
     }
 
-    /**
-     * compares two arrays of parameters for equality
-     * used to ensure that methods are not duplicated, when overloading methods
-     *
-     * @param types1
-     * @param types2
-     * @return @code{true} if these FieldVarTypes are equal, otherwise @code{false}
-     */
-    private static boolean compareParametersForEquality(FieldVarType[] types1, FieldVarType[] types2) {
-        if (types1.length == types2.length) {
-            for (int i = 0; i < types1.length; i++) {
-                if (types1[i] != types2[i]) return false;
-            }
-            return true;
-        } else return false;
+    private boolean equalOverloadedParamTypeExists(List<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
+        for (MethodLogger ml : equalNumberOfParamMethods) {
+            if (this.equalParameterTypes(parameterTypes, ml.getParamsTypes())) return true;
+        }
+        return false;
     }
+
+
+//        for (int i = 0; i <= maximumNumberOfParams; i++) {
+//            int numberOfParameters = i;
+//            List<MethodLogger> iParamMethods = overloadedMethods.stream().filter(
+//                    m -> m.getParamsTypes().length == numberOfParameters).collect(Collectors.toList());
+//            if(iParamMethods.size() == 0) return RandomSupplier.getNParameterTypes(numberOfParameters);
+//            for (int j = 0; j < iParamMethods.size(); j++) {
+//                FieldVarType[] types = RandomSupplier.getNParameterTypes(numberOfParameters);
+//                if(equalOverloadedParamTypeExists(iParamMethods, types)) continue;
+//                else return types;
+//            }
+//        }
+//        return null;
 
 }

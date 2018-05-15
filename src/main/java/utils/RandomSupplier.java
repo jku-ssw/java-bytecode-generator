@@ -60,9 +60,13 @@ public class RandomSupplier {
      * @return an RANDOM array of ParameterTypes
      */
     public static FieldVarType[] getParameterTypes(int maxParameters) {
-        int number = RANDOM.nextInt(maxParameters);
-        FieldVarType[] types = new FieldVarType[number];
-        for (int i = 0; i < number; i++) {
+        int n = RANDOM.nextInt(maxParameters);
+        return getNParameterTypes(n);
+    }
+
+    public static FieldVarType[] getNParameterTypes(int n) {
+        FieldVarType[] types = new FieldVarType[n];
+        for (int i = 0; i < n; i++) {
             types[i] = getFieldVarType();
         }
         return types;
@@ -153,7 +157,7 @@ public class RandomSupplier {
     /**
      * @return random modifiers
      */
-    public int getModifiers() {
+    public static int getModifiers() {
         int numberOfModifiers = RANDOM.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
         int r = RANDOM.nextInt(5);

@@ -53,18 +53,19 @@ public class MathGenerator extends Generator {
         CtMethod ctMethod = methods[random.nextInt(methods.length)];
         String methodName = ctMethod.getName();
         String signature = ctMethod.getSignature();
-        List<FieldVarType> paramTypes = getParamTypes(signature);
+        FieldVarType[] paramTypes = getParamTypes(signature);
         FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
         List<Object> parameters = new ArrayList<>();
+        //ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
         for (FieldVarType t : paramTypes) {
             Object p;
             if (random.nextBoolean()) { //try to fetch field
-                p = getGlobalUsableVariableOfType(method, t, clazzLogger);
-                if (p == null) p = method.getVariableWithPredicate(v -> v.getType() == t);
+                p = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, t);
+                if (p == null) p = this.getClazzLogger().getInitializedLocalVarOfType(method, t);
                 if (p == null) p = RandomSupplier.getRandomValueAsString(t);
             } else { //try to fetch local variable
-                p = method.getVariableWithPredicate(v -> v.getType() == t);
-                if (p == null) p = getGlobalUsableVariableOfType(method, t, clazzLogger);
+                p = this.getClazzLogger().getInitializedLocalVarOfType(method, t);
+                if (p == null) p = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, t);
                 if (p == null) p = RandomSupplier.getRandomValueAsString(t);
             }
             parameters.add(p);
@@ -96,21 +97,13 @@ public class MathGenerator extends Generator {
         return callString.toString();
     }
 
-
-    //TODO in clazzLogger geben
-    private FieldVarLogger getGlobalUsableVariableOfType(MethodLogger method, FieldVarType type, ClazzLogger clazzLogger) {
-        FieldVarLogger l;
-        if (method.isStatic()) l = clazzLogger.getVariableWithPredicate(v -> v.isStatic() && v.getType() == type);
-        else l = clazzLogger.getVariableWithPredicate(v -> v.getType() == type);
-        return l;
-    }
-
-    private static List<FieldVarType> getParamTypes(String signature) {
+    private static FieldVarType[] getParamTypes(String signature) {
         List<FieldVarType> paramTypes = new ArrayList<>();
         for (int i = 1; i < signature.length() - 2; i++) {
             paramTypes.add(FieldVarType.getType(signature.charAt(i)));
         }
-        return paramTypes;
+        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
+        return paramTypes.toArray(paramTypesArray);
     }
 
 }

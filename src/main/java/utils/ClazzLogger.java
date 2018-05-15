@@ -40,6 +40,11 @@ public class ClazzLogger extends MyLogger {
         return method.getVariables();
     }
 
+
+    public List<MethodLogger> getOverloadedMethods(String name) {
+        return methods.stream().filter(m -> m.getName().equals(name)).collect(Collectors.toList());
+    }
+
     /**
      * @return the MethodLogger of a randomly chosen method, that is logged in the clazzLogger
      */
@@ -141,11 +146,11 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getNonFinalInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
-            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() && !v.isFinal() && v.getType() == type);
         } else {
-            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> !v.isFinal() && v.isInitialized() && v.getType() == type);
         }
     }
 
@@ -158,13 +163,13 @@ public class ClazzLogger extends MyLogger {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType returnType) {
+    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
             return this.getVariableWithPredicate(
-                    v -> v.isInitialized() && v.isStatic() && v.getType() == returnType);
+                    v -> v.isInitialized() && v.isStatic() && v.getType() == type);
         } else {
             return this.getVariableWithPredicate(
-                    v -> v.isInitialized() && v.getType() == returnType);
+                    v -> v.isInitialized() && v.getType() == type);
         }
     }
 }
