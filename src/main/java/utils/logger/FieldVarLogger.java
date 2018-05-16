@@ -1,4 +1,6 @@
-package utils;
+package utils.logger;
+
+import utils.FieldVarType;
 
 import java.lang.reflect.Modifier;
 

@@ -5,8 +5,8 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import utils.ClazzFileContainer;
-import utils.ClazzLogger;
-import utils.MethodLogger;
+import utils.logger.ClazzLogger;
+import utils.logger.MethodLogger;
 import utils.RandomSupplier;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.Random;
  * super-Class of all generators
  * capable of generating the smallest executable class-file
  */
-public abstract class Generator {
+abstract class Generator {
 
     ClazzFileContainer clazzContainer;
     Random random = new Random();
@@ -28,15 +28,6 @@ public abstract class Generator {
      */
     public Generator(ClazzFileContainer clazzContainer) {
         this.clazzContainer = clazzContainer;
-    }
-
-    /**
-     * creates a generator.Generator with a new utils.ClazzFileContainer
-     *
-     * @param filename name of the class-file to be generated
-     */
-    public Generator(String filename) {
-        this.clazzContainer = new ClazzFileContainer(filename);
     }
 
     public ClazzFileContainer getClazzContainer() {

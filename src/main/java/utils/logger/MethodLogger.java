@@ -1,6 +1,7 @@
-package utils;
+package utils.logger;
 
 import javassist.CtClass;
+import utils.FieldVarType;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;

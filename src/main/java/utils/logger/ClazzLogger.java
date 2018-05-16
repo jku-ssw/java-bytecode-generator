@@ -1,4 +1,8 @@
-package utils;
+package utils.logger;
+
+import utils.FieldVarType;
+import utils.ParamWrapper;
+import utils.RandomSupplier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,6 +150,14 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
+    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+        } else {
+            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+        }
+    }
+
     public FieldVarLogger getNonFinalInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
             return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() && !v.isFinal() && v.getType() == type);
@@ -161,6 +173,10 @@ public class ClazzLogger extends MyLogger {
 
     public FieldVarLogger getNonFinalLocalVar(MethodLogger method) {
         return method.getVariableWithPredicate(v -> !v.isFinal());
+    }
+
+    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
+        return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
     }
 
     public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {

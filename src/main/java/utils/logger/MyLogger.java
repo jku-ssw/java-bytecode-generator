@@ -1,4 +1,6 @@
-package utils;
+package utils.logger;
+
+import utils.FieldVarType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +81,7 @@ abstract class MyLogger {
 
     /**
      * @param name the name of the variable
-     * @return the FieldVarLogger of the variable with given name, that is logged in this Logger
+     * @return the FieldVarLogger of the variable with given name, that is logged in this logger
      */
     public FieldVarLogger getVariable(String name) {
         return variables.get(name);

@@ -4,20 +4,14 @@ import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
 import utils.ClazzFileContainer;
-import utils.FieldVarLogger;
+import utils.logger.FieldVarLogger;
 import utils.FieldVarType;
-import utils.MethodLogger;
+import utils.logger.MethodLogger;
 
 public class FieldVarGenerator extends Generator {
-
-    public FieldVarGenerator(String filename) {
-        super(filename);
-    }
-
     public FieldVarGenerator(ClazzFileContainer clazzContainer) {
         super(clazzContainer);
     }
-
     //===========================================field generation=======================================================
 
     /**

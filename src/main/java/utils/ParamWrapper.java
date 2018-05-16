@@ -1,5 +1,7 @@
 package utils;
 
+import utils.logger.FieldVarLogger;
+
 public class ParamWrapper<T> {
 
     //the value of the parameter, either an object of FieldVarLogger or a random value in string format

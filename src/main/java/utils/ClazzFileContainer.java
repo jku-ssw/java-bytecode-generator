@@ -1,6 +1,8 @@
 package utils;
 
 import javassist.*;
+import utils.logger.ClazzLogger;
+import utils.logger.MethodLogger;
 
 /**
  * contains a ctClass-Object, that is exportable as a new Class-file

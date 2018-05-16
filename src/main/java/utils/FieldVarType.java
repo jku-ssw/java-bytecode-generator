@@ -4,11 +4,12 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Enum-Class of all possible Variable- and FieldTypes in the ByteCodeGenerator
+ * Enum-Class of all possible Variable- and FieldTypes in the jb_generator.jb_generator
  */
 public enum FieldVarType {
     Byte("byte"),
@@ -142,5 +143,14 @@ public enum FieldVarType {
             default:
                 return null;
         }
+    }
+
+    public static FieldVarType[] getParamTypes(String methodSignature) {
+        List<FieldVarType> paramTypes = new ArrayList<>();
+        for (int i = 1; i < methodSignature.length() - 2; i++) {
+            paramTypes.add(FieldVarType.getType(methodSignature.charAt(i)));
+        }
+        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
+        return paramTypes.toArray(paramTypesArray);
     }
 }

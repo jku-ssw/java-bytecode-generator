@@ -2,19 +2,23 @@ package generator;
 
 import javassist.*;
 import utils.*;
+import utils.logger.FieldVarLogger;
+import utils.logger.MethodLogger;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 
-public class MathGenerator extends Generator {
-    private CtClass mathClazz;
+public class MathGenerator extends MethodCaller {
+    private static CtClass mathClazz;
 
     public MathGenerator(ClazzFileContainer cf) {
         super(cf);
         this.getClazzContainer().getClazzPool().importPackage("java.lang.Math");
+        includeMathPackage();
+    }
+
+    private void includeMathPackage() {
         try {
             mathClazz = this.getClazzContainer().getClazzPool().get("java.lang.Math");
         } catch (NotFoundException e) {
@@ -23,87 +27,66 @@ public class MathGenerator extends Generator {
         }
     }
 
-    public MathGenerator(String filename) {
-        super(filename);
-        this.getClazzContainer().getClazzPool().importPackage("java.lang.Math");
-        try {
-            mathClazz = this.getClazzContainer().getClazzPool().get("java.lang.Math");
-        } catch (NotFoundException e) {
-            System.err.println("Cannot fetch CtClass-Object of java.lang.Math");
-            e.printStackTrace();
-        }
+    public boolean generateRandomMathMethodCall(MethodLogger method) {
+        String callString = srcGenerateRandomMathMethodCall(method);
+        return this.insertIntoMethodBody(method, callString);
     }
 
-    public boolean callRandomJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
-        String callString = srcCallRandomJavaLangMathMethod(method, clazzLogger, assignToFieldOrVar);
-        CtMethod callerMethod = this.getCtMethod(method);
-        try {
-            callerMethod.insertAfter(callString);
-        } catch (CannotCompileException e) {
-            System.err.println("Cannot insert call: " + callString);
-            e.printStackTrace();
-        }
-        return true;
+    public String srcGenerateRandomMathMethodCall(MethodLogger method) {
+        CtMethod ctMethod = getRandomRandomMathMethod();
+        String methodName = ctMethod.getName();
+        String signature = ctMethod.getSignature();
+        FieldVarType[] paramTypes = FieldVarType.getParamTypes(signature);
+        ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
+        return "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues);
     }
 
-    public String srcCallRandomJavaLangMathMethod(MethodLogger method, ClazzLogger clazzLogger, boolean assignToFieldOrVar) {
+    public boolean setRandomFieldToMathReturnValue(MethodLogger method) {
+        String src = srcSetRandomFieldToMathReturnValue(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
+        CtMethod mathMethod = getRandomRandomMathMethod();
+        String signature = mathMethod.getSignature();
+        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
+        if (this.getClazzLogger().hasVariables()) {
+            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, returnType);
+            if (fieldVar == null) return null;
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
+        } else return null;
+    }
+
+
+    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
+        FieldVarType[] paramTypes = FieldVarType.getParamTypes(mathMethod.getSignature());
+        ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
+        return fieldVar.getName() + " = " + "Math." + this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
+    }
+
+    public boolean setRandomLocalVarToMathReturnValue(MethodLogger method) {
+        String src = srcSetRandomLocalVarToMathReturnValue(method);
+        return insertIntoMethodBody(method, src);
+    }
+
+    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
+        CtMethod mathMethod = getRandomRandomMathMethod();
+        String signature = mathMethod.getSignature();
+        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
+        if (method.hasVariables()) {
+            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalLocalVarOfType(method, returnType);
+            if (fieldVar == null) return null;
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
+        } else return null;
+    }
+
+
+    //================================================Utility===========================================================
+    private static CtMethod getRandomRandomMathMethod() {
         CtMethod[] methods = mathClazz.getDeclaredMethods();
         methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
         Random random = new Random();
-        CtMethod ctMethod = methods[random.nextInt(methods.length)];
-        String methodName = ctMethod.getName();
-        String signature = ctMethod.getSignature();
-        FieldVarType[] paramTypes = getParamTypes(signature);
-        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
-        List<Object> parameters = new ArrayList<>();
-        //ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
-        for (FieldVarType t : paramTypes) {
-            Object p;
-            if (random.nextBoolean()) { //try to fetch field
-                p = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, t);
-                if (p == null) p = this.getClazzLogger().getInitializedLocalVarOfType(method, t);
-                if (p == null) p = RandomSupplier.getRandomValueAsString(t);
-            } else { //try to fetch local variable
-                p = this.getClazzLogger().getInitializedLocalVarOfType(method, t);
-                if (p == null) p = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, t);
-                if (p == null) p = RandomSupplier.getRandomValueAsString(t);
-            }
-            parameters.add(p);
-        }
-        StringBuilder callString = null;
-        if (assignToFieldOrVar) {
-            FieldVarLogger l = null;
-            if (random.nextBoolean()) { //fetch field
-                if (method.isStatic()) {
-                    clazzLogger.getCompatibleVariableWithPredicate(v -> v.isStatic(), returnType);
-                } else {
-                    l = clazzLogger.getCompatibleVariable(returnType);
-                }
-            } else { //fetch local variable
-                l = method.getCompatibleVariable(returnType);
-            }
-            if (l != null) callString = new StringBuilder(l.getName() + " = " + "Math." + methodName + "(");
-        }
-        if (callString == null) callString = new StringBuilder("Math." + methodName + "(");
-        boolean first = true;
-        for (Object o : parameters) {
-            if (!first) callString.append(", ");
-            else first = false;
-            if (o instanceof FieldVarLogger) {
-                callString.append(((FieldVarLogger) o).getName());
-            } else callString.append(o);
-        }
-        callString.append(");");
-        return callString.toString();
-    }
-
-    private static FieldVarType[] getParamTypes(String signature) {
-        List<FieldVarType> paramTypes = new ArrayList<>();
-        for (int i = 1; i < signature.length() - 2; i++) {
-            paramTypes.add(FieldVarType.getType(signature.charAt(i)));
-        }
-        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
-        return paramTypes.toArray(paramTypesArray);
+        return methods[random.nextInt(methods.length)];
     }
 
 }

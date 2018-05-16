@@ -1,4 +1,4 @@
-package utils;
+package utils.cli;
 
 import org.apache.commons.cli.*;
 
@@ -67,7 +67,7 @@ public class ControlValueParser {
      */
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("ByteCodeGenerator", options);
+        formatter.printHelp("jb_generator", options);
         System.exit(0);
     }
 }

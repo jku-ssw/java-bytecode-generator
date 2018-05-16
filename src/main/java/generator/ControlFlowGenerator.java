@@ -3,9 +3,10 @@ package generator;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
 import utils.*;
+import utils.logger.MethodLogger;
 
 public class ControlFlowGenerator extends Generator {
-    private StringBuilder blockSrc = new StringBuilder();
+    private StringBuilder controlSrc = new StringBuilder();
 
     private int deepness = 0;
 
@@ -13,33 +14,29 @@ public class ControlFlowGenerator extends Generator {
         super(cf);
     }
 
-    public ControlFlowGenerator(String filename) {
-        super(filename);
-    }
-
-
-    public void openIfStatement(MethodLogger method, ClazzLogger logger) {
-        blockSrc.append("if(" + getRandomCondition(method, logger) + ") {");
+    public void openIfStatement(MethodLogger method) {
+        controlSrc.append("if(" + getRandomCondition(method) + ") {");
         ++deepness;
     }
 
     //TODO condition
-    private String getRandomCondition(MethodLogger method, ClazzLogger logger) {
+    private String getRandomCondition(MethodLogger method) {
+        //this.getClazzLogger();
         return "true";
     }
 
     public void closeStatement() {
-        blockSrc.append("}");
+        controlSrc.append("}");
         deepness--;
     }
 
-    public boolean insertBlockSrc(MethodLogger method) {
+    public boolean insertControlSrcIntoMethod(MethodLogger method) {
         if (deepness != 0) return false;
-        for (int i = 0; i < deepness; i++) blockSrc.append("}");
+        for (int i = 0; i < deepness; i++) controlSrc.append("}");
         CtMethod ctMethod = this.getCtMethod(method);
         try {
-            ctMethod.insertAfter(blockSrc.toString());
-            blockSrc = new StringBuilder();
+            ctMethod.insertAfter(controlSrc.toString());
+            controlSrc = new StringBuilder();
             return true;
         } catch (CannotCompileException e) {
             e.printStackTrace();
@@ -49,7 +46,7 @@ public class ControlFlowGenerator extends Generator {
 
     public void addCodeToControlSrc(String code) {
         if (deepness > 0) {
-            blockSrc.append(code);
+            controlSrc.append(code);
         } else {
             System.err.println("Cannot insert code, no open control-flow-block");
         }

@@ -1,8 +1,10 @@
-import generator.RandomCodeGenerator;
-import utils.ControlValueParser;
-import utils.GenerationController;
+package jb_generator;
 
-public class ByteCodeGenerator {
+import generator.RandomCodeGenerator;
+import utils.cli.ControlValueParser;
+import utils.cli.GenerationController;
+
+public class JBGenerator {
 
 
     public static void main(String[] args) {

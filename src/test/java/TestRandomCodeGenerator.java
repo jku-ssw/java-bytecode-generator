@@ -1,7 +1,9 @@
 import generator.RandomCodeGenerator;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import utils.*;
+
+import utils.cli.ControlValueParser;
+import utils.cli.GenerationController;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,8 +13,8 @@ import java.io.InputStreamReader;
 
 public class TestRandomCodeGenerator {
     private String[] args = new String[]{
-            "-l", "10", "-f", "100", "-lv", "100", "-ga", "0", "-la", "90", "-m", "20", "-mc", "10",
-            "-ml", "2", "-mp", "6", "-p", "10", "-mo", "100", "-cf", "10", "-cl", "2", "-cd", "4"};
+            "-l", "10", "-f", "40", "-lv", "50", "-ga", "40", "-la", "90", "-m", "20", "-mc", "40",
+            "-ml", "2", "-mp", "6", "-p", "10", "-mo", "100", "-cf", "10", "-cl", "2", "-cd", "4", "jlm", "100"};
 
     @Test
     void testMultipleCodeGeneration() throws IOException, InterruptedException {
