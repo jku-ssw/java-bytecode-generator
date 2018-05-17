@@ -1,4 +1,4 @@
-package generator;
+package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtField;
@@ -72,9 +72,10 @@ public class FieldVarGenerator extends Generator {
     public void generateRandomLocalVariable(MethodLogger method) {
         FieldVarType ft = getRandomSupplier().getFieldVarType();
         String value = null;
-        if (random.nextBoolean()) { //50% chance to be initialized
+        //TODO fix bug local return value assignment in controlflow
+        //if (random.nextBoolean()) { //50% chance to be initialized
             value = getRandomSupplier().getRandomValueAsString(ft);
-        }
+        //}
         this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
     }
 
@@ -99,17 +100,17 @@ public class FieldVarGenerator extends Generator {
 
     //=============================================print variables======================================================
 
-//    /**
-//     * generates a System.out.println-Statement in the given method for this field
-//     *
-//     * @param variable the logged Variable
-//     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-//     */
-//    private boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
-//        String src = srcGeneratePrintStatement(variable);
-//        return insertIntoMethodBody(
-//                method, src);
-//    }
+    /**
+     * generates a System.out.println-Statement in the given method for this field
+     *
+     * @param variable the logged Variable
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
+     */
+    public boolean generatePrintStatement(FieldVarLogger variable, MethodLogger method) {
+        String src = srcGeneratePrintStatement(variable);
+        return insertIntoMethodBody(
+                method, src);
+    }
 
     private String srcGeneratePrintStatement(FieldVarLogger variable) {
         return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
@@ -252,23 +253,22 @@ public class FieldVarGenerator extends Generator {
         else return null;
     }
 
-//    /**
-//     * @param var1   the field to which the value of field2 is assigned
-//     * @param var2   the field, which's value is assigned to field1
-//     * @param method the logger of the method in which the assign-statement is generated
-//     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
-//     */
-//    private boolean assignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2, MethodLogger method) {
-//        String src = srcAssignVariableToVariable(var1, var2);
-//        var1.setInitialized();
-//        return insertIntoMethodBody(method, src);
-//    }
-
     public String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
         var1.setInitialized();
         return var1.getName() + " = " + var2.getName() + ";";
     }
 
+    /**
+     * @param var1   the field to which the value of field2 is assigned
+     * @param var2   the field, which's value is assigned to field1
+     * @param method the logger of the method in which the assign-statement is generated
+     * @return {@code true} if the statement was generated successfully, otherwise {@code false}
+     */
+    private boolean assignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2, MethodLogger method) {
+        String src = srcAssignVariableToVariable(var1, var2);
+        var1.setInitialized();
+        return insertIntoMethodBody(method, src);
+    }
 }
 
 

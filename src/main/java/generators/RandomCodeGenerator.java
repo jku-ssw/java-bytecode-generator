@@ -1,4 +1,4 @@
-package generator;
+package generators;
 
 import utils.*;
 import utils.cli.GenerationController;
@@ -8,12 +8,17 @@ import utils.logger.MethodLogger;
 import java.util.Random;
 
 public class RandomCodeGenerator {
-    private enum Context {
+    enum Context {
         programContext,
         methodContext,
         controlContext;
+
         private int lengthWeighting;
         private MethodLogger contextMethod;
+
+        public void setContextMethod(MethodLogger contextMethod) {
+            this.contextMethod = contextMethod;
+        }
     }
 
     private final Random random = new Random();
@@ -29,15 +34,19 @@ public class RandomCodeGenerator {
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         ClazzFileContainer container = new ClazzFileContainer(fileName);
         this.fieldVar_generator = new FieldVarGenerator(container);
-        this.method_generator = new MethodGenerator(container);
+        this.method_generator = new MethodGenerator(this);
         this.math_generator = new MathGenerator(container);
-        this.controlFlow_generator = new ControlFlowGenerator(container);
+        this.controlFlow_generator = new ControlFlowGenerator(this);
 
         this.controller = controller;
         Context.programContext.lengthWeighting = controller.getProgramLengthWeighting();
         Context.programContext.contextMethod = getClazzLogger().getMain();
         Context.methodContext.lengthWeighting = controller.getMethodLengthWeighting();
         Context.controlContext.lengthWeighting = controller.getControlLengthWeighting();
+    }
+
+    public ClazzFileContainer getClazzFileContainer() {
+        return fieldVar_generator.getClazzContainer();
     }
 
 
@@ -49,7 +58,7 @@ public class RandomCodeGenerator {
         generate(Context.programContext);
     }
 
-    private void generate(Context context) {
+    void generate(Context context) {
         for (int i = 0; i < context.lengthWeighting; i++) {
             int r = 1 + random.nextInt(100);
 
@@ -57,8 +66,9 @@ public class RandomCodeGenerator {
                 fieldVar_generator.generateRandomField();
 
             //TODO maybe add local variable declaration in controlContext
-            if (r <= controller.getLocalVariableProbability() && context != Context.controlContext)
+            if (r <= controller.getLocalVariableProbability() && context != Context.controlContext) {
                 fieldVar_generator.generateRandomLocalVariable(context.contextMethod);
+            }
 
             if (r <= controller.getGlobalAssignProbability()) {
                 String src = null;
@@ -81,7 +91,6 @@ public class RandomCodeGenerator {
                         break;
                 }
                 if (src != null) controlFlow_generator.addCodeToControlSrc(src);
-
             }
 
             if (r <= controller.getLocalAssignProbability() && context != Context.controlContext) {
@@ -108,10 +117,10 @@ public class RandomCodeGenerator {
             }
 
             if (context == Context.programContext && r <= controller.getMethodProbability())
-                generateMethod();
+                method_generator.generateRandomMethodWithBody(controller.getMaximumMethodParameters());
 
             if (r <= controller.getMethodCallProbability()) {
-                int callKind = random.nextInt(3);
+                int callKind = 2;//random.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
@@ -134,31 +143,31 @@ public class RandomCodeGenerator {
             }
 
             //TODO check java.lang.Math - Boundries
-            if (r <= controller.getJavaLangMathProbalility()) {
-                int callKind = random.nextInt(3);
-                String src = null;
-                switch (callKind) {
-                    case 0: //call method
-                        if (context == Context.controlContext) {
-                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod);
-                        } else math_generator.generateRandomMathMethodCall(context.contextMethod);
-                        break;
-                    case 1: //assign return value of called method to field
-                        if (context == Context.controlContext)
-                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
-                        else math_generator.setRandomFieldToMathReturnValue(context.contextMethod);
-                        break;
-                    case 2: //assign return value of called method to local variable
-                        if (context == Context.controlContext) {
-                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
-                        } else math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod);
-                        break;
-                }
-                if (src != null) controlFlow_generator.addCodeToControlSrc(src);
-            }
+//            if (r <= controller.getJavaLangMathProbalility()) {
+//                int callKind = random.nextInt(3);
+//                String src = null;
+//                switch (callKind) {
+//                    case 0: //call method
+//                        if (context == Context.controlContext) {
+//                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod);
+//                        } else math_generator.generateRandomMathMethodCall(context.contextMethod);
+//                        break;
+//                    case 1: //assign return value of called method to field
+//                        if (context == Context.controlContext)
+//                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
+//                        else math_generator.setRandomFieldToMathReturnValue(context.contextMethod);
+//                        break;
+//                    case 2: //assign return value of called method to local variable
+//                        if (context == Context.controlContext) {
+//                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
+//                        } else math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod);
+//                        break;
+//                }
+//                if (src != null) controlFlow_generator.addCodeToControlSrc(src);
+//            }
 
             if (context == Context.programContext && r <= controller.getMethodOverloadProbability()) {
-                overLoadRandomMethod(context);
+                method_generator.overLoadRandomMethodWithBody(controller.getMaximumMethodParameters());
             }
             if (r <= controller.getPrintProbability()) {
                 String src = null;
@@ -168,35 +177,11 @@ public class RandomCodeGenerator {
                 if (src != null) controlFlow_generator.addCodeToControlSrc(src);
             }
 
-            if (r <= controller.getControlFlowProbability() && controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
-                generateControlFlow(context);
+            if (r <= controller.getControlFlowProbability() &&
+                    controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
+                //TODO add and select differnent kind of control flow statement
+                controlFlow_generator.generateRandomIfStatement(context.contextMethod);
             }
-        }
-    }
-
-    private void generateMethod() {
-        MethodLogger method = method_generator.generateRandomMethod(controller.getMaximumMethodParameters());
-        Context.methodContext.contextMethod = method;
-        this.generate(Context.methodContext);
-        method_generator.overrideReturnStatement(method);
-    }
-
-    public void overLoadRandomMethod(Context context) {
-        MethodLogger method = method_generator.overloadRandomMethod(controller.getMaximumMethodParameters());
-        if (method == null) return;
-        context.contextMethod = method;
-        this.generate(RandomCodeGenerator.Context.methodContext);
-        method_generator.overrideReturnStatement(method);
-    }
-
-    private void generateControlFlow(Context context) {
-        //TODO select kind of control flow statement
-        controlFlow_generator.openIfStatement(context.contextMethod);
-        Context.controlContext.contextMethod = context.contextMethod;
-        this.generate(Context.controlContext);
-        controlFlow_generator.closeStatement();
-        if (controlFlow_generator.getDeepness() == 0) {
-            controlFlow_generator.insertControlSrcIntoMethod(context.contextMethod);
         }
     }
 

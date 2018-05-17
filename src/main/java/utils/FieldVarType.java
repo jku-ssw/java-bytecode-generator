@@ -129,7 +129,7 @@ public enum FieldVarType {
     }
 
 
-    //TODO in FieldVarType geben
+    //TODO restliche types not only for Math => ev. wieder in Math Generator geben
     public static FieldVarType getType(char t) {
         switch (t) {
             case 'D':

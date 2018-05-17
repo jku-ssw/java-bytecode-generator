@@ -57,7 +57,6 @@ public class ClazzLogger extends MyLogger {
         else return null;
     }
 
-
     public MethodLogger getRandomCallableMethod(MethodLogger callerMethod) {
         List<MethodLogger> callableMethods;
         if (callerMethod.isStatic()) callableMethods = getStaticMethods();
@@ -69,9 +68,7 @@ public class ClazzLogger extends MyLogger {
     }
 
     private List<MethodLogger> getStaticMethods() {
-        if (hasMethods()) {
             return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
-        } else return null;
     }
 
     /**

@@ -1,17 +1,28 @@
-package generator;
+package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
-import utils.*;
 import utils.logger.MethodLogger;
 
 public class ControlFlowGenerator extends Generator {
     private StringBuilder controlSrc = new StringBuilder();
 
     private int deepness = 0;
+    private RandomCodeGenerator randomCodeGenerator;
 
-    public ControlFlowGenerator(ClazzFileContainer cf) {
-        super(cf);
+    public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator) {
+        super(randomCodeGenerator.getClazzFileContainer());
+        this.randomCodeGenerator = randomCodeGenerator;
+    }
+
+    public void generateRandomIfStatement(MethodLogger contextMethod) {
+        this.openIfStatement(contextMethod);
+        RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
+        this.closeStatement();
+        if (this.getDeepness() == 0) {
+            this.insertControlSrcIntoMethod(contextMethod);
+        }
     }
 
     public void openIfStatement(MethodLogger method) {
@@ -55,17 +66,6 @@ public class ControlFlowGenerator extends Generator {
     public int getDeepness() {
         return deepness;
     }
-
-
-    //TODO string represenationen der Insert-Methoden, das returnen was ins insert-After kommen würde
-    //maximum Controlflow deepness als Input parameter
-    //Verwendbare funktions:
-    //generateLocalVariable(context)
-    //global Assignments
-    //local Assignments
-    //Methodcalls
-    //print
-    //eigentlich alles vom Method-Context
 }
 
 

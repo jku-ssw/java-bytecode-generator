@@ -1,4 +1,4 @@
-package generator;
+package generators;
 
 import utils.ClazzFileContainer;
 import utils.logger.FieldVarLogger;

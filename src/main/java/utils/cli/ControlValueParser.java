@@ -23,7 +23,7 @@ public class ControlValueParser {
         this.options.addOption("mo", "method_overload", true, "The probability for overloading methods");
         this.options.addOption("p", "print_probability", true, "The probability to generate print-Statements");
         this.options.addOption("jlm", "java_lang_math_probability", true, "The probability to call methods of java.lang.Math");
-        this.options.addOption("cf", "control_flow_probability", true, "phe Probability to generate control flow statements");
+        this.options.addOption("cf", "control_flow_probability", true, "the Probability to generate control flow statements");
         this.options.addOption("cl", "control_length", true, "The maximum number of iterations for control-block generation");
         this.options.addOption("cd", "control_deepness", true, "The maximum deepness, to which control-flow-statements can be nested");
         this.parse();

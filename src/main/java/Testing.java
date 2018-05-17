@@ -1,4 +1,4 @@
-//import generator.FieldVarGenerator;
+//import generators.FieldVarGenerator;
 //import javassist.*;
 //import utils.ClazzFileContainer;
 //import utils.FieldVarType;

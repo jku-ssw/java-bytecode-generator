@@ -1,4 +1,4 @@
-package generator;
+package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
@@ -14,64 +14,16 @@ import java.util.stream.Collectors;
 
 public class MethodGenerator extends MethodCaller {
 
+    private RandomCodeGenerator randomCodeGenerator;
+
     private Random random = new Random();
 
-    public MethodGenerator(ClazzFileContainer cf) {
-        super(cf);
+    public MethodGenerator(RandomCodeGenerator randomCodeGenerator) {
+        super(randomCodeGenerator.getClazzFileContainer());
+        this.randomCodeGenerator = randomCodeGenerator;
     }
 
     //============================================Method Generation=====================================================
-
-    /**
-     * @param modifiers the Integer-Representation of the modifiers
-     * @return a String-Representation of these modifiers
-     */
-    private static String modifiersToString(int modifiers) {
-        StringBuilder b = new StringBuilder();
-        if (Modifier.isStatic(modifiers)) b.append("static ");
-        if (Modifier.isFinal(modifiers)) b.append("final ");
-        if (Modifier.isPrivate(modifiers)) b.append("private ");
-        if (Modifier.isProtected(modifiers)) b.append("protected ");
-        if (Modifier.isPublic(modifiers)) b.append("public ");
-        return b.toString();
-    }
-
-//    /**
-//     * @param paramType the FieldVarType of the given value
-//     * @param param     the parameter value to be returned as String
-//     * @return the correct String-Format for this value
-//     */
-//    private static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
-//        if (param.isVariable()) {
-//            FieldVarLogger fvl = (FieldVarLogger) param.getParam();
-//            if (paramType == fvl.getType()) return fvl.getName();
-//            else {
-//                System.err.println("Invalid parameter value for parameter type " + paramType.getName());
-//                return null;
-//            }
-//        } else if (param.isValue()) return (String) param.getParam();
-//        else {
-//            System.err.println("Incorrect Parameter type: Can either be of FieldVarLogger or String");
-//            return "";
-//        }
-//    }
-
-    /**
-     * compares two arrays of parameters for equality
-     * used to ensure that methods are not duplicated, when overloading methods
-     *
-     * @param types1
-     * @param types2
-     * @return @code{true} if these FieldVarTypes are equal, otherwise @code{false}
-     */
-    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
-        if (types1.length == types2.length) {
-            for (int i = 0; i < types1.length; i++) {
-                if (types1[i] != types2[i]) return false;
-            }
-            return true;
-        } else return false;
-    }
 
     /**
      * @param name       the name of the generated method
@@ -80,7 +32,7 @@ public class MethodGenerator extends MethodCaller {
      * @param modifiers  merged modifiers for the new field (from javassist class Modifier)
      * @return
      */
-    private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
+    public MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
@@ -113,20 +65,65 @@ public class MethodGenerator extends MethodCaller {
         }
     }
 
-//    /**
-//     * @param calledMethod the method that gets called
-//     * @param method       the method in which calledMethod is called
-//     * @param paramValues  the values used to call the method
-//     * @return @code{true} if the methodCall was generated successfully, otherwise @code{false}
-//     */
-//    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
-//        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-//        if (calledMethod.isStatic() || !method.isStatic()) {
-//            CtMethod m = this.getCtMethod(method);
-//            String callString = generateMethodCallString(calledMethod.getName(), paramTypes, paramValues);
-//            return insertIntoMethodBody(method, callString);
-//        } else return false;
-//    }
+    public void generateRandomMethodWithBody(int maximumParameters) {
+        MethodLogger method = this.generateRandomMethod(maximumParameters);
+        RandomCodeGenerator.Context.methodContext.setContextMethod(method);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.methodContext);
+        this.overrideReturnStatement(method);
+    }
+
+    public void overLoadRandomMethodWithBody(int maximumParameters) {
+        MethodLogger method = this.overloadRandomMethod(maximumParameters);
+        if (method == null) return;
+        RandomCodeGenerator.Context.methodContext.setContextMethod(method);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.methodContext);
+        this.overrideReturnStatement(method);
+    }
+
+    /**
+     * @param calledMethod the method that gets called
+     * @param method       the method in which calledMethod is called
+     * @param paramValues  the values used to call the method
+     * @return @code{true} if the methodCall was generated successfully, otherwise @code{false}
+     */
+    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
+        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+        if (calledMethod.isStatic() || !method.isStatic()) {
+            String callString = generateMethodCallString(calledMethod.getName(), paramTypes, paramValues);
+            return insertIntoMethodBody(method, callString);
+        } else return false;
+    }
+
+    /**
+     * @param modifiers the Integer-Representation of the modifiers
+     * @return a String-Representation of these modifiers
+     */
+    private static String modifiersToString(int modifiers) {
+        StringBuilder b = new StringBuilder();
+        if (Modifier.isStatic(modifiers)) b.append("static ");
+        if (Modifier.isFinal(modifiers)) b.append("final ");
+        if (Modifier.isPrivate(modifiers)) b.append("private ");
+        if (Modifier.isProtected(modifiers)) b.append("protected ");
+        if (Modifier.isPublic(modifiers)) b.append("public ");
+        return b.toString();
+    }
+
+    /**
+     * compares two arrays of parameters for equality
+     * used to ensure that methods are not duplicated, when overloading methods
+     *
+     * @param types1
+     * @param types2
+     * @return @code{true} if these FieldVarTypes are equal, otherwise @code{false}
+     */
+    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
+        if (types1.length == types2.length) {
+            for (int i = 0; i < types1.length; i++) {
+                if (types1[i] != types2[i]) return false;
+            }
+            return true;
+        } else return false;
+    }
 
     //===============================================Method Calling=====================================================
 
@@ -185,70 +182,44 @@ public class MethodGenerator extends MethodCaller {
 
     public boolean setRandomFieldToReturnValue(MethodLogger method) {
         String src = srcSetRandomFieldToReturnValue(method);
-        return insertIntoMethodBody(method, src);
+        return this.insertIntoMethodBody(method, src);
     }
 
     public String srcSetRandomFieldToReturnValue(MethodLogger method) {
-        if (this.getClazzLogger().hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
-            if (fieldVar == null) return null;
-            return srcSetVariableToReturnValue(method, fieldVar);
+        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
+        if(calledMethod == null) return null;
+        else if(this.getClazzLogger().hasVariables()) {
+            FieldVarLogger fieldVar = this.getClazzLogger().
+                    getNonFinalFieldOfTypeUsableInMethod(method, calledMethod.getReturnType());
+            if(fieldVar == null) return null;
+            else return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
         } else return null;
     }
 
     public boolean setRandomLocalVarToReturnValue(MethodLogger method) {
         String src = srcSetRandomLocalVarToReturnValue(method);
-        return insertIntoMethodBody(method, src);
+        return this.insertIntoMethodBody(method, src);
     }
 
     public String srcSetRandomLocalVarToReturnValue(MethodLogger method) {
-        if (!method.hasVariables()) return null;
-        FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalLocalVar(method);
-        if (fieldVar == null) return null;
-        return srcSetVariableToReturnValue(method, fieldVar);
+        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
+        if(calledMethod == null) return null;
+        else if(method.hasVariables()) {
+            FieldVarLogger fieldVar = this.getClazzLogger().
+                    getNonFinalLocalVarOfType(method, calledMethod.getReturnType());
+            if(fieldVar == null) return null;
+            else return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
+        } else return null;
     }
 
-//    /**
-//     * @param methodName  the method that gets called
-//     * @param paramTypes  the paramTypes of the method that is called given by FieldVarType
-//     * @param paramValues the values used to call the method
-//     * @return a String-Representation of the methodCall
-//     */
-//    private static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper... paramValues) {
-//        StringBuilder statement = new StringBuilder(methodName + "(");
-//        if (paramValues != null && paramValues.length != 0) {
-//            statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
-//        }
-//        for (int i = 1; i < paramValues.length; i++) {
-//            statement.append(", ");
-//            statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
-//        }
-//        statement.append(");");
-//        return statement.toString();
-//    }
-
-//    /**
-//     * @param field        the field that is set to the return value of the function
-//     * @param calledMethod the method that is called
-//     * @param method       the method, in which the assign-statement is generated
-//     * @param paramValues  the values used to call the method
-//     * @return @code{true} if the statement was generated successfully, otherwise @code{false}
-//     */
-//    public boolean setFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
-//        String src = srcSetFieldVarToReturnValue(field, calledMethod, paramValues);
-//        return insertIntoMethodBody(method, src);
-//    }
 
     //=================================================Utility==========================================================
 
-    private String srcSetVariableToReturnValue(MethodLogger method, FieldVarLogger fieldVar) {
-        MethodLogger calledMethod = getClazzLogger().getRandomMethodWithReturnTypeUsableInMethod(method, fieldVar.getType());
-        if (calledMethod == null) return null;
+    private String srcSetVariableToReturnValue(MethodLogger calledMethod, MethodLogger method, FieldVarLogger fieldVar) {
         FieldVarType[] paramTypes = calledMethod.getParamsTypes();
         ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
         calledMethod.addMethodToExcludedForCalling(method);
-        return this.srcSetFieldVarToReturnValue(
-                fieldVar, calledMethod, values);
+        return this.srcSetFieldVarToReturnValue(fieldVar, calledMethod, values);
     }
 
     private String srcSetFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, ParamWrapper... paramValues) {
@@ -274,19 +245,4 @@ public class MethodGenerator extends MethodCaller {
         }
         return false;
     }
-
-
-//        for (int i = 0; i <= maximumNumberOfParams; i++) {
-//            int numberOfParameters = i;
-//            List<MethodLogger> iParamMethods = overloadedMethods.stream().filter(
-//                    m -> m.getParamsTypes().length == numberOfParameters).collect(Collectors.toList());
-//            if(iParamMethods.size() == 0) return RandomSupplier.getNParameterTypes(numberOfParameters);
-//            for (int j = 0; j < iParamMethods.size(); j++) {
-//                FieldVarType[] types = RandomSupplier.getNParameterTypes(numberOfParameters);
-//                if(equalOverloadedParamTypeExists(iParamMethods, types)) continue;
-//                else return types;
-//            }
-//        }
-//        return null;
-
 }

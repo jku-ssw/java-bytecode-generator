@@ -1,4 +1,4 @@
-package generator;
+package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -35,7 +35,7 @@ abstract class Generator {
     }
 
     /**
-     * @return the class-file processed by this generator
+     * @return the class-file processed by this generators
      */
     public CtClass getClazzFile() {
         return clazzContainer.getClazzFile();
@@ -63,7 +63,7 @@ abstract class Generator {
     }
 
     /**
-     * @return the ClazzLogger of the class, processed by this generator
+     * @return the ClazzLogger of the class, processed by this generators
      */
     public ClazzLogger getClazzLogger() {
         return this.clazzContainer.getClazzLogger();

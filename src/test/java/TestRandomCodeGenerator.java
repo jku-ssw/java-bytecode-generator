@@ -1,51 +1,30 @@
-import generator.RandomCodeGenerator;
+import generators.RandomCodeGenerator;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import utils.cli.ControlValueParser;
 import utils.cli.GenerationController;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 
-public class TestRandomCodeGenerator {
+public class TestRandomCodeGenerator extends TestGenerator {
     private String[] args = new String[]{
-            "-l", "10", "-f", "40", "-lv", "50", "-ga", "40", "-la", "90", "-m", "20", "-mc", "40",
-            "-ml", "2", "-mp", "6", "-p", "10", "-mo", "100", "-cf", "10", "-cl", "2", "-cd", "4", "jlm", "100"};
+            "-l", "10", "-f", "20", "-lv", "100", "-ga", "40", "-la", "60", "-m", "50", "-mc", "100",
+            "-ml", "3", "-mp", "7", "-mo", "100", "-p", "5", "jlm", "100", "-cf", "30", "-cl", "3", "-cd", "3"};
 
     @Test
-    void testMultipleCodeGeneration() throws IOException, InterruptedException {
+    void multipleCodeGeneration() throws IOException, InterruptedException {
         //Process p;
         for (int i = 0; i < 200; i++) {
             //TODO random args
             ControlValueParser parser = new ControlValueParser(args);
             GenerationController controller = parser.parse();
-            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("Test" + i + "Clazz", controller);
+            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("TestClazz" + i, controller);
             randomCodeGenerator.generate();
-            randomCodeGenerator.writeFile("src/test/generated_files");
-
-            Process p = Runtime.getRuntime().exec("java Test" + i + "Clazz", null, new File("src/test/generated_files"));
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-            int exitCode = p.waitFor();
-            if (exitCode != 0) {
-//                throw new IOException("Execution of Test" + i + "Clazz failed " + exitCode);
-//                //print all variables
-//                for (MethodLogger m : randomCodeGenerator.getClazzLogger().methods) {
-//                    System.out.println(m.getName());
-//                    for(FieldVarType paramTypes)
-//                }
-//
-//                for (FieldVarLogger f : fieldVar_generator.getClazzContainer().getClazzLogger().getLocals(getClazzLogger().getMain())) {
-//                    fieldVar_generator.generatePrintStatement(f, getClazzLogger().getMain());
-//                }
-            } else assertEquals(true, new File("src/test/generated_files/Test" + i + "Clazz.class").delete());
+            randomCodeGenerator.writeFile("src/test/generated_test_files");
+            assertEquals(true, executeAndDeleteFile("TestClazz" + i));
         }
     }
 }
