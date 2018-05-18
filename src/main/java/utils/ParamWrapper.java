@@ -1,6 +1,6 @@
 package utils;
 
-import utils.logger.FieldVarLogger;
+import logger.FieldVarLogger;
 
 public class ParamWrapper<T> {
 
@@ -8,7 +8,7 @@ public class ParamWrapper<T> {
     private T paramValue;
     private boolean isValue = true;
 
-    public T getParam() {
+    public T getParamValue() {
         return paramValue;
     }
 

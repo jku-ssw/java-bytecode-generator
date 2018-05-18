@@ -5,8 +5,8 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import utils.ClazzFileContainer;
-import utils.logger.ClazzLogger;
-import utils.logger.MethodLogger;
+import logger.ClazzLogger;
+import logger.MethodLogger;
 import utils.RandomSupplier;
 
 import java.io.IOException;

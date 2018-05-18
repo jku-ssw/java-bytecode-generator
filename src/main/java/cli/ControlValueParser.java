@@ -1,4 +1,4 @@
-package utils.cli;
+package cli;
 
 import org.apache.commons.cli.*;
 

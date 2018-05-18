@@ -1,9 +1,9 @@
 package generators;
 
 import utils.*;
-import utils.cli.GenerationController;
-import utils.logger.ClazzLogger;
-import utils.logger.MethodLogger;
+import cli.GenerationController;
+import logger.ClazzLogger;
+import logger.MethodLogger;
 
 import java.util.Random;
 
@@ -143,28 +143,28 @@ public class RandomCodeGenerator {
             }
 
             //TODO check java.lang.Math - Boundries
-//            if (r <= controller.getJavaLangMathProbalility()) {
-//                int callKind = random.nextInt(3);
-//                String src = null;
-//                switch (callKind) {
-//                    case 0: //call method
-//                        if (context == Context.controlContext) {
-//                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod);
-//                        } else math_generator.generateRandomMathMethodCall(context.contextMethod);
-//                        break;
-//                    case 1: //assign return value of called method to field
-//                        if (context == Context.controlContext)
-//                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
-//                        else math_generator.setRandomFieldToMathReturnValue(context.contextMethod);
-//                        break;
-//                    case 2: //assign return value of called method to local variable
-//                        if (context == Context.controlContext) {
-//                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
-//                        } else math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod);
-//                        break;
-//                }
-//                if (src != null) controlFlow_generator.addCodeToControlSrc(src);
-//            }
+            if (r <= controller.getJavaLangMathProbalility()) {
+                int callKind = random.nextInt(3);
+                String src = null;
+                switch (callKind) {
+                    case 0: //call method
+                        if (context == Context.controlContext) {
+                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod);
+                        } else math_generator.generateRandomMathMethodCall(context.contextMethod);
+                        break;
+                    case 1: //assign return value of called method to field
+                        if (context == Context.controlContext)
+                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
+                        else math_generator.setRandomFieldToMathReturnValue(context.contextMethod);
+                        break;
+                    case 2: //assign return value of called method to local variable
+                        if (context == Context.controlContext) {
+                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
+                        } else math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod);
+                        break;
+                }
+                if (src != null) controlFlow_generator.addCodeToControlSrc(src);
+            }
 
             if (context == Context.programContext && r <= controller.getMethodOverloadProbability()) {
                 method_generator.overLoadRandomMethodWithBody(controller.getMaximumMethodParameters());

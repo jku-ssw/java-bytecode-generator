@@ -3,8 +3,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import utils.cli.ControlValueParser;
-import utils.cli.GenerationController;
+import cli.ControlValueParser;
+import cli.GenerationController;
 
 import java.io.IOException;
 

@@ -1,7 +1,7 @@
 package generators;
 
 import utils.ClazzFileContainer;
-import utils.logger.FieldVarLogger;
+import logger.FieldVarLogger;
 import utils.FieldVarType;
 import utils.ParamWrapper;
 
@@ -16,7 +16,7 @@ abstract class MethodCaller extends Generator {
      * @param paramValues the values used to call the method
      * @return a String-Representation of the methodCall
      */
-    static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper... paramValues) {
+    static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper[] paramValues) {
         StringBuilder statement = new StringBuilder(methodName + "(");
         if (paramValues != null && paramValues.length != 0) {
             statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
@@ -34,15 +34,15 @@ abstract class MethodCaller extends Generator {
      * @param param     the parameter value to be returned as String
      * @return the correct String-Format for this value
      */
-    private static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
+     static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
         if (param.isVariable()) {
-            FieldVarLogger fvl = (FieldVarLogger) param.getParam();
+            FieldVarLogger fvl = (FieldVarLogger) param.getParamValue();
             if (paramType == fvl.getType()) return fvl.getName();
             else {
                 System.err.println("Invalid parameter value for parameter type " + paramType.getName());
                 return null;
             }
-        } else if (param.isValue()) return (String) param.getParam();
+        } else if (param.isValue()) return (String) param.getParamValue();
         else {
             System.err.println("Incorrect Parameter type: Can either be of FieldVarLogger or String");
             return "";

@@ -1,4 +1,4 @@
-package utils.logger;
+package logger;
 
 import javassist.CtClass;
 import utils.FieldVarType;

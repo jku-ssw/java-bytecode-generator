@@ -5,18 +5,14 @@ import generators.RandomCodeGenerator;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import javassist.bytecode.analysis.ControlFlow;
 import org.junit.jupiter.api.Test;
 import utils.ClazzFileContainer;
 import utils.FieldVarType;
-import utils.RandomSupplier;
-import utils.cli.ControlValueParser;
-import utils.cli.GenerationController;
-import utils.logger.MethodLogger;
+import cli.ControlValueParser;
+import cli.GenerationController;
+import logger.MethodLogger;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

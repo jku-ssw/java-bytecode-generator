@@ -5,8 +5,8 @@ import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
 import utils.*;
-import utils.logger.FieldVarLogger;
-import utils.logger.MethodLogger;
+import logger.FieldVarLogger;
+import logger.MethodLogger;
 
 import java.util.List;
 import java.util.Random;
@@ -86,7 +86,7 @@ public class MethodGenerator extends MethodCaller {
      * @param paramValues  the values used to call the method
      * @return @code{true} if the methodCall was generated successfully, otherwise @code{false}
      */
-    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper... paramValues) {
+    public boolean generateMethodCall(MethodLogger calledMethod, MethodLogger method, ParamWrapper[] paramValues) {
         FieldVarType[] paramTypes = calledMethod.getParamsTypes();
         if (calledMethod.isStatic() || !method.isStatic()) {
             String callString = generateMethodCallString(calledMethod.getName(), paramTypes, paramValues);
@@ -222,7 +222,7 @@ public class MethodGenerator extends MethodCaller {
         return this.srcSetFieldVarToReturnValue(fieldVar, calledMethod, values);
     }
 
-    private String srcSetFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, ParamWrapper... paramValues) {
+    private String srcSetFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, ParamWrapper[] paramValues) {
         field.setInitialized();
         return field.getName() + " = "
                 + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), paramValues);

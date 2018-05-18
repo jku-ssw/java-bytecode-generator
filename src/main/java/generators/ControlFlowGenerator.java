@@ -2,7 +2,7 @@ package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
-import utils.logger.MethodLogger;
+import logger.MethodLogger;
 
 public class ControlFlowGenerator extends Generator {
     private StringBuilder controlSrc = new StringBuilder();
