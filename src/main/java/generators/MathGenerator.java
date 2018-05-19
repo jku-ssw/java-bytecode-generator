@@ -9,31 +9,30 @@ import java.util.*;
 
 
 public class MathGenerator extends MethodCaller {
-    private static List<String> OVERFLOW_METHODS = initBorders();
+    private static List<String> OVERFLOW_METHODS;
 
-    private static List<String> initBorders() {
-        List<String> borders = new ArrayList<>();
-        borders.add("java.lang.Math.addExact(int,int)");
-        borders.add("java.lang.Math.addExact(long,long)");
-        borders.add("java.lang.Math.decrementExact(int)");
-        borders.add("java.lang.Math.decrementExact(long)");
-        borders.add("java.lang.Math.incrementExact(int)");
-        borders.add("java.lang.Math.incrementExact(long)");
-        borders.add("java.lang.Math.negateExact(int)");
-        borders.add("java.lang.Math.negateExact(long)");
-        borders.add("java.lang.Math.subtractExact(int,int)");
-        borders.add("java.lang.Math.subtractExact(long,long)");
-        borders.add("java.lang.Math.toIntExact(long)");
-        borders.add("java.lang.Math.multiplyExact(int,int)");
-        borders.add("java.lang.Math.multiplyExact(long,int)");
-        borders.add("java.lang.Math.multiplyExact(long,long)");
-        borders.add("java.lang.Math.floorDiv(int,int)");
-        borders.add("java.lang.Math.floorDiv(long,int)");
-        borders.add("java.lang.Math.floorDiv(long,long)");
-        borders.add("java.lang.Math.floorMod(int,int)");
-        borders.add("java.lang.Math.floorMod(long,int)");
-        borders.add("java.lang.Math.floorMod(long,long)");
-        return borders;
+    private static void initOverflowMethods() {
+        OVERFLOW_METHODS = new ArrayList<>();
+        OVERFLOW_METHODS.add("java.lang.Math.addExact(int,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.addExact(long,long)");
+        OVERFLOW_METHODS.add("java.lang.Math.decrementExact(int)");
+        OVERFLOW_METHODS.add("java.lang.Math.decrementExact(long)");
+        OVERFLOW_METHODS.add("java.lang.Math.incrementExact(int)");
+        OVERFLOW_METHODS.add("java.lang.Math.incrementExact(long)");
+        OVERFLOW_METHODS.add("java.lang.Math.negateExact(int)");
+        OVERFLOW_METHODS.add("java.lang.Math.negateExact(long)");
+        OVERFLOW_METHODS.add("java.lang.Math.subtractExact(int,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.subtractExact(long,long)");
+        OVERFLOW_METHODS.add("java.lang.Math.toIntExact(long)");
+        OVERFLOW_METHODS.add("java.lang.Math.multiplyExact(int,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.multiplyExact(long,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.multiplyExact(long,long)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorDiv(int,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorDiv(long,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorDiv(long,long)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorMod(int,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorMod(long,int)");
+        OVERFLOW_METHODS.add("java.lang.Math.floorMod(long,long)");
     }
 
 
@@ -43,6 +42,7 @@ public class MathGenerator extends MethodCaller {
         super(cf);
         this.getClazzContainer().getClazzPool().importPackage("java.lang.Math");
         includeMathPackage();
+        initOverflowMethods();
     }
 
     private void includeMathPackage() {
@@ -66,58 +66,11 @@ public class MathGenerator extends MethodCaller {
         FieldVarType[] paramTypes = FieldVarType.getParamTypes(signature);
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
-            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues);
+            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
             String src = noOverFlowIf + "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues) + "}";
-            System.out.println(src);
             return src;
         } else return "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues);
-    }
-
-    private static String getNoOverFlowIf(String longName, ParamWrapper[] paramValues) {
-        switch (longName) {
-//            case "java.lang.Math.addExact(int,int)":
-//                //case "java.lang.Math.subtractExact(int,int)":
-//                return "if((" + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) +
-//                        " < 0 && " + paramToCorrectStringFormat(FieldVarType.Int, paramValues[1]) +
-//                        " > 0) || (" + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) +
-//                        " > 0 && " + paramToCorrectStringFormat(FieldVarType.Int, paramValues[1]) +
-//                        " < 0) || (" + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " > 0 && (((" +
-//                        paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " & 1 << 30) == 0) || ((" +
-//                        paramToCorrectStringFormat(FieldVarType.Int, paramValues[1]) + " & 1 << 30) == 0))) || (" +
-//                        paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " < 0 && (((" +
-//                        paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " & 1 << 30) != 0) || ((" +
-//                        paramToCorrectStringFormat(FieldVarType.Int, paramValues[1]) + " & 1 << 30) != 0)))) {";
-//            case "java.lang.Math.addExact(long,long)":
-//                //case "java.lang.Math.subtractExact(long,long)":
-//                return "if((" + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " < 0L && " +
-//                        paramToCorrectStringFormat(FieldVarType.Long, paramValues[1]) + " > 0L) " +
-//                        "|| (" + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " > 0L && " +
-//                        paramToCorrectStringFormat(FieldVarType.Long, paramValues[1]) + " < 0L) " +
-//                        "|| ((" + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " > 0L) && ((("
-//                        + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " & 1L << 62) == 0L) " +
-//                        "|| ((" + paramToCorrectStringFormat(FieldVarType.Long, paramValues[1]) + " & 1L << 62) == 0L)))) {";
-            case "java.lang.Math.decrementExact(int)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " > Integer.MIN_VALUE) {";
-            case "java.lang.Math.decrementExact(long)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " > Long.MIN_VALUE) {";
-            case "java.lang.Math.incrementExact(int)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " < Integer.MAX_VALUE) {";
-            case "java.lang.Math.incrementExact(long)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " < Long.MAX_VALUE) {";
-            case "java.lang.Math.negateExact(int)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Int, paramValues[0]) + " > Integer.MIN_VALUE) {";
-            case "java.lang.Math.negateExact(long)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " > Long.MIN_VALUE) {";
-            case "java.lang.Math.toIntExact(long)":
-                return "if( " + paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " <= Integer.MAX_VALUE && " +
-                         paramToCorrectStringFormat(FieldVarType.Long, paramValues[0]) + " >= Integer.MIN_VALUE) {";
-//            case "java.lang.Math.multiplyExact(int,int)":
-//            case "java.lang.Math.multiplyExact(long,long)":
-            default:
-                return null;
-
-        }
     }
 
     public boolean setRandomFieldToMathReturnValue(MethodLogger method) {
@@ -141,11 +94,10 @@ public class MathGenerator extends MethodCaller {
         FieldVarType[] paramTypes = FieldVarType.getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
-            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues);
+            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
             String src = noOverFlowIf + fieldVar.getName() + " = " + "Math." +
                     this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
-            System.out.println(src);
             return src;
         } else return fieldVar.getName() + " = " + "Math." +
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
@@ -174,6 +126,58 @@ public class MathGenerator extends MethodCaller {
         methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
         Random random = new Random();
         return methods[random.nextInt(methods.length)];
+    }
+
+    private static String getNoOverFlowIf(String longName, ParamWrapper[] paramValues, FieldVarType[] paramTypes) {
+        String[] params = new String[2];
+        params[0] = paramToCorrectStringFormat(paramTypes[0], paramValues[0]);
+        if (paramTypes.length == 2) {
+            params[1] = paramToCorrectStringFormat(paramTypes[1], paramValues[1]);
+        }
+        switch (longName) {
+            case "java.lang.Math.addExact(int,int)":
+                return "if(" + params[1] + " > 0 ? Integer.MAX_VALUE - " + params[1] + " > " + params[0] +
+                        " : Integer.MIN_VALUE - " + params[1] + " < " + params[0] + ") {";
+            case "java.lang.Math.addExact(long,long)":
+                return "if(" + params[1] + " > 0 ? Long.MAX_VALUE - " + params[1] + " > " + params[0] +
+                        " : Long.MIN_VALUE - " + params[1] + " < " + params[0] + ") {";
+            case "java.lang.Math.subtractExact(int,int)":
+                return "if(" + params[1] + " > 0 ? Integer.MAX_VALUE - " + params[1] + " < " + params[0] +
+                        " : Integer.MIN_VALUE - " + params[1] + " > " + params[0] + ") {";
+            case "java.lang.Math.subtractExact(long,long)":
+                return "if(" + params[1] + " > 0 ? Long.MAX_VALUE - " + params[1] + " < " + params[0] +
+                        " : Long.MIN_VALUE - " + params[1] + " > " + params[0] + ") {";
+            case "java.lang.Math.decrementExact(int)":
+                return "if( " + params[0] + " > Integer.MIN_VALUE) {";
+            case "java.lang.Math.decrementExact(long)":
+                return "if( " + params[0] + " > Long.MIN_VALUE) {";
+            case "java.lang.Math.incrementExact(int)":
+                return "if( " + params[0] + " < Integer.MAX_VALUE) {";
+            case "java.lang.Math.incrementExact(long)":
+                return "if( " + params[0] + " < Long.MAX_VALUE) {";
+            case "java.lang.Math.negateExact(int)":
+                return "if( " + params[0] + " > Integer.MIN_VALUE) {";
+            case "java.lang.Math.negateExact(long)":
+                return "if( " + params[0] + " > Long.MIN_VALUE) {";
+            case "java.lang.Math.toIntExact(long)":
+                return "if( " + params[0] + " <= Integer.MAX_VALUE && " +
+                        params[0] + " >= Integer.MIN_VALUE) {";
+            case "java.lang.Math.multiplyExact(int,int)":
+                return "if(" + params[0] + " == 0 || Math.abs(Integer.MIN_VALUE/" + params[0] + ") > Math.abs(" + params[1] + ")) {";
+            case "java.lang.Math.multiplyExact(long,long)":
+                return "if(" + params[0] + " == 0 || Math.abs(Long.MIN_VALUE/" + params[0] + ") > Math.abs(" + params[1] + ")) {";
+            case "java.lang.Math.floorDiv(int,int)":
+            case "java.lang.Math.floorDiv(long,int)":
+            case "java.lang.Math.floorMod(int,int)":
+            case "java.lang.Math.floorMod(long,int)":
+                return "if(" + params[1] + " != 0) {";
+            case "java.lang.Math.floorDiv(long,long)":
+            case "java.lang.Math.floorMod(long,long)":
+                return "if(" + params[1] + " != 0) {";
+            default:
+                return null;
+
+        }
     }
 
 }

@@ -24,17 +24,17 @@ public class FieldVarGenerator extends Generator {
      * @return {@code true} if the field was generated successfully, otherwise {@code false}
      */
     public boolean generateField(String name, FieldVarType type, int modifiers, String value) {
-        boolean initialized = false;
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
                 this.getClazzFile().addField(f);
             } else {
                 this.getClazzFile().addField(f, value);
-                initialized = true;
             }
             f.setModifiers(modifiers);
-            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, initialized);
+
+            //fields are initialized by default values
+            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, true);
             return true;
         } catch (CannotCompileException e) {
             System.err.println("Generation of static field " + name + " failed");
