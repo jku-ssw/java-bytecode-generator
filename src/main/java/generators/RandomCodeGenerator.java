@@ -11,7 +11,7 @@ public class RandomCodeGenerator {
     enum Context {
         programContext,
         methodContext,
-        controlContext;
+        controlContext; //if while etc context;
 
         private int lengthWeighting;
         private MethodLogger contextMethod;
@@ -179,8 +179,20 @@ public class RandomCodeGenerator {
 
             if (r <= controller.getControlFlowProbability() &&
                     controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
-                //TODO add and select differnent kind of control flow statement
-                controlFlow_generator.generateRandomIfStatement(context.contextMethod);
+                //TODO add and select differnent kind of control flow statement, ev. probability für jedes dieser Statements
+                int controlKind = random.nextInt(3);
+                switch (controlKind) {
+                    case 0:
+                        controlFlow_generator.generateRandomIfElseStatement(context.contextMethod);
+                        break;
+                    case 1:
+                        controlFlow_generator.generateRandomWhileStatement(context.contextMethod);
+                        break;
+                    case 2:
+                        controlFlow_generator.generateRandomDoWhileStatement(context.contextMethod);
+                        break;
+                }
+
             }
         }
     }
@@ -197,18 +209,9 @@ public class RandomCodeGenerator {
 }
 
 
-//TODO only use initialized Local Vars if in controlContext
-//TODO use Sets to generate parameters for Overloading
-
-//TODO Fix Bad Local Variable Bug
-//TODO Fix String top exception
-//TODO prevent Stack Overflow in generation
-
-//TODO test genration in methodContext
-
-//TODO check for correct Method paramater variable names
+//TODO only use initialized Local Vars if in controlContext????(Bad Local Variable Bug)
 
 
-//TODO add main to functions again?
+//TODO test generation in methodContext
+
 //TODO generation-conditions in RandomCodeGenerator?
-//TODO fetch more precisely?

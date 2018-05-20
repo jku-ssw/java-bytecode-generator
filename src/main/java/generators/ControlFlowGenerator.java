@@ -4,9 +4,30 @@ import javassist.CannotCompileException;
 import javassist.CtMethod;
 import logger.MethodLogger;
 
-public class ControlFlowGenerator extends Generator {
-    private StringBuilder controlSrc = new StringBuilder();
+import java.util.LinkedList;
 
+public class ControlFlowGenerator extends Generator {
+    private class IfContext {
+        int numberOfElseIf;
+        boolean hasElse;
+        int deepness;
+
+        public IfContext(int deepness) {
+            this.deepness = deepness;
+            hasElse = false;
+            numberOfElseIf = 0;
+        }
+    }
+
+    private enum ControlType {
+        ifType,
+        elseType,
+        whileType,
+        doWhileType
+    }
+
+    LinkedList<IfContext> openIfContexts = new LinkedList<>();
+    private StringBuilder controlSrc = new StringBuilder();
     private int deepness = 0;
     private RandomCodeGenerator randomCodeGenerator;
 
@@ -15,37 +36,92 @@ public class ControlFlowGenerator extends Generator {
         this.randomCodeGenerator = randomCodeGenerator;
     }
 
-    public void generateRandomIfStatement(MethodLogger contextMethod) {
-        this.openIfStatement(contextMethod);
-        RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
-        this.closeStatement();
-        if (this.getDeepness() == 0) {
-            this.insertControlSrcIntoMethod(contextMethod);
+    public void generateRandomIfElseStatement(MethodLogger contextMethod) {
+        if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
+            switch (random.nextInt(3)) {
+                case 0:
+                    //TODO userdefined numberOfElseIf
+                    if (openIfContexts.getLast().hasElse == false && openIfContexts.getLast().numberOfElseIf < 3) {
+                        openElseIfStatement(contextMethod);
+                        this.generateBody(contextMethod, ControlType.elseType);
+                    }
+                    break;
+                case 1:
+                    if (openIfContexts.getLast().hasElse == false) {
+                        openElseStatement();
+                        this.generateBody(contextMethod, ControlType.elseType);
+                    }
+                    break;
+                case 2:
+                    openIfStatement(contextMethod);
+                    this.generateBody(contextMethod, ControlType.ifType);
+            }
+        } else {
+            this.openIfStatement(contextMethod);
+            this.generateBody(contextMethod, ControlType.ifType);
         }
     }
 
-    public void openIfStatement(MethodLogger method) {
-        controlSrc.append("if(" + getRandomCondition(method) + ") {");
-        ++deepness;
+    private void openElseStatement() {
+        controlSrc.append("} else {");
+        openIfContexts.getLast().hasElse = true;
+    }
+
+    private void openElseIfStatement(MethodLogger contextMethod) {
+        openIfContexts.getLast().numberOfElseIf++;
+        controlSrc.append("} else if(" + getRandomCondition(contextMethod) + ") {");
     }
 
     //TODO condition
+    private void openIfStatement(MethodLogger contextMethod) {
+        controlSrc.append("if(" + getRandomCondition(contextMethod) + ") {");
+        deepness++;
+        IfContext c = new IfContext(deepness);
+        openIfContexts.add(c);
+    }
+
+
+    private void closeIStatement() {
+        controlSrc.append("}");
+        openIfContexts.removeLast();
+        deepness--;
+    }
+
+    private void generateBody(MethodLogger contextMethod, ControlType controlType) {
+        RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
+        if (controlType == ControlType.ifType) {
+            this.closeIStatement();
+        } else if (controlType == ControlType.whileType) {
+            this.closeWhileStatement();
+        } else if (controlType == ControlType.doWhileType) {
+            this.closeDoWhileStatement(contextMethod);
+        }
+        System.out.println(deepness);
+        if (this.getDeepness() == 0) this.insertControlSrcIntoMethod(contextMethod);
+    }
+
+//    private void generateDoWhileBody(MethodLogger contextMethod) {
+//        RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
+//        randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
+//        this.closeDoWhileStatement(contextMethod);
+//        if (this.getDeepness() == 0) {
+//            this.insertControlSrcIntoMethod(contextMethod);
+//        }
+//    }
+
+    //TODO conditions
     private String getRandomCondition(MethodLogger method) {
         //this.getClazzLogger();
         return "true";
     }
 
-    public void closeStatement() {
-        controlSrc.append("}");
-        deepness--;
-    }
 
-    public boolean insertControlSrcIntoMethod(MethodLogger method) {
-        if (deepness != 0) return false;
-        for (int i = 0; i < deepness; i++) controlSrc.append("}");
+    private boolean insertControlSrcIntoMethod(MethodLogger method) {
+        //for (int i = 0; i < deepness; i++) controlSrc.append("}");
         CtMethod ctMethod = this.getCtMethod(method);
         try {
+            System.out.println(controlSrc);
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc = new StringBuilder();
             return true;
@@ -66,6 +142,47 @@ public class ControlFlowGenerator extends Generator {
     public int getDeepness() {
         return deepness;
     }
+
+    public void generateRandomDoWhileStatement(MethodLogger contextMethod) {
+        this.openDoWhileStatement(contextMethod);
+        this.generateBody(contextMethod, ControlType.doWhileType);
+    }
+
+    private void openDoWhileStatement(MethodLogger method) {
+        controlSrc.append("do {");
+        deepness++;
+    }
+
+    //TODO condition
+    private void closeDoWhileStatement(MethodLogger method) {
+        controlSrc.append("} while(false);");
+        deepness--;
+    }
+
+    public void generateRandomWhileStatement(MethodLogger contextMethod) {
+        this.openWhileStatement(contextMethod);
+        this.generateBody(contextMethod, ControlType.whileType);
+    }
+
+    //TODO condition
+    private void openWhileStatement(MethodLogger method) {
+        controlSrc.append("while(false) {");
+        ++deepness;
+    }
+
+    private void closeWhileStatement() {
+        controlSrc.append("}");
+        deepness--;
+    }
+
+    //TODO random conditions
+    //TODO
+    //TODO for-loop
+    //TODO swtich
+    //TODO else, elseif
+    //TODO use break, continue statements
 }
+
+
 
 
