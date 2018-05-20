@@ -22,7 +22,7 @@ public class RandomCodeGenerator {
     }
 
     private final Random random = new Random();
-    private final GenerationController controller;
+    final GenerationController controller;
 
     //Generators
     private final FieldVarGenerator fieldVar_generator;
@@ -32,13 +32,12 @@ public class RandomCodeGenerator {
 
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
+        this.controller = controller;
         ClazzFileContainer container = new ClazzFileContainer(fileName);
         this.fieldVar_generator = new FieldVarGenerator(container);
         this.method_generator = new MethodGenerator(this);
         this.math_generator = new MathGenerator(container);
         this.controlFlow_generator = new ControlFlowGenerator(this);
-
-        this.controller = controller;
         Context.programContext.lengthWeighting = controller.getProgramLengthWeighting();
         Context.programContext.contextMethod = getClazzLogger().getMain();
         Context.methodContext.lengthWeighting = controller.getMethodLengthWeighting();
@@ -180,7 +179,7 @@ public class RandomCodeGenerator {
             if (r <= controller.getControlFlowProbability() &&
                     controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
                 //TODO add and select differnent kind of control flow statement, ev. probability für jedes dieser Statements
-                int controlKind = random.nextInt(3);
+                int controlKind = random.nextInt(4);
                 switch (controlKind) {
                     case 0:
                         controlFlow_generator.generateRandomIfElseStatement(context.contextMethod);
@@ -191,6 +190,8 @@ public class RandomCodeGenerator {
                     case 2:
                         controlFlow_generator.generateRandomDoWhileStatement(context.contextMethod);
                         break;
+                    case 3:
+                        controlFlow_generator.generateRandomForStatement(context.contextMethod);
                 }
 
             }

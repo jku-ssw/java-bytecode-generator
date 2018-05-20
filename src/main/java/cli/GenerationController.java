@@ -87,4 +87,8 @@ public class GenerationController {
     public int getControlFlowDeepness() {
         return controlValues.get("cd");
     }
+
+    public int getIfBranchingFactor() {
+        return controlValues.get("ibf");
+    }
 }

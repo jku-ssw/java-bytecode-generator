@@ -187,11 +187,7 @@
 //    }
 //
 //
-//    //TODO random conditions
-//    //TODO for-loop
-//    //TODO swtich
-//    //TODO else, elseif
-//    //TODO use break, continue statements
+
 //}
 //
 //
