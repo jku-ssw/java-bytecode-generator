@@ -72,13 +72,9 @@ public class GenerationController {
         return controlValues.get("mo");
     }
 
-    public int getJavaLangMathProbalility() {
-        return controlValues.get("jlm");
-    }
+    public int getJavaLangMathProbability() { return controlValues.get("jlm"); }
 
-    public int getControlFlowProbability() {
-        return controlValues.get("cf");
-    }
+    public int getControlFlowProbability() { return controlValues.get("cf"); }
 
     public int getControlLengthWeighting() {
         return controlValues.get("cl");

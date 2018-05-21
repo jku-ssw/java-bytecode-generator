@@ -142,7 +142,7 @@ public class RandomCodeGenerator {
             }
 
             //TODO check java.lang.Math - Boundries
-            if (r <= controller.getJavaLangMathProbalility()) {
+            if (r <= controller.getJavaLangMathProbability()) {
                 int callKind = random.nextInt(3);
                 String src = null;
                 switch (callKind) {
@@ -211,8 +211,10 @@ public class RandomCodeGenerator {
 
 
 //TODO only use initialized Local Vars if in controlContext????(Bad Local Variable Bug)
-
-
 //TODO test generation in methodContext
 
-//TODO generation-conditions in RandomCodeGenerator?
+//TODO userinput probabilities for different controlFlow statements
+//TODO userinput maximum loop iterations
+//TODO compute and print Hashvalue of all global variables
+//TODO logical operators
+
