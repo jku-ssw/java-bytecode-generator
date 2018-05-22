@@ -31,12 +31,14 @@ public class ControlFlowGenerator extends Generator {
     private StringBuilder controlSrc = new StringBuilder();
     private int deepness = 0;
     int ifBranchingFactor;
+    int maxLoopIterations;
     private RandomCodeGenerator randomCodeGenerator;
 
     public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator) {
         super(randomCodeGenerator.getClazzFileContainer());
         this.randomCodeGenerator = randomCodeGenerator;
-        ifBranchingFactor = randomCodeGenerator.controller.getIfBranchingFactor();
+        this.ifBranchingFactor = randomCodeGenerator.controller.getIfBranchingFactor();
+        this.maxLoopIterations = randomCodeGenerator.controller.getMaxLoopIterations();
     }
 
     //==========================================IF ELSEIF ELSE==========================================================
@@ -191,10 +193,7 @@ public class ControlFlowGenerator extends Generator {
     }
 
     //TODO random conditions
-    //TODO swtich
-    //TODO add break, continue statements
 }
-
 
 
 

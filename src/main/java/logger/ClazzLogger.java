@@ -106,7 +106,7 @@ public class ClazzLogger extends MyLogger {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
                         //add random value if no variables available
-                        values.add(new ParamWrapper(RandomSupplier.getRandomValueAsString(t)));
+                        values.add(new ParamWrapper(RandomSupplier.getRandomValue(t)));
                     }
                 }
             } else { //add local variable
@@ -114,7 +114,7 @@ public class ClazzLogger extends MyLogger {
                     //add global variable if no local variable available
                     if (!addFieldToParamValues(values, method, t)) {
                         //add random value if no variables available
-                        values.add(new ParamWrapper(RandomSupplier.getRandomValueAsString(t)));
+                        values.add(new ParamWrapper(RandomSupplier.getRandomValue(t)));
                     }
                 }
             }

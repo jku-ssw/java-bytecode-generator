@@ -47,7 +47,7 @@ public class FieldVarGenerator extends Generator {
         FieldVarType ft = this.getRandomSupplier().getFieldVarType();
         String value = null;
         if (this.random.nextBoolean()) { //50% chance to be initialized
-            value = this.getRandomSupplier().getRandomValueAsString(ft);
+            value = this.getRandomSupplier().getRandomValue(ft);
         }
         this.generateField(
                 getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
@@ -74,7 +74,7 @@ public class FieldVarGenerator extends Generator {
         String value = null;
         //TODO fix bug local return value assignment in controlflow
         //if (random.nextBoolean()) { //50% chance to be initialized
-            value = getRandomSupplier().getRandomValueAsString(ft);
+            value = getRandomSupplier().getRandomValue(ft);
         //}
         this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
     }
@@ -163,28 +163,28 @@ public class FieldVarGenerator extends Generator {
         if (!getClazzLogger().hasVariables()) return false;
         FieldVarLogger f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
         if (f == null) return false;
-        else return setVarValue(f, method, getRandomSupplier().getRandomValueAsString(f.getType()));
+        else return setVarValue(f, method, getRandomSupplier().getRandomValue(f.getType()));
     }
 
     public String srcSetRandomFieldValue(MethodLogger method) {
         if (!getClazzLogger().hasVariables()) return null;
         FieldVarLogger f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
         if (f == null) return null;
-        return this.srcSetVarValue(f, getRandomSupplier().getRandomValueAsString(f.getType()));
+        return this.srcSetVarValue(f, getRandomSupplier().getRandomValue(f.getType()));
     }
 
     public boolean setRandomLocalVariableValue(MethodLogger method) {
         if (!method.hasVariables()) return false;
         FieldVarLogger f = this.getClazzLogger().getNonFinalLocalVar(method);
         if (f == null) return false;
-        return setVarValue(f, method, getRandomSupplier().getRandomValueAsString(f.getType()));
+        return setVarValue(f, method, getRandomSupplier().getRandomValue(f.getType()));
     }
 
     public String srcSetRandomLocalVariableValue(MethodLogger method) {
         if (!method.hasVariables()) return null;
         FieldVarLogger f = this.getClazzLogger().getNonFinalLocalVar(method);
         if (f == null) return null;
-        return srcSetVarValue(f, getRandomSupplier().getRandomValueAsString(f.getType()));
+        return srcSetVarValue(f, getRandomSupplier().getRandomValue(f.getType()));
     }
 
 

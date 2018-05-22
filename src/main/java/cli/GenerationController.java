@@ -87,4 +87,6 @@ public class GenerationController {
     public int getIfBranchingFactor() {
         return controlValues.get("ibf");
     }
+
+    public int getMaxLoopIterations() { return controlValues.get("mli");}
 }

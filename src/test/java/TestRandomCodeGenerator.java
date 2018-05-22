@@ -16,8 +16,7 @@ public class TestRandomCodeGenerator extends TestGenerator {
 
     @Test
     void multipleCodeGeneration() throws IOException, InterruptedException {
-        //Process p;
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 50; i++) {
             //TODO random args
             ControlValueParser parser = new ControlValueParser(args);
             GenerationController controller = parser.parse();

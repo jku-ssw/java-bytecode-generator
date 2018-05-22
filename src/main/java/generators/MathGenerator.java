@@ -63,7 +63,7 @@ public class MathGenerator extends MethodCaller {
         CtMethod mathMethod = getRandomMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
-        FieldVarType[] paramTypes = FieldVarType.getParamTypes(signature);
+        FieldVarType[] paramTypes = getParamTypes(signature);
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
             String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
@@ -81,7 +81,7 @@ public class MathGenerator extends MethodCaller {
     public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
+        FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, returnType);
             if (fieldVar == null) return null;
@@ -91,7 +91,7 @@ public class MathGenerator extends MethodCaller {
 
 
     private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
-        FieldVarType[] paramTypes = FieldVarType.getParamTypes(mathMethod.getSignature());
+        FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
             String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
@@ -111,7 +111,7 @@ public class MathGenerator extends MethodCaller {
     public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType returnType = FieldVarType.getType(signature.charAt(signature.length() - 1));
+        FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalLocalVarOfType(method, returnType);
             if (fieldVar == null) return null;
@@ -176,8 +176,31 @@ public class MathGenerator extends MethodCaller {
                 return "if(" + params[1] + " != 0) {";
             default:
                 return null;
-
         }
+    }
+
+    private static FieldVarType getType(char t) {
+        switch (t) {
+            case 'D':
+                return FieldVarType.Double;
+            case 'I':
+                return FieldVarType.Int;
+            case 'F':
+                return FieldVarType.Float;
+            case 'J':
+                return FieldVarType.Long;
+            default:
+                return null;
+        }
+    }
+
+    private static FieldVarType[] getParamTypes(String methodSignature) {
+        List<FieldVarType> paramTypes = new ArrayList<>();
+        for (int i = 1; i < methodSignature.length() - 2; i++) {
+            paramTypes.add(getType(methodSignature.charAt(i)));
+        }
+        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
+        return paramTypes.toArray(paramTypesArray);
     }
 
 }

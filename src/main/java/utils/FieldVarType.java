@@ -128,29 +128,4 @@ public enum FieldVarType {
         return getName();
     }
 
-
-    //TODO restliche types not only for Math => ev. wieder in Math Generator geben
-    public static FieldVarType getType(char t) {
-        switch (t) {
-            case 'D':
-                return FieldVarType.Double;
-            case 'I':
-                return FieldVarType.Int;
-            case 'F':
-                return FieldVarType.Float;
-            case 'J':
-                return FieldVarType.Long;
-            default:
-                return null;
-        }
-    }
-
-    public static FieldVarType[] getParamTypes(String methodSignature) {
-        List<FieldVarType> paramTypes = new ArrayList<>();
-        for (int i = 1; i < methodSignature.length() - 2; i++) {
-            paramTypes.add(FieldVarType.getType(methodSignature.charAt(i)));
-        }
-        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
-        return paramTypes.toArray(paramTypesArray);
-    }
 }

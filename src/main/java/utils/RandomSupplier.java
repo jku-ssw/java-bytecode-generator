@@ -56,6 +56,13 @@ public class RandomSupplier {
         return FieldVarType.values()[r];
     }
 
+    public static FieldVarType getSwitchAbleFielVarType() {
+        FieldVarType[] switchableTypes =
+                {FieldVarType.Byte, FieldVarType.Short, FieldVarType.Int, FieldVarType.Char};
+        return FieldVarType.Int;
+        //return switchableTypes[RANDOM.nextInt(switchableTypes.length)];
+    }
+
     /**
      * @return an RANDOM array of ParameterTypes
      */
@@ -80,45 +87,12 @@ public class RandomSupplier {
         return FieldVarType.values()[r];
     }
 
-//    /**
-//     * @param fieldVarType the fieldVarType of the value
-//     * @return a RANDOM value of given FieldVarType
-//     */
-//    public static Object getRANDOMValue(FieldVarType fieldVarType) {
-//        if (fieldVarType.getClazzType().getName().startsWith("java.lang")) {
-//            //for Objects 25% chance to be initialized with null
-//            if (RANDOM.nextInt(4) == 0) return null;
-//        }
-//        switch (fieldVarType) {
-//            case Byte:
-//                return (byte) RANDOM.nextInt();
-//            case Short:
-//                return (short) RANDOM.nextInt();
-//            case Int:
-//                return RANDOM.nextInt();
-//            case Long:
-//                return RANDOM.nextLong();
-//            case Float:
-//                return RANDOM.nextFloat();
-//            case Double:
-//                return RANDOM.nextDouble();
-//            case Boolean:
-//                return RANDOM.nextBoolean();
-//            case Char:
-//                return stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length()));
-//            case String:
-//                return getString();
-//            default:
-//                return null;
-//        }
-//    }
-
-    public static String getRandomValueAsString(FieldVarType fieldVarType) {
-        if (fieldVarType.getClazzType().getName().startsWith("java.lang")) {
+    public static String getRandomValue(FieldVarType type) {
+        if (type.getClazzType().getName().startsWith("java.lang")) {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) return "null";
         }
-        switch (fieldVarType) {
+        switch (type) {
             case Byte:
                 return "(byte)" + (byte) RANDOM.nextInt(Byte.MAX_VALUE + 1);
             case Short:
@@ -135,8 +109,30 @@ public class RandomSupplier {
                 return "" + RANDOM.nextBoolean();
             case Char:
                 return "\'" + stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length())) + "\'";
+            //return "\'" + (char) RANDOM.nextInt() + "\'";
             case String:
                 return "\"" + getString() + "\"";
+            default:
+                return null;
+        }
+    }
+
+    public static String getSwitchValueWithLimit(FieldVarType type, int limit) {
+        switch (type) {
+            case Byte:
+                return "(byte)" + (byte) RANDOM.nextInt(limit);
+            case Short:
+                return "(short)" + (short) RANDOM.nextInt(limit);
+            case Int:
+                return "" + RANDOM.nextInt(limit);
+            case Boolean:
+                return "" + RANDOM.nextBoolean();
+            case Char:
+                if (limit < stringCandidates.length()) {
+                    return "\'" + stringCandidates.charAt(RANDOM.nextInt(limit)) + "\'";
+                } else {
+                    return "\'" + stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length())) + "\'";
+                }
             default:
                 return null;
         }
@@ -147,6 +143,10 @@ public class RandomSupplier {
      */
     public static String getString() {
         int length = RANDOM.nextInt(MAX_STRING_LENGTH + 1);
+        return getStringOfLength(length);
+    }
+
+    public static String getStringOfLength(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append(stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length())));

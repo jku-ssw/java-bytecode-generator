@@ -11,7 +11,7 @@ public class RandomCodeGenerator {
     enum Context {
         programContext,
         methodContext,
-        controlContext; //if while etc context;
+        controlContext;
 
         private int lengthWeighting;
         private MethodLogger contextMethod;
@@ -192,6 +192,7 @@ public class RandomCodeGenerator {
                         break;
                     case 3:
                         controlFlow_generator.generateRandomForStatement(context.contextMethod);
+                        break;
                 }
 
             }
@@ -205,8 +206,6 @@ public class RandomCodeGenerator {
     public void writeFile(String directoryName) {
         fieldVar_generator.writeFile(directoryName);
     }
-
-
 }
 
 
@@ -215,6 +214,12 @@ public class RandomCodeGenerator {
 
 //TODO userinput probabilities for different controlFlow statements
 //TODO userinput maximum loop iterations
+
 //TODO compute and print Hashvalue of all global variables
 //TODO logical operators
+//TODO enable arrays
+//TODO check clazz-file size borders
+
+//TODO tests
+//TODO documentation
 

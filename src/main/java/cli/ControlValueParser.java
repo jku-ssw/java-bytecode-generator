@@ -27,6 +27,7 @@ public class ControlValueParser {
         this.options.addOption("cl", "control_length", true, "The maximum number of iterations for control-block generation");
         this.options.addOption("cd", "control_deepness", true, "The maximum deepness, to which control-flow-statements can be nested");
         this.options.addOption("ibf", "if_branching_factor", true, "The maximum branching_factor for if-statements");
+        this.options.addOption("mli", "maximum_loop_iterations", true, "The maximum number of iterations for while-, do-while- or for-loops");
         this.parse();
     }
 

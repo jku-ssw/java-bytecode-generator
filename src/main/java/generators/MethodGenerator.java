@@ -50,7 +50,7 @@ public class MethodGenerator extends MethodCaller {
         String returnStatement;
         if (returnType == FieldVarType.Void) {
             returnStatement = "";
-        } else returnStatement = "return " + RandomSupplier.getRandomValueAsString(returnType) + ";";
+        } else returnStatement = "return " + RandomSupplier.getRandomValue(returnType) + ";";
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
         try {
