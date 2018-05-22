@@ -68,7 +68,7 @@ public class ClazzLogger extends MyLogger {
     }
 
     private List<MethodLogger> getStaticMethods() {
-            return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
+        return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
     }
 
     /**
@@ -78,25 +78,25 @@ public class ClazzLogger extends MyLogger {
         return !methods.isEmpty();
     }
 
-    /**
-     * @param type the return-type of the randomly choosen method
-     * @return the MethodLogger of a randomly chosen method with given return-type
-     */
-    public MethodLogger getRandomMethodWithReturnTypeUsableInMethod(MethodLogger callerMethod, FieldVarType type) {
-        if (hasMethods()) {
-            List<MethodLogger> retTypeMethods;
-            if (callerMethod.isStatic()) {
-                retTypeMethods = methods.stream().filter(
-                        m -> m.getReturnType() == type && m.isStatic()).collect(Collectors.toList());
-            } else {
-                retTypeMethods = methods.stream().filter(
-                        m -> m.getReturnType() == type).collect(Collectors.toList());
-            }
-            retTypeMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
-            retTypeMethods.remove(callerMethod);
-            return retTypeMethods.isEmpty() ? null : retTypeMethods.get(random.nextInt(retTypeMethods.size()));
-        } else return null;
-    }
+//    /**
+//     * @param type the return-type of the randomly choosen method
+//     * @return the MethodLogger of a randomly chosen method with given return-type
+//     */
+//    public MethodLogger getRandomMethodWithReturnTypeUsableInMethod(MethodLogger callerMethod, FieldVarType type) {
+//        if (hasMethods()) {
+//            List<MethodLogger> retTypeMethods;
+//            if (callerMethod.isStatic()) {
+//                retTypeMethods = methods.stream().filter(
+//                        m -> m.getReturnType() == type && m.isStatic()).collect(Collectors.toList());
+//            } else {
+//                retTypeMethods = methods.stream().filter(
+//                        m -> m.getReturnType() == type).collect(Collectors.toList());
+//            }
+//            retTypeMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
+//            retTypeMethods.remove(callerMethod);
+//            return retTypeMethods.isEmpty() ? null : retTypeMethods.get(random.nextInt(retTypeMethods.size()));
+//        } else return null;
+//    }
 
     public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
         List<ParamWrapper> values = new ArrayList<>();
@@ -174,6 +174,19 @@ public class ClazzLogger extends MyLogger {
 
     public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
         return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+    }
+
+    public FieldVarLogger getGlobalOrLocalVarOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+        FieldVarLogger l;
+        if (random.nextBoolean()) {
+            l = getInitializedLocalVarOfType(method, type);
+            if (l == null) l = getInitializedFieldOfTypeUsableInMethod(method, type);
+
+        } else {
+            l = getInitializedFieldOfTypeUsableInMethod(method, type);
+            if (l == null) l = getInitializedLocalVarOfType(method, type);
+        }
+        return l;
     }
 
     public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {

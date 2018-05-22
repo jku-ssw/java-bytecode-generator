@@ -180,21 +180,35 @@ public class RandomCodeGenerator {
                     controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
                 //TODO add and select differnent kind of control flow statement, ev. probability für jedes dieser Statements
                 int controlKind = random.nextInt(4);
-                switch (controlKind) {
-                    case 0:
-                        controlFlow_generator.generateRandomIfElseStatement(context.contextMethod);
-                        break;
-                    case 1:
-                        controlFlow_generator.generateRandomWhileStatement(context.contextMethod);
-                        break;
-                    case 2:
-                        controlFlow_generator.generateRandomDoWhileStatement(context.contextMethod);
-                        break;
-                    case 3:
-                        controlFlow_generator.generateRandomForStatement(context.contextMethod);
-                        break;
+                boolean noStatementGenerated = true;
+                for (int j = 0; j < 4 && noStatementGenerated; j++) {
+                    switch (controlKind) {
+                        case 0:
+                            if (r <= controller.getIfProbability()) {
+                                controlFlow_generator.generateRandomIfElseStatement(context.contextMethod);
+                                noStatementGenerated = false;
+                            } else controlKind = 1;
+                            break;
+                        case 1:
+                            if (r < controller.getWhileProbability()) {
+                                controlFlow_generator.generateRandomWhileStatement(context.contextMethod);
+                                noStatementGenerated = false;
+                            } else controlKind = 2;
+                            break;
+                        case 2:
+                            if (r < controller.getWhileProbability()) {
+                                controlFlow_generator.generateRandomDoWhileStatement(context.contextMethod);
+                                noStatementGenerated = false;
+                            } else controlKind = 3;
+                            break;
+                        case 3:
+                            if (r < controller.getFieldProbability()) {
+                                controlFlow_generator.generateRandomForStatement(context.contextMethod);
+                                noStatementGenerated = false;
+                            } else controlKind = 0;
+                            break;
+                    }
                 }
-
             }
         }
     }

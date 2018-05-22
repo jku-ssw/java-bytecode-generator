@@ -89,4 +89,12 @@ public class GenerationController {
     }
 
     public int getMaxLoopIterations() { return controlValues.get("mli");}
+
+    public int getWhileProbability() { return controlValues.get("while");}
+
+    public int getForProbability() { return controlValues.get("for");}
+
+    public int getDoWhileProbability() { return controlValues.get("doWhile");}
+
+    public int getIfProbability() {return controlValues.get("if");}
 }

@@ -92,6 +92,10 @@ public class RandomSupplier {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) return "null";
         }
+        return getRandomValueNotNull(type);
+    }
+
+    public static String getRandomValueNotNull(FieldVarType type) {
         switch (type) {
             case Byte:
                 return "(byte)" + (byte) RANDOM.nextInt(Byte.MAX_VALUE + 1);

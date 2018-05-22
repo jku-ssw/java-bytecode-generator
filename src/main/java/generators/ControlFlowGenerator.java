@@ -2,7 +2,9 @@ package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
+import logger.FieldVarLogger;
 import logger.MethodLogger;
+import utils.FieldVarType;
 import utils.RandomSupplier;
 
 import java.util.LinkedList;
@@ -47,7 +49,6 @@ public class ControlFlowGenerator extends Generator {
         if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
             switch (random.nextInt(3)) {
                 case 0:
-                    //TODO userdefined numberOfElseIf
                     if (openIfContexts.getLast().hasElse == false &&
                             openIfContexts.getLast().numberOfElseIf < ifBranchingFactor) {
                         openElseIfStatement(contextMethod);
@@ -86,7 +87,7 @@ public class ControlFlowGenerator extends Generator {
     //TODO condition
     private void openElseIfStatement(MethodLogger contextMethod) {
         openIfContexts.getLast().numberOfElseIf++;
-        controlSrc.append("} else if(" + getIfCondition(contextMethod) + ") {");
+        controlSrc.append("} else if(" + getIfCondition(contextMethod) + " ) {");
     }
 
     private void closeIStatement() {
@@ -97,8 +98,33 @@ public class ControlFlowGenerator extends Generator {
 
     //TODO condition
     private String getIfCondition(MethodLogger method) {
-        //this.getClazzLogger();
-        return "true";
+        StringBuilder condition = new StringBuilder();
+        FieldVarType type = RandomSupplier.getFieldVarType();
+        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
+        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
+        if (type != FieldVarType.String) {
+            addOperandToCondition(op1, type, condition);
+            String eqRelOp = getRandomEqRelOperator();
+            condition.append(eqRelOp);
+            addOperandToCondition(op2, type, condition);
+        } else {
+            if (op1 != null) {
+                condition.append(op1.getName() + " != null && ");
+            }
+            addOperandToCondition(op1, type, condition);
+            condition.append(".equals(");
+            addOperandToCondition(op1, type, condition);
+            condition.append(")");
+        }
+        return condition.toString();
+    }
+
+    private static void addOperandToCondition(FieldVarLogger operand, FieldVarType type, StringBuilder condition) {
+        if (operand == null) {
+            condition.append(RandomSupplier.getRandomValueNotNull(type));
+        } else {
+            condition.append(operand.getName());
+        }
     }
 
     //=================================================DO WHILE=========================================================
@@ -119,7 +145,7 @@ public class ControlFlowGenerator extends Generator {
         deepness--;
     }
 
-    //================================================FOR / WHILE=====================================================
+    //================================================FOR/WHILE=====================================================
 
     public void generateRandomWhileStatement(MethodLogger contextMethod) {
         this.openWhileStatement(contextMethod);
@@ -145,8 +171,9 @@ public class ControlFlowGenerator extends Generator {
     //TODO randomize iterations, userinput maximum iterations
     private void openForStatement() {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
-        String varname = supplier.getVarName();
-        controlSrc.append("for(int " + varname + " = 0; " + varname + " < 10; " + varname + "++) {");
+        String varName = supplier.getVarName();
+        int it = random.nextInt(this.maxLoopIterations + 1);
+        controlSrc.append("for(int " + varName + " = 0; " + varName + " < " + it + "; " + varName + "++) {");
         deepness++;
     }
 
@@ -190,7 +217,26 @@ public class ControlFlowGenerator extends Generator {
         return deepness;
     }
 
-    //TODO random conditions
+    private String getRandomEqRelOperator() {
+        switch (random.nextInt(6)) {
+            case 0:
+                return " == ";
+            case 1:
+                return " != ";
+            case 2:
+                return " > ";
+            case 3:
+                return " >= ";
+            case 4:
+                return " < ";
+            case 5:
+                return " <= ";
+            default:
+                return null;
+        }
+    }
+
+    //TODO random conditions (ev. Condition concatination with Conditional Operators) => max number of conditions => user!!
 }
 
 

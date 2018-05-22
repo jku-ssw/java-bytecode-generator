@@ -26,8 +26,12 @@ public class ControlValueParser {
         this.options.addOption("cf", "control_flow_probability", true, "the Probability to generate control flow statements");
         this.options.addOption("cl", "control_length", true, "The maximum number of iterations for control-block generation");
         this.options.addOption("cd", "control_deepness", true, "The maximum deepness, to which control-flow-statements can be nested");
+        this.options.addOption("mli", "maximum_loop_iterations", true, "The maximum number of iterations for while-, doWhile- or for-loops");
+        this.options.addOption("while", "while_probability", true, "The probability to generate a while-loop");
+        this.options.addOption("for", "for_probability", true, "The probability to generate a for-loop");
+        this.options.addOption("doWhile", "doWhile_probability", true, "The probability to generate a doWhile-loop");
+        this.options.addOption("if", "if_probability", true, "The probability to generate an if-statement");
         this.options.addOption("ibf", "if_branching_factor", true, "The maximum branching_factor for if-statements");
-        this.options.addOption("mli", "maximum_loop_iterations", true, "The maximum number of iterations for while-, do-while- or for-loops");
         this.parse();
     }
 
