@@ -163,14 +163,12 @@ public class ControlFlowGenerator extends Generator {
         } else if (controlType == ControlType.doWhileType) {
             this.closeDoWhileStatement(contextMethod);
         }
-        System.out.println(deepness);
         if (this.getDeepness() == 0) this.insertControlSrcIntoMethod(contextMethod);
     }
 
     private boolean insertControlSrcIntoMethod(MethodLogger method) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
-            System.out.println(controlSrc);
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc = new StringBuilder();
             return true;
