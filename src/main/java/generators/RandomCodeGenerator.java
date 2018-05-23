@@ -226,9 +226,6 @@ public class RandomCodeGenerator {
 //TODO only use initialized Local Vars if in controlContext????(Bad Local Variable Bug)
 //TODO test generation in methodContext
 
-//TODO userinput probabilities for different controlFlow statements
-//TODO userinput maximum loop iterations
-
 //TODO compute and print Hashvalue of all global variables
 //TODO logical operators
 //TODO enable arrays

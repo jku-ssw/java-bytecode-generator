@@ -71,7 +71,6 @@ public class ControlFlowGenerator extends Generator {
         }
     }
 
-    //TODO condition
     private void openIfStatement(MethodLogger contextMethod) {
         controlSrc.append("if(" + getIfCondition(contextMethod) + ") {");
         deepness++;
@@ -96,7 +95,6 @@ public class ControlFlowGenerator extends Generator {
         deepness--;
     }
 
-    //TODO condition
     private String getIfCondition(MethodLogger method) {
         StringBuilder condition = new StringBuilder();
         FieldVarType type = RandomSupplier.getFieldVarType();
@@ -111,6 +109,7 @@ public class ControlFlowGenerator extends Generator {
             if (op1 != null) {
                 condition.append(op1.getName() + " != null && ");
             }
+            if (random.nextBoolean()) condition.append("!");
             addOperandToCondition(op1, type, condition);
             condition.append(".equals(");
             addOperandToCondition(op1, type, condition);
@@ -130,31 +129,45 @@ public class ControlFlowGenerator extends Generator {
     //=================================================DO WHILE=========================================================
 
     public void generateRandomDoWhileStatement(MethodLogger contextMethod) {
-        this.openDoWhileStatement();
-        this.generateBody(contextMethod, ControlType.doWhileType);
+        String condition = this.openDoWhileStatement();
+        this.generateBody(contextMethod, ControlType.doWhileType, condition);
     }
 
-    private void openDoWhileStatement() {
-        controlSrc.append("do {");
+    private String openDoWhileStatement() {
+        String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         deepness++;
+        if (random.nextBoolean()) {
+            controlSrc.append("int " + varName + " = 0; do { " + varName + "++;");
+            return varName + " < " + random.nextInt(maxLoopIterations);
+        } else {
+            controlSrc.append("int " + varName + " = " + random.nextInt(maxLoopIterations) + "; do { " + varName + "--;");
+            return varName + " != 0";
+        }
     }
 
     //TODO condition
-    private void closeDoWhileStatement(MethodLogger method) {
-        controlSrc.append("} while(false);");
+    private void closeDoWhileStatement(String condition) {
+        controlSrc.append("} while(" + condition + ");");
         deepness--;
     }
 
     //================================================FOR/WHILE=====================================================
 
     public void generateRandomWhileStatement(MethodLogger contextMethod) {
-        this.openWhileStatement(contextMethod);
+        this.openWhileStatement();
         this.generateBody(contextMethod, ControlType.forWhileType);
     }
 
     //TODO condition
-    private void openWhileStatement(MethodLogger method) {
-        controlSrc.append("while(false) {");
+    private void openWhileStatement() {
+        String varName = this.getClazzContainer().getRandomSupplier().getVarName();
+        if (random.nextBoolean()) {
+            controlSrc.append("int " + varName + " = 0; while(" +
+                    varName + "++ < " + random.nextInt(maxLoopIterations) + ") {");
+        } else {
+            controlSrc.append("int " + varName + " = 0; while(" +
+                    varName + "-- != 0) {");
+        }
         ++deepness;
     }
 
@@ -180,7 +193,7 @@ public class ControlFlowGenerator extends Generator {
     //==================================================COMMON==========================================================
 
 
-    private void generateBody(MethodLogger contextMethod, ControlType controlType) {
+    private void generateBody(MethodLogger contextMethod, ControlType controlType, String... condition) {
         RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
         if (controlType == ControlType.ifType) {
@@ -188,7 +201,7 @@ public class ControlFlowGenerator extends Generator {
         } else if (controlType == ControlType.forWhileType) {
             this.closeForWhileStatement();
         } else if (controlType == ControlType.doWhileType) {
-            this.closeDoWhileStatement(contextMethod);
+            this.closeDoWhileStatement(condition[0]);
         }
         if (this.getDeepness() == 0) this.insertControlSrcIntoMethod(contextMethod);
     }
@@ -236,7 +249,7 @@ public class ControlFlowGenerator extends Generator {
         }
     }
 
-    //TODO random conditions (ev. Condition concatination with Conditional Operators) => max number of conditions => user!!
+    //TODO ev. Condition-concatination with conditional Operators) => max number of conditions => user!!
 }
 
 
