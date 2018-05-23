@@ -1,5 +1,9 @@
 package generators;
 
+import javassist.CannotCompileException;
+import javassist.CtMethod;
+import javassist.Modifier;
+import logger.FieldVarLogger;
 import utils.*;
 import cli.GenerationController;
 import logger.ClazzLogger;
@@ -55,6 +59,8 @@ public class RandomCodeGenerator {
 
     public void generate() {
         generate(Context.programContext);
+        //compute HashValue of all locals
+        //computeHash();
     }
 
     void generate(Context context) {
@@ -220,6 +226,32 @@ public class RandomCodeGenerator {
     public void writeFile(String directoryName) {
         fieldVar_generator.writeFile(directoryName);
     }
+
+
+    //TODO generate Object and make run method instead of calling main only
+//    private void computeHash() {
+//        MethodLogger computeHash = method_generator.generateMethod("computeHash", FieldVarType.Int, new FieldVarType[0], Modifier.PRIVATE);
+//        CtMethod ctComputeHash = fieldVar_generator.getCtMethod(computeHash);
+//        StringBuilder src = new StringBuilder("int hashValue = 0; ");
+//        if (this.getClazzLogger().hasVariables()) {
+//            for (FieldVarLogger field : this.getClazzLogger().getVariables()) {
+//                if (field.getType() != FieldVarType.String) {
+//                    src.append("hashValue += " + field.getName() + "; ");
+//                } else {
+//                    src.append("hashValue += " + field.getName() + ".hashCode(); ");
+//                }
+//            }
+//            //src.replace(src.length() - 3, src.length(), ";");
+//        }
+//        try {
+//            System.out.println(src.toString());
+//            ctComputeHash.insertAfter(src.toString());
+//            CtMethod main = fieldVar_generator.getCtMethod(this.getClazzLogger().getMain());
+//           // main.insertAfter("computeHash();");
+//        } catch (CannotCompileException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
 
 
@@ -234,3 +266,4 @@ public class RandomCodeGenerator {
 //TODO tests
 //TODO documentation
 
+//-l 3 -f 40 -lv 60 -ga 10 -la 30 -m 50 -mc 100 -ml 3 -mp 5 -mo 100 -p 10 jlm 100 -cf 100 -cl 1 -cd 3 -ibf 7 -mli 10
