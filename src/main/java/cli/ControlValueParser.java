@@ -12,10 +12,10 @@ public class ControlValueParser {
 
     private static Options initOptions() {
         Options options = new Options();
-        options.addOption("l", "program_length_weighting", true, "The maximum number of iterations for program-Generation");
+        options.addOption("l", "program_length_weighting", true, "The maximum number of iterations for program-generation");
         options.addOption("h", "help", false, "Lists all options and how to use them");
         options.addOption("f", "field_probability", true, "The probability to generate fields");
-        options.addOption("lv", "variable_probability", true, "The probability to generate variables");
+        options.addOption("lv", "variable_probability", true, "The probability to generate local variables");
         options.addOption("ga", "global_assign_probability", true, "The probability for assigning values to fields");
         options.addOption("la", "local_assign_probability", true, "The probability for assigning values to variables");
         options.addOption("m", "method_probability", true, "The probability to generate methods");
@@ -23,17 +23,17 @@ public class ControlValueParser {
         options.addOption("ml", "method_length_weighting", true, "The maximum number of iterations for method-generation");
         options.addOption("mp", "maximum_parameters", true, "The maximum number of parameters a method can have");
         options.addOption("mo", "method_overload", true, "The probability for overloading methods");
-        options.addOption("p", "print_probability", true, "The probability to generate print-Statements");
+        options.addOption("p", "print_probability", true, "The probability to generate print-statements");
         options.addOption("jlm", "java_lang_math_probability", true, "The probability to call methods of java.lang.Math");
         options.addOption("cf", "control_flow_probability", true, "the Probability to generate control flow statements");
         options.addOption("cl", "control_length", true, "The maximum number of iterations for control-block generation");
         options.addOption("cd", "control_deepness", true, "The maximum deepness, to which control-flow-statements can be nested");
         options.addOption("mli", "maximum_loop_iterations", true, "The maximum number of iterations for while-, doWhile- or for-loops");
-        options.addOption("while", "while_probability", true, "The probability to generate a while-loop");
-        options.addOption("for", "for_probability", true, "The probability to generate a for-loop");
-        options.addOption("doWhile", "doWhile_probability", true, "The probability to generate a doWhile-loop");
+        options.addOption("while", "while_probability", true, "The probability to generate while-loops");
+        options.addOption("for", "for_probability", true, "The probability to generate for-loops");
+        options.addOption("doWhile", "doWhile_probability", true, "The probability to generate doWhile-loops");
         options.addOption("if", "if_probability", true, "The probability to generate an if-statement");
-        options.addOption("ibf", "if_branching_factor", true, "The maximum branching_factor for if-statements");
+        options.addOption("ibf", "if_branching_factor", true, "The maximum branching-factor for if-statements");
         return options;
     }
 
