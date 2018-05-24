@@ -1,11 +1,19 @@
 package generators;
 
-import javassist.*;
-import utils.*;
+import javassist.CtClass;
+import javassist.CtMethod;
+import javassist.Modifier;
+import javassist.NotFoundException;
 import logger.FieldVarLogger;
 import logger.MethodLogger;
+import utils.ClazzFileContainer;
+import utils.FieldVarType;
+import utils.ParamWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 
 public class MathGenerator extends MethodCaller {

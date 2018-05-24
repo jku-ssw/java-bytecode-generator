@@ -1,17 +1,15 @@
 package generators;
 
+import cli.GenerationController;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
-import javassist.Modifier;
-import logger.FieldVarLogger;
-import utils.*;
-import cli.GenerationController;
 import logger.ClazzLogger;
+import logger.FieldVarLogger;
 import logger.MethodLogger;
+import utils.ClazzFileContainer;
+import utils.FieldVarType;
 
-import java.lang.reflect.Method;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class RandomCodeGenerator {
     enum Context {
@@ -248,7 +246,7 @@ public class RandomCodeGenerator {
         }
         try {
             CtMethod run = fieldVar_generator.getCtMethod(this.getClazzLogger().getRun());
-            run.insertAfter(src.toString() + " System.out.println(\"#############GLOBAL HASH:\" + hashValue + \"  #############\");");
+            run.insertAfter(src.toString() + " System.out.println(\"#############GLOBAL HASH: \" + hashValue + \"  #############\");");
         } catch (CannotCompileException e) {
             e.printStackTrace();
         }
@@ -259,7 +257,6 @@ public class RandomCodeGenerator {
 //TODO only use initialized Local Vars if in controlContext????(Bad Local Variable Bug)
 //TODO test generation in methodContext
 
-//TODO compute and print Hashvalue of all global variables
 //TODO logical operators
 //TODO enable arrays
 //TODO check clazz-file size borders

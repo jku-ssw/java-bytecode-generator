@@ -1,7 +1,7 @@
 package generators;
 
-import utils.ClazzFileContainer;
 import logger.FieldVarLogger;
+import utils.ClazzFileContainer;
 import utils.FieldVarType;
 import utils.ParamWrapper;
 

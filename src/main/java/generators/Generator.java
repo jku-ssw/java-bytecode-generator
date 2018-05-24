@@ -4,9 +4,9 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import utils.ClazzFileContainer;
 import logger.ClazzLogger;
 import logger.MethodLogger;
+import utils.ClazzFileContainer;
 import utils.RandomSupplier;
 
 import java.io.IOException;

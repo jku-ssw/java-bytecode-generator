@@ -3,10 +3,10 @@ package generators;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
-import utils.ClazzFileContainer;
 import logger.FieldVarLogger;
-import utils.FieldVarType;
 import logger.MethodLogger;
+import utils.ClazzFileContainer;
+import utils.FieldVarType;
 
 public class FieldVarGenerator extends Generator {
     public FieldVarGenerator(ClazzFileContainer clazzContainer) {

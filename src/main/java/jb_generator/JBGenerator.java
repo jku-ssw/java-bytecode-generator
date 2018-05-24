@@ -1,8 +1,8 @@
 package jb_generator;
 
-import generators.RandomCodeGenerator;
 import cli.ControlValueParser;
 import cli.GenerationController;
+import generators.RandomCodeGenerator;
 
 public class JBGenerator {
 

@@ -1,9 +1,11 @@
 package generators;
 
 import javassist.*;
-import utils.*;
 import logger.FieldVarLogger;
 import logger.MethodLogger;
+import utils.FieldVarType;
+import utils.ParamWrapper;
+import utils.RandomSupplier;
 
 import java.util.List;
 import java.util.Random;
