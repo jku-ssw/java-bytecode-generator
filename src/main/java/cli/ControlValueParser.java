@@ -88,12 +88,14 @@ public class ControlValueParser {
                 String signature = option.getOpt();
                 if (signature.equals("h")) continue;
                 if (cmd.hasOption(signature)) {
-                    System.out.println("Using argument " + options.getOption(signature).getLongOpt() + " = " + cmd.getOptionValue(signature));
+                    System.out.println("Using argument " + options.getOption(signature).getLongOpt() + " = " +
+                            cmd.getOptionValue(signature));
                     int value = Integer.parseInt(cmd.getOptionValue(signature));
                     generationController.addControlValue(signature, value);
                 } else {
                     generationController.addControlValue(signature, defaultValues.get(signature));
-                    System.out.println("Using default value 50 for " + options.getOption(signature).getLongOpt());
+                    System.out.println("Using default value " + defaultValues.get(signature) + " for " +
+                            options.getOption(signature).getLongOpt());
                 }
             }
         } catch (ParseException e) {

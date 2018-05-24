@@ -13,15 +13,18 @@ public class ClazzFileContainer {
     private CtClass clazz;
     private ClazzLogger clazzLogger;
     private RandomSupplier randomSupplier;
+    private String fileName;
 
     /**
      * generates a new minimal executable Class and a new ClazzLogger
      *
-     * @param file_name the name of the generated Class
+     * @param fielName the name of the generated Class
      */
-    public ClazzFileContainer(String file_name) {
-        this.clazz = getClazzPool().makeClass(file_name);
+    public ClazzFileContainer(String fielName) {
+        this.clazz = getClazzPool().makeClass(fielName);
         this.randomSupplier = new RandomSupplier();
+        this.fileName = fielName;
+        this.clazzLogger = new ClazzLogger();
         createMinExecutableClazz();
     }
 
@@ -45,7 +48,8 @@ public class ClazzFileContainer {
 
         //TODO add correct parameter-logging for main, when arrays enabled
         MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void, new FieldVarType[0]);
-        this.clazzLogger = new ClazzLogger(main);
+        this.clazzLogger = new ClazzLogger();
+        this.clazzLogger.setMain(main);
     }
 
     /**
@@ -65,5 +69,9 @@ public class ClazzFileContainer {
 
     public RandomSupplier getRandomSupplier() {
         return randomSupplier;
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 }

@@ -1,9 +1,6 @@
 package generators;
 
-import javassist.CannotCompileException;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.Modifier;
+import javassist.*;
 import utils.*;
 import logger.FieldVarLogger;
 import logger.MethodLogger;
@@ -187,11 +184,11 @@ public class MethodGenerator extends MethodCaller {
 
     public String srcSetRandomFieldToReturnValue(MethodLogger method) {
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
-        if(calledMethod == null) return null;
-        else if(this.getClazzLogger().hasVariables()) {
+        if (calledMethod == null) return null;
+        else if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().
                     getNonFinalFieldOfTypeUsableInMethod(method, calledMethod.getReturnType());
-            if(fieldVar == null) return null;
+            if (fieldVar == null) return null;
             else return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
         } else return null;
     }
@@ -203,11 +200,11 @@ public class MethodGenerator extends MethodCaller {
 
     public String srcSetRandomLocalVarToReturnValue(MethodLogger method) {
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
-        if(calledMethod == null) return null;
-        else if(method.hasVariables()) {
+        if (calledMethod == null) return null;
+        else if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().
                     getNonFinalLocalVarOfType(method, calledMethod.getReturnType());
-            if(fieldVar == null) return null;
+            if (fieldVar == null) return null;
             else return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
         } else return null;
     }
@@ -244,5 +241,22 @@ public class MethodGenerator extends MethodCaller {
             if (this.equalParameterTypes(parameterTypes, ml.getParamsTypes())) return true;
         }
         return false;
+    }
+
+    public MethodLogger generateAndCallRunMethod() {
+        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+        try {
+            this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
+            CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
+            this.getClazzFile().addConstructor(constructor);
+            String fileName = this.getClazzContainer().getFileName();
+            main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + constructor.getName() + "();" +
+                    fileName.toLowerCase() + ".run();");
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
+        }
+        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.Void, new FieldVarType[0]);
+        this.getClazzLogger().setRun(runLogger);
+        return runLogger;
     }
 }

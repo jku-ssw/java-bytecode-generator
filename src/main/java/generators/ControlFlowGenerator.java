@@ -141,7 +141,7 @@ public class ControlFlowGenerator extends Generator {
             return varName + " < " + random.nextInt(maxLoopIterations);
         } else {
             controlSrc.append("int " + varName + " = " + random.nextInt(maxLoopIterations) + "; do { " + varName + "--;");
-            return varName + " != 0";
+            return varName + " > 0";
         }
     }
 
@@ -151,7 +151,7 @@ public class ControlFlowGenerator extends Generator {
         deepness--;
     }
 
-    //================================================FOR/WHILE=====================================================
+    //==================================================FOR/WHILE=======================================================
 
     public void generateRandomWhileStatement(MethodLogger contextMethod) {
         this.openWhileStatement();
@@ -163,10 +163,10 @@ public class ControlFlowGenerator extends Generator {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         if (random.nextBoolean()) {
             controlSrc.append("int " + varName + " = 0; while(" +
-                    varName + "++ < " + random.nextInt(maxLoopIterations) + ") {");
+                    varName + " < " + random.nextInt(maxLoopIterations) + ") { " + varName + "++; ");
         } else {
-            controlSrc.append("int " + varName + " = 0; while(" +
-                    varName + "-- != 0) {");
+            controlSrc.append("int " + varName + " = " + random.nextInt(maxLoopIterations) + "; while(" +
+                    varName + " > 0) { " + varName + "--; ");
         }
         ++deepness;
     }

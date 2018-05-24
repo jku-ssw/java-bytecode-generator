@@ -9,7 +9,9 @@ import cli.GenerationController;
 import logger.ClazzLogger;
 import logger.MethodLogger;
 
+import java.lang.reflect.Method;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class RandomCodeGenerator {
     enum Context {
@@ -42,8 +44,10 @@ public class RandomCodeGenerator {
         this.method_generator = new MethodGenerator(this);
         this.math_generator = new MathGenerator(container);
         this.controlFlow_generator = new ControlFlowGenerator(this);
+
+        MethodLogger run = this.method_generator.generateAndCallRunMethod();
         Context.programContext.lengthWeighting = controller.getProgramLengthWeighting();
-        Context.programContext.contextMethod = getClazzLogger().getMain();
+        Context.programContext.contextMethod = run;
         Context.methodContext.lengthWeighting = controller.getMethodLengthWeighting();
         Context.controlContext.lengthWeighting = controller.getControlLengthWeighting();
     }
@@ -60,7 +64,7 @@ public class RandomCodeGenerator {
     public void generate() {
         generate(Context.programContext);
         //compute HashValue of all locals
-        //computeHash();
+        computeHash();
     }
 
     void generate(Context context) {
@@ -229,29 +233,26 @@ public class RandomCodeGenerator {
 
 
     //TODO generate Object and make run method instead of calling main only
-//    private void computeHash() {
-//        MethodLogger computeHash = method_generator.generateMethod("computeHash", FieldVarType.Int, new FieldVarType[0], Modifier.PRIVATE);
-//        CtMethod ctComputeHash = fieldVar_generator.getCtMethod(computeHash);
-//        StringBuilder src = new StringBuilder("int hashValue = 0; ");
-//        if (this.getClazzLogger().hasVariables()) {
-//            for (FieldVarLogger field : this.getClazzLogger().getVariables()) {
-//                if (field.getType() != FieldVarType.String) {
-//                    src.append("hashValue += " + field.getName() + "; ");
-//                } else {
-//                    src.append("hashValue += " + field.getName() + ".hashCode(); ");
-//                }
-//            }
-//            //src.replace(src.length() - 3, src.length(), ";");
-//        }
-//        try {
-//            System.out.println(src.toString());
-//            ctComputeHash.insertAfter(src.toString());
-//            CtMethod main = fieldVar_generator.getCtMethod(this.getClazzLogger().getMain());
-//           // main.insertAfter("computeHash();");
-//        } catch (CannotCompileException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void computeHash() {
+        StringBuilder src = new StringBuilder("int hashValue = 0; ");
+        FieldVarLogger[] initGlobals = this.getClazzLogger().getVariables().stream().filter(v -> v.isInitialized()).toArray(FieldVarLogger[]::new);
+        if (this.getClazzLogger().hasVariables()) {
+            for (FieldVarLogger field : initGlobals) {
+                if (field.getType() != FieldVarType.String) {
+                    src.append("hashValue += " + field.getName() + ";");
+                } else {
+                    src.append("if(" + field.getName() + " != null) {");
+                    src.append("hashValue += " + field.getName() + ".hashCode();}");
+                }
+            }
+        }
+        try {
+            CtMethod run = fieldVar_generator.getCtMethod(this.getClazzLogger().getRun());
+            run.insertAfter(src.toString() + " System.out.println(\"#############GLOBAL HASH:\" + hashValue + \"  #############\");");
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

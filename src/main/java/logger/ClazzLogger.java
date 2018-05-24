@@ -4,6 +4,7 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +16,30 @@ import java.util.stream.Collectors;
 public class ClazzLogger extends MyLogger {
 
     private List<MethodLogger> methods;
-    private MethodLogger main;
+    private MethodLogger main = null;
+    private MethodLogger run = null;
 
-    public ClazzLogger(MethodLogger main) {
+    public ClazzLogger() {
         methods = new ArrayList<>();
         variables = new HashMap<>();
-        this.main = main;
+    }
+
+    public void setMain(MethodLogger main) {
+        if (this.main != null) return; //main method can't be changed
+        else this.main = main;
+    }
+
+    public MethodLogger getMain() {
+        return main;
+    }
+
+    public void setRun(MethodLogger run) {
+        if (this.run != null) return; //run method can't be changed
+        else this.run = run;
+    }
+
+    public MethodLogger getRun() {
+        return this.run;
     }
 
     /**
@@ -29,11 +48,8 @@ public class ClazzLogger extends MyLogger {
      * @param ml the MethodLogger in which the Information is stored
      */
     public void logMethod(MethodLogger ml) {
+        ml.addMethodToExcludedForCalling(ml);
         methods.add(ml);
-    }
-
-    public MethodLogger getMain() {
-        return main;
     }
 
     /**

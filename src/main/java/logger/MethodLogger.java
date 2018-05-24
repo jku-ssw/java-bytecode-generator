@@ -57,6 +57,7 @@ public class MethodLogger extends MyLogger {
     }
 
     public CtClass[] getCtParamsTypes() {
+        if(paramTypes == null) return null;
         return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
     }
 
