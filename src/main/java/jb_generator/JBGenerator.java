@@ -5,8 +5,6 @@ import cli.GenerationController;
 import generators.RandomCodeGenerator;
 
 public class JBGenerator {
-
-
     public static void main(String[] args) {
         ControlValueParser parser = new ControlValueParser(args);
         GenerationController controller = parser.parse();

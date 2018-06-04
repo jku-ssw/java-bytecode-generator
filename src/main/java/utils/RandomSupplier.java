@@ -8,9 +8,9 @@ public class RandomSupplier {
     private int varCharNum = 97;
     private int varRepeat = 0;
     private int methodRepeat = 0;
-    private final static Random RANDOM = new Random();
-    private final static String stringCandidates = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    static int MAX_STRING_LENGTH = 20;
+    static private final Random RANDOM = new Random();
+    static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    static final int MAX_STRING_LENGTH = 20;
 
     public String getVarName() {
         if (varCharNum == 123) {
@@ -92,7 +92,7 @@ public class RandomSupplier {
             case Boolean:
                 return "" + RANDOM.nextBoolean();
             case Char:
-                return "\'" + stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length())) + "\'";
+                return "\'" + STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())) + "\'";
             case String:
                 return "\"" + getString() + "\"";
             default:
@@ -108,7 +108,7 @@ public class RandomSupplier {
     public static String getStringOfLength(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(stringCandidates.charAt(RANDOM.nextInt(stringCandidates.length())));
+            sb.append(STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())));
         }
         return sb.toString();
     }

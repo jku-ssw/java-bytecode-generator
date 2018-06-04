@@ -10,24 +10,15 @@ import logger.MethodLogger;
  */
 public class ClazzFileContainer {
 
-    private CtClass clazz;
-    private ClazzLogger clazzLogger;
-    private RandomSupplier randomSupplier;
-    private String fileName;
+    private final CtClass clazz;
+    private final ClazzLogger clazzLogger;
+    private final RandomSupplier randomSupplier;
+    private final String fileName;
 
     public ClazzFileContainer(String fielName) {
         this.clazz = getClazzPool().makeClass(fielName);
         this.randomSupplier = new RandomSupplier();
         this.fileName = fielName;
-        this.clazzLogger = new ClazzLogger();
-        createMinExecutableClazz();
-    }
-
-    public ClassPool getClazzPool() {
-        return ClassPool.getDefault();
-    }
-
-    private void createMinExecutableClazz() {
         try {
             CtMethod m = CtNewMethod.make(
                     "public static void main(String[] args) {}",
@@ -38,8 +29,11 @@ public class ClazzFileContainer {
         }
 
         MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void);
-        this.clazzLogger = new ClazzLogger();
-        this.clazzLogger.setMain(main);
+        this.clazzLogger = new ClazzLogger(main);
+    }
+
+    public ClassPool getClazzPool() {
+        return ClassPool.getDefault();
     }
 
     public CtClass getClazzFile() {

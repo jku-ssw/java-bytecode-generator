@@ -27,13 +27,14 @@ public class RandomCodeGenerator {
     }
 
     private final Random random = new Random();
-    final GenerationController controller;
+
+    private final GenerationController controller;
 
     //Generators
     private final FieldVarGenerator fieldVar_generator;
     private final MethodGenerator method_generator;
-    private MathGenerator math_generator;
-    private ControlFlowGenerator controlFlow_generator;
+    private final MathGenerator math_generator;
+    private final ControlFlowGenerator controlFlow_generator;
 
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
@@ -49,6 +50,10 @@ public class RandomCodeGenerator {
         Context.programContext.contextMethod = run;
         Context.methodContext.lengthWeighting = controller.getMethodLengthWeighting();
         Context.controlContext.lengthWeighting = controller.getControlLengthWeighting();
+    }
+
+    public GenerationController getController() {
+        return controller;
     }
 
     public ClazzFileContainer getClazzFileContainer() {
@@ -296,6 +301,7 @@ public class RandomCodeGenerator {
     }
 }
 
+//TODO make assignments also with compatible types
 //TODO user option for filename and location
 //TODO probability for avoiding Overflow-exceptions
 //TODO only use initialized Local Vars if in controlContext????(Bad Local Variable Bug)

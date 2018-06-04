@@ -18,8 +18,8 @@ import java.util.Random;
  */
 abstract class Generator {
 
-    ClazzFileContainer clazzContainer;
-    Random random = new Random();
+    final ClazzFileContainer clazzContainer;
+    final Random random = new Random();
 
     public Generator(ClazzFileContainer clazzContainer) {
         this.clazzContainer = clazzContainer;

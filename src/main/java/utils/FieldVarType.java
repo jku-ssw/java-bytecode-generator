@@ -22,13 +22,13 @@ public enum FieldVarType {
     String("String"),
     Void("void");
 
-    private static final List<FieldVarType> compWithShort =
+    private static final List<FieldVarType> COMP_WITH_SHORT =
             Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
-    private static final List<FieldVarType> compWithInt =
+    private static final List<FieldVarType> COMP_WITH_INT =
             Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
-    private static final List<FieldVarType> compWithLong =
+    private static final List<FieldVarType> COMP_WITH_LONG =
             Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int, FieldVarType.Long);
-    private static final List<FieldVarType> compWithDouble =
+    private static final List<FieldVarType> COMP_WITH_DOUBLE =
             Arrays.asList(FieldVarType.Float, FieldVarType.Double);
 
     private CtClass clazzType;
@@ -81,21 +81,20 @@ public enum FieldVarType {
         return this.name;
     }
 
-    public static List<FieldVarType>
-    getCompatibleTypes(FieldVarType type) {
+    public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {
         switch (type) {
             case Byte:
                 return Arrays.asList(FieldVarType.Byte);
             case Short:
-                return compWithShort;
+                return COMP_WITH_SHORT;
             case Int:
-                return compWithInt;
+                return COMP_WITH_INT;
             case Long:
-                return compWithLong;
+                return COMP_WITH_LONG;
             case Float:
                 return Arrays.asList(FieldVarType.Float);
             case Double:
-                return compWithDouble;
+                return COMP_WITH_DOUBLE;
             case Boolean:
                 return Arrays.asList(FieldVarType.Boolean);
             case Char:

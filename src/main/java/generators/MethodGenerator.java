@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 
 public class MethodGenerator extends MethodCaller {
 
-    private RandomCodeGenerator randomCodeGenerator;
+    private final RandomCodeGenerator randomCodeGenerator;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public MethodGenerator(RandomCodeGenerator randomCodeGenerator) {
         super(randomCodeGenerator.getClazzFileContainer());

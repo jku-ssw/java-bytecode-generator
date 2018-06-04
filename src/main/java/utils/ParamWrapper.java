@@ -5,8 +5,8 @@ import logger.FieldVarLogger;
 public class ParamWrapper<T> {
 
     //the value of the parameter, either an object of FieldVarLogger or a random value in string format
-    private T paramValue;
-    private boolean isValue = true;
+    private final T paramValue;
+    private final boolean isValue;
 
     public T getParamValue() {
         return paramValue;

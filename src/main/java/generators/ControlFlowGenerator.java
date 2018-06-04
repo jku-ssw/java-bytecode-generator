@@ -30,17 +30,17 @@ public class ControlFlowGenerator extends Generator {
     }
 
     LinkedList<IfContext> openIfContexts = new LinkedList<>();
-    private StringBuilder controlSrc = new StringBuilder();
+    private final StringBuilder controlSrc = new StringBuilder();
     private int deepness = 0;
-    int ifBranchingFactor;
-    int maxLoopIterations;
-    private RandomCodeGenerator randomCodeGenerator;
+    private final int ifBranchingFactor;
+    private final int maxLoopIterations;
+    private final RandomCodeGenerator randomCodeGenerator;
 
     public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator) {
         super(randomCodeGenerator.getClazzFileContainer());
         this.randomCodeGenerator = randomCodeGenerator;
-        this.ifBranchingFactor = randomCodeGenerator.controller.getIfBranchingFactor();
-        this.maxLoopIterations = randomCodeGenerator.controller.getMaxLoopIterations();
+        this.ifBranchingFactor = randomCodeGenerator.getController().getIfBranchingFactor();
+        this.maxLoopIterations = randomCodeGenerator.getController().getMaxLoopIterations();
     }
 
     //==========================================IF ELSEIF ELSE==========================================================
@@ -210,7 +210,7 @@ public class ControlFlowGenerator extends Generator {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
             ctMethod.insertAfter(controlSrc.toString());
-            controlSrc = new StringBuilder();
+            controlSrc.setLength(0);
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
