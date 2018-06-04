@@ -26,8 +26,7 @@ public class TestRandomCodeGenerator extends TestGenerator {
             try {
                 assertEquals(true, executeAndDeleteFile("TestClazz" + i));
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-                break;
+                throw new AssertionError(e);
             }
         }
     }

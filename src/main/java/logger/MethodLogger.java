@@ -21,7 +21,7 @@ public class MethodLogger extends MyLogger {
 
     private List<MethodLogger> methodsExcludedForCalling;
 
-    public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType paramTypes[]) {
+    public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType... paramTypes) {
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;
@@ -38,16 +38,10 @@ public class MethodLogger extends MyLogger {
         return methodsExcludedForCalling;
     }
 
-    /**
-     * @return the name of the logged method
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @return @code{true} if the logged method is static, otherwise @code{false}
-     */
     public boolean isStatic() {
         return (modifiers & Modifier.STATIC) != 0;
     }
@@ -56,27 +50,21 @@ public class MethodLogger extends MyLogger {
         return paramTypes;
     }
 
-    public CtClass[] getCtParamsTypes() {
-        if(paramTypes == null) return null;
+    public CtClass[] getCtParamTypes() {
+        if (paramTypes == null) return null;
         return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
     }
 
-    /**
-     * @return the return-type of this method, given by its FieldVarType
-     */
     public FieldVarType getReturnType() {
         return returnType;
     }
 
-    /**
-     * @return @code{true} if the logged method is void, otherwise @code{false}
-     */
     public boolean isVoid() {
         return returnType == FieldVarType.Void;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + paramTypes.hashCode();
+        return paramTypes == null ? name.hashCode() : name.hashCode() + paramTypes.hashCode();
     }
 }

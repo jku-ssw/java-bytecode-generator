@@ -57,14 +57,13 @@ public class MathGenerator extends MethodCaller {
         try {
             mathClazz = this.getClazzContainer().getClazzPool().get("java.lang.Math");
         } catch (NotFoundException e) {
-            System.err.println("Cannot fetch CtClass-Object of java.lang.Math");
-            e.printStackTrace();
+            throw new AssertionError(e);
         }
     }
 
-    public boolean generateRandomMathMethodCall(MethodLogger method) {
+    public void generateRandomMathMethodCall(MethodLogger method) {
         String callString = srcGenerateRandomMathMethodCall(method);
-        return this.insertIntoMethodBody(method, callString);
+        insertIntoMethodBody(method, callString);
     }
 
     public String srcGenerateRandomMathMethodCall(MethodLogger method) {
@@ -75,15 +74,20 @@ public class MathGenerator extends MethodCaller {
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
             String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
-            if (noOverFlowIf == null) return null;
-            String src = noOverFlowIf + "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues) + "}";
+            if (noOverFlowIf == null) {
+                return null;
+            }
+            String src = noOverFlowIf + "Math." +
+                    this.generateMethodCallString(methodName, paramTypes, paramValues) + "}";
             return src;
-        } else return "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues);
+        } else {
+            return "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues);
+        }
     }
 
-    public boolean setRandomFieldToMathReturnValue(MethodLogger method) {
+    public void setRandomFieldToMathReturnValue(MethodLogger method) {
         String src = srcSetRandomFieldToMathReturnValue(method);
-        return insertIntoMethodBody(method, src);
+        insertIntoMethodBody(method, src);
     }
 
     public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
@@ -92,9 +96,13 @@ public class MathGenerator extends MethodCaller {
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, returnType);
-            if (fieldVar == null) return null;
+            if (fieldVar == null) {
+                return null;
+            }
             return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
 
@@ -111,9 +119,9 @@ public class MathGenerator extends MethodCaller {
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
-    public boolean setRandomLocalVarToMathReturnValue(MethodLogger method) {
+    public void setRandomLocalVarToMathReturnValue(MethodLogger method) {
         String src = srcSetRandomLocalVarToMathReturnValue(method);
-        return insertIntoMethodBody(method, src);
+        insertIntoMethodBody(method, src);
     }
 
     public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
@@ -122,9 +130,13 @@ public class MathGenerator extends MethodCaller {
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalLocalVarOfType(method, returnType);
-            if (fieldVar == null) return null;
+            if (fieldVar == null) {
+                return null;
+            }
             return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
 

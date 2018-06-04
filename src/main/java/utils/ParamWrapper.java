@@ -22,8 +22,13 @@ public class ParamWrapper<T> {
 
     public ParamWrapper(T paramValue) {
         this.paramValue = paramValue;
-        if (paramValue instanceof String) isValue = true;
-        else if (paramValue instanceof FieldVarLogger) isValue = false;
+        if (paramValue instanceof String) {
+            isValue = true;
+        } else if (paramValue instanceof FieldVarLogger) {
+            isValue = false;
+        } else {
+            throw new AssertionError("Wrong type of paramValue for ParamWrapper");
+        }
     }
 
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 public class ControlValueParser {
 
     private final String[] args;
-    private Options options = initOptions();
+    private final Options options = initOptions();
 
     private static Options initOptions() {
         Options options = new Options();
@@ -99,8 +99,7 @@ public class ControlValueParser {
                 }
             }
         } catch (ParseException e) {
-            System.err.println("Failed to parse command line properties");
-            e.printStackTrace();
+            throw new AssertionError(e);
         }
         return generationController;
     }

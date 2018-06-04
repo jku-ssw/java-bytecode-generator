@@ -34,11 +34,6 @@ public enum FieldVarType {
     private CtClass clazzType;
     private final String name;
 
-    /**
-     * constructs a new FieldVarType with given name and ClazzType
-     *
-     * @param name the name of this FieldVarType
-     */
     FieldVarType(String name) {
         this.name = name;
         switch (name) {
@@ -70,8 +65,7 @@ public enum FieldVarType {
                 try {
                     this.clazzType = ClassPool.getDefault().get("java.lang.String");
                 } catch (NotFoundException e) {
-                    System.err.println("Cannot create FieldVarType of class String");
-                    e.printStackTrace();
+                    throw new AssertionError(e);
                 }
                 break;
             case "void":
@@ -79,25 +73,16 @@ public enum FieldVarType {
         }
     }
 
-    /**
-     * @return returns the CtClass of this FieldVarType
-     */
     public CtClass getClazzType() {
         return this.clazzType;
     }
 
-    /**
-     * @return returns the name of this FieldVarType
-     */
     public String getName() {
         return this.name;
     }
 
-    /**
-     * @param type
-     * @return a random FieldVarType that is compatible to type
-     */
-    public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {
+    public static List<FieldVarType>
+    getCompatibleTypes(FieldVarType type) {
         switch (type) {
             case Byte:
                 return Arrays.asList(FieldVarType.Byte);

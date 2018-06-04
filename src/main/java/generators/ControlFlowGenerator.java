@@ -158,7 +158,6 @@ public class ControlFlowGenerator extends Generator {
         this.generateBody(contextMethod, ControlType.forWhileType);
     }
 
-    //TODO condition
     private void openWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         if (random.nextBoolean()) {
@@ -181,7 +180,6 @@ public class ControlFlowGenerator extends Generator {
         this.generateBody(contextMethod, ControlType.forWhileType);
     }
 
-    //TODO randomize iterations, userinput maximum iterations
     private void openForStatement() {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
@@ -203,18 +201,18 @@ public class ControlFlowGenerator extends Generator {
         } else if (controlType == ControlType.doWhileType) {
             this.closeDoWhileStatement(condition[0]);
         }
-        if (this.getDeepness() == 0) this.insertControlSrcIntoMethod(contextMethod);
+        if (this.getDeepness() == 0) {
+            this.insertControlSrcIntoMethod(contextMethod);
+        }
     }
 
-    private boolean insertControlSrcIntoMethod(MethodLogger method) {
+    private void insertControlSrcIntoMethod(MethodLogger method) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc = new StringBuilder();
-            return true;
         } catch (CannotCompileException e) {
-            e.printStackTrace();
-            return false;
+            throw new AssertionError(e);
         }
     }
 

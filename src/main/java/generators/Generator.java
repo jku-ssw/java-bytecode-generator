@@ -21,11 +21,6 @@ abstract class Generator {
     ClazzFileContainer clazzContainer;
     Random random = new Random();
 
-    /**
-     * Takes an existing utils.ClazzFileContainer to extend
-     *
-     * @param clazzContainer the container for the class-file with additional information
-     */
     public Generator(ClazzFileContainer clazzContainer) {
         this.clazzContainer = clazzContainer;
     }
@@ -34,53 +29,39 @@ abstract class Generator {
         return clazzContainer;
     }
 
-    /**
-     * @return the class-file processed by this generators
-     */
     public CtClass getClazzFile() {
         return clazzContainer.getClazzFile();
     }
 
-    /**
-     * writes the CtClass-Object as a .class file
-     */
     public void writeFile() {
         try {
             this.getClazzFile().writeFile();
         } catch (NotFoundException | IOException | CannotCompileException e) {
-            System.err.println("Cannot write class-file");
-            e.printStackTrace();
+            throw new AssertionError(e);
         }
     }
 
     public void writeFile(String directoryName) {
         try {
             this.getClazzFile().writeFile(directoryName);
-        } catch ( IOException | CannotCompileException e) {
-            System.err.println("Cannot write class-file");
-            e.printStackTrace();
+        } catch (IOException | CannotCompileException e) {
+            throw new AssertionError(e);
         }
     }
 
-    /**
-     * @return the ClazzLogger of the class, processed by this generators
-     */
     public ClazzLogger getClazzLogger() {
         return this.clazzContainer.getClazzLogger();
     }
 
-    /**
-     * @param method the logger of the method to return
-     * @return the CtMethod-Object of the method given by its MethodLogger
-     */
     public CtMethod getCtMethod(MethodLogger method) {
         try {
-            if (method.getName().equals("main")) return this.getClazzFile().getDeclaredMethod(method.getName());
-            else return this.getClazzFile().getDeclaredMethod(method.getName(), method.getCtParamsTypes());
+            if (method.getName().equals("main")) {
+                return this.getClazzFile().getDeclaredMethod(method.getName());
+            } else {
+                return this.getClazzFile().getDeclaredMethod(method.getName(), method.getCtParamTypes());
+            }
         } catch (NotFoundException e) {
-            System.err.println("Method " + method.getName() + " not found");
-            e.printStackTrace();
-            return null;
+            throw new AssertionError(e);
         }
     }
 
@@ -89,15 +70,15 @@ abstract class Generator {
     }
 
     //=================================================Utility==========================================================
-    boolean insertIntoMethodBody(MethodLogger method, String src) {
-        if (src == null) return false;
+    void insertIntoMethodBody(MethodLogger method, String src) {
+        if (src == null) {
+            return;
+        }
         try {
             CtMethod ctMethod = this.getCtMethod(method);
             ctMethod.insertAfter(src);
-            return true;
         } catch (CannotCompileException e) {
-            e.printStackTrace();
-            return false;
+            throw new AssertionError(e);
         }
     }
 }
