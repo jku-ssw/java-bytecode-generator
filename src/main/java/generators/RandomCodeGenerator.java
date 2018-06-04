@@ -181,28 +181,32 @@ public class RandomCodeGenerator {
                 }
             }
             if (r <= controller.getJavaLangMathProbability()) {
+                boolean noOverflow = false;
+                if(r <= this.controller.getAvoidOverFlowProbability()) {
+                    noOverflow = true;
+                }
                 int callKind = random.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
                         if (context == Context.controlContext) {
-                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod);
+                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod, noOverflow);
                         } else {
-                            math_generator.generateRandomMathMethodCall(context.contextMethod);
+                            math_generator.generateRandomMathMethodCall(context.contextMethod, noOverflow);
                         }
                         break;
                     case 1: //assign return value of called method to field
                         if (context == Context.controlContext)
-                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
+                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod, noOverflow);
                         else {
-                            math_generator.setRandomFieldToMathReturnValue(context.contextMethod);
+                            math_generator.setRandomFieldToMathReturnValue(context.contextMethod, noOverflow);
                         }
                         break;
                     case 2: //assign return value of called method to local variable
                         if (context == Context.controlContext) {
-                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
+                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod, noOverflow);
                         } else {
-                            math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod);
+                            math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod, noOverflow);
                         }
                         break;
                 }

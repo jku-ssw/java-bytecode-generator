@@ -61,18 +61,18 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-    public void generateRandomMathMethodCall(MethodLogger method) {
-        String callString = srcGenerateRandomMathMethodCall(method);
+    public void generateRandomMathMethodCall(MethodLogger method, boolean noOverflow) {
+        String callString = srcGenerateRandomMathMethodCall(method, noOverflow);
         insertIntoMethodBody(method, callString);
     }
 
-    public String srcGenerateRandomMathMethodCall(MethodLogger method) {
+    public String srcGenerateRandomMathMethodCall(MethodLogger method, boolean noOverflow) {
         CtMethod mathMethod = getRandomMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
         FieldVarType[] paramTypes = getParamTypes(signature);
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
-        if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
+        if (OVERFLOW_METHODS.contains(mathMethod.getLongName()) && noOverflow) {
             String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) {
                 return null;
@@ -85,12 +85,12 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-    public void setRandomFieldToMathReturnValue(MethodLogger method) {
-        String src = srcSetRandomFieldToMathReturnValue(method);
+    public void setRandomFieldToMathReturnValue(MethodLogger method, boolean noOverflow) {
+        String src = srcSetRandomFieldToMathReturnValue(method, noOverflow);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
+    public String srcSetRandomFieldToMathReturnValue(MethodLogger method, boolean noOverflow) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
@@ -99,17 +99,17 @@ public class MathGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             }
-            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar, noOverflow);
         } else {
             return null;
         }
     }
 
 
-    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
+    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar, boolean noOverflow) {
         FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
-        if (OVERFLOW_METHODS.contains(mathMethod.getLongName())) {
+        if (OVERFLOW_METHODS.contains(mathMethod.getLongName()) && noOverflow) {
             String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
             String src = noOverFlowIf + fieldVar.getName() + " = " + "Math." +
@@ -119,12 +119,12 @@ public class MathGenerator extends MethodCaller {
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
-    public void setRandomLocalVarToMathReturnValue(MethodLogger method) {
-        String src = srcSetRandomLocalVarToMathReturnValue(method);
+    public void setRandomLocalVarToMathReturnValue(MethodLogger method, boolean noOverflow) {
+        String src = srcSetRandomLocalVarToMathReturnValue(method, noOverflow);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
+    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method, boolean noOverflow) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
@@ -133,7 +133,7 @@ public class MathGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             }
-            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar, noOverflow);
         } else {
             return null;
         }
