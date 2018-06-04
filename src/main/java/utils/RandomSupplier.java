@@ -66,6 +66,7 @@ public class RandomSupplier {
     }
 
     public static String getRandomValue(FieldVarType type) {
+        System.out.println(type.getName());
         if (type.getClazzType().getName().startsWith("java.lang")) {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) {
@@ -77,23 +78,23 @@ public class RandomSupplier {
 
     public static String getRandomValueNotNull(FieldVarType type) {
         switch (type) {
-            case Byte:
+            case BYTE:
                 return "(byte)" + (byte) RANDOM.nextInt(Byte.MAX_VALUE + 1);
-            case Short:
+            case SHORT:
                 return "(short)" + (short) RANDOM.nextInt(Short.MAX_VALUE + 1);
-            case Int:
+            case INT:
                 return "" + RANDOM.nextInt();
-            case Long:
+            case LONG:
                 return RANDOM.nextLong() + "L";
-            case Float:
+            case FLOAT:
                 return RANDOM.nextFloat() + "f";
-            case Double:
+            case DOUBLE:
                 return RANDOM.nextDouble() + "d";
-            case Boolean:
+            case BOOLEAN:
                 return "" + RANDOM.nextBoolean();
-            case Char:
+            case CHAR:
                 return "\'" + STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())) + "\'";
-            case String:
+            case STRING:
                 return "\"" + getString() + "\"";
             default:
                 return null;

@@ -11,64 +11,66 @@ import java.util.List;
  * Enum-Class of all possible Variable- and FieldTypes in the jb_generator.jb_generator
  */
 public enum FieldVarType {
-    Byte("byte"),
-    Short("short"),
-    Int("int"),
-    Long("long"),
-    Float("float"),
-    Double("double"),
-    Boolean("boolean"),
-    Char("char"),
-    String("String"),
-    Void("void");
+    BYTE,
+    SHORT,
+    INT,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    BOOLEAN,
+    CHAR,
+    STRING,
+    VOID;
 
     private static final List<FieldVarType> COMP_WITH_SHORT =
-            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char);
+            Arrays.asList(FieldVarType.BYTE, FieldVarType.SHORT, FieldVarType.CHAR);
     private static final List<FieldVarType> COMP_WITH_INT =
-            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int);
+            Arrays.asList(FieldVarType.BYTE, FieldVarType.SHORT, FieldVarType.CHAR, FieldVarType.INT);
     private static final List<FieldVarType> COMP_WITH_LONG =
-            Arrays.asList(FieldVarType.Byte, FieldVarType.Short, FieldVarType.Char, FieldVarType.Int, FieldVarType.Long);
+            Arrays.asList(FieldVarType.BYTE, FieldVarType.SHORT, FieldVarType.CHAR, FieldVarType.INT, FieldVarType.LONG);
     private static final List<FieldVarType> COMP_WITH_DOUBLE =
-            Arrays.asList(FieldVarType.Float, FieldVarType.Double);
+            Arrays.asList(FieldVarType.FLOAT, FieldVarType.DOUBLE);
 
     private CtClass clazzType;
-    private final String name;
 
-    FieldVarType(String name) {
-        this.name = name;
-        switch (name) {
-            case "byte":
+    FieldVarType() {
+        initClazzType();
+    }
+
+    void initClazzType() {
+        switch (this) {
+            case BYTE:
                 this.clazzType = CtClass.byteType;
                 break;
-            case "short":
+            case SHORT:
                 this.clazzType = CtClass.shortType;
                 break;
-            case "int":
+            case INT:
                 this.clazzType = CtClass.intType;
                 break;
-            case "long":
+            case LONG:
                 this.clazzType = CtClass.longType;
                 break;
-            case "float":
+            case FLOAT:
                 this.clazzType = CtClass.floatType;
                 break;
-            case "double":
+            case DOUBLE:
                 this.clazzType = CtClass.doubleType;
                 break;
-            case "boolean":
+            case BOOLEAN:
                 this.clazzType = CtClass.booleanType;
                 break;
-            case "char":
+            case CHAR:
                 this.clazzType = CtClass.charType;
                 break;
-            case "String":
+            case STRING:
                 try {
                     this.clazzType = ClassPool.getDefault().get("java.lang.String");
                 } catch (NotFoundException e) {
                     throw new AssertionError(e);
                 }
                 break;
-            case "void":
+            case VOID:
                 this.clazzType = CtClass.voidType;
         }
     }
@@ -78,37 +80,35 @@ public enum FieldVarType {
     }
 
     public String getName() {
-        return this.name;
+        if(this == STRING) {
+            return "String";
+        } else {
+            return this.toString().toLowerCase();
+        }
     }
 
     public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {
         switch (type) {
-            case Byte:
-                return Arrays.asList(FieldVarType.Byte);
-            case Short:
+            case BYTE:
+                return Arrays.asList(FieldVarType.BYTE);
+            case SHORT:
                 return COMP_WITH_SHORT;
-            case Int:
+            case INT:
                 return COMP_WITH_INT;
-            case Long:
+            case LONG:
                 return COMP_WITH_LONG;
-            case Float:
-                return Arrays.asList(FieldVarType.Float);
-            case Double:
+            case FLOAT:
+                return Arrays.asList(FieldVarType.FLOAT);
+            case DOUBLE:
                 return COMP_WITH_DOUBLE;
-            case Boolean:
-                return Arrays.asList(FieldVarType.Boolean);
-            case Char:
-                return Arrays.asList(FieldVarType.Char);
-            case String:
-                return Arrays.asList(FieldVarType.String);
+            case BOOLEAN:
+                return Arrays.asList(FieldVarType.BOOLEAN);
+            case CHAR:
+                return Arrays.asList(FieldVarType.CHAR);
+            case STRING:
+                return Arrays.asList(FieldVarType.STRING);
             default:
                 return Arrays.asList(type);
         }
     }
-
-    @Override
-    public java.lang.String toString() {
-        return getName();
-    }
-
 }

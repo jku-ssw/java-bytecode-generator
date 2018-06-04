@@ -51,7 +51,7 @@ public class MethodLogger extends MyLogger {
     }
 
     public CtClass[] getCtParamTypes() {
-        if (paramTypes == null) return null;
+        if (paramTypes == null) return new CtClass[0];
         return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
     }
 
@@ -60,7 +60,7 @@ public class MethodLogger extends MyLogger {
     }
 
     public boolean isVoid() {
-        return returnType == FieldVarType.Void;
+        return returnType == FieldVarType.VOID;
     }
 
     @Override

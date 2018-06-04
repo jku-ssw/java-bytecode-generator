@@ -35,7 +35,7 @@ abstract class MethodCaller extends Generator {
         } else if (param.isValue()) {
             return param.getParamValue().toString();
         } else {
-            throw new AssertionError("Incorrect Parameter type: Can either be of FieldVarLogger or String");
+            throw new AssertionError("Incorrect Parameter type: Can either be of FieldVarLogger or STRING");
         }
     }
 }

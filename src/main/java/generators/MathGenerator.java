@@ -159,33 +159,33 @@ public class MathGenerator extends MethodCaller {
                 return "if(" + params[1] + " > 0 ? Integer.MAX_VALUE - " + params[1] + " > " + params[0] +
                         " : Integer.MIN_VALUE - " + params[1] + " < " + params[0] + ") {";
             case "java.lang.Math.addExact(long,long)":
-                return "if(" + params[1] + " > 0 ? Long.MAX_VALUE - " + params[1] + " > " + params[0] +
-                        " : Long.MIN_VALUE - " + params[1] + " < " + params[0] + ") {";
+                return "if(" + params[1] + " > 0 ? LONG.MAX_VALUE - " + params[1] + " > " + params[0] +
+                        " : LONG.MIN_VALUE - " + params[1] + " < " + params[0] + ") {";
             case "java.lang.Math.subtractExact(int,int)":
                 return "if(" + params[1] + " > 0 ? Integer.MAX_VALUE - " + params[1] + " < " + params[0] +
                         " : Integer.MIN_VALUE - " + params[1] + " > " + params[0] + ") {";
             case "java.lang.Math.subtractExact(long,long)":
-                return "if(" + params[1] + " > 0 ? Long.MAX_VALUE - " + params[1] + " < " + params[0] +
-                        " : Long.MIN_VALUE - " + params[1] + " > " + params[0] + ") {";
+                return "if(" + params[1] + " > 0 ? LONG.MAX_VALUE - " + params[1] + " < " + params[0] +
+                        " : LONG.MIN_VALUE - " + params[1] + " > " + params[0] + ") {";
             case "java.lang.Math.decrementExact(int)":
                 return "if( " + params[0] + " > Integer.MIN_VALUE) {";
             case "java.lang.Math.decrementExact(long)":
-                return "if( " + params[0] + " > Long.MIN_VALUE) {";
+                return "if( " + params[0] + " > LONG.MIN_VALUE) {";
             case "java.lang.Math.incrementExact(int)":
                 return "if( " + params[0] + " < Integer.MAX_VALUE) {";
             case "java.lang.Math.incrementExact(long)":
-                return "if( " + params[0] + " < Long.MAX_VALUE) {";
+                return "if( " + params[0] + " < LONG.MAX_VALUE) {";
             case "java.lang.Math.negateExact(int)":
                 return "if( " + params[0] + " > Integer.MIN_VALUE) {";
             case "java.lang.Math.negateExact(long)":
-                return "if( " + params[0] + " > Long.MIN_VALUE) {";
+                return "if( " + params[0] + " > LONG.MIN_VALUE) {";
             case "java.lang.Math.toIntExact(long)":
                 return "if( " + params[0] + " <= Integer.MAX_VALUE && " +
                         params[0] + " >= Integer.MIN_VALUE) {";
             case "java.lang.Math.multiplyExact(int,int)":
                 return "if(" + params[0] + " == 0 || Math.abs(Integer.MIN_VALUE/" + params[0] + ") > Math.abs(" + params[1] + ")) {";
             case "java.lang.Math.multiplyExact(long,long)":
-                return "if(" + params[0] + " == 0 || Math.abs(Long.MIN_VALUE/" + params[0] + ") > Math.abs(" + params[1] + ")) {";
+                return "if(" + params[0] + " == 0 || Math.abs(LONG.MIN_VALUE/" + params[0] + ") > Math.abs(" + params[1] + ")) {";
             case "java.lang.Math.floorDiv(int,int)":
             case "java.lang.Math.floorDiv(long,int)":
             case "java.lang.Math.floorMod(int,int)":
@@ -202,13 +202,13 @@ public class MathGenerator extends MethodCaller {
     private static FieldVarType getType(char t) {
         switch (t) {
             case 'D':
-                return FieldVarType.Double;
+                return FieldVarType.DOUBLE;
             case 'I':
-                return FieldVarType.Int;
+                return FieldVarType.INT;
             case 'F':
-                return FieldVarType.Float;
+                return FieldVarType.FLOAT;
             case 'J':
-                return FieldVarType.Long;
+                return FieldVarType.LONG;
             default:
                 return null;
         }

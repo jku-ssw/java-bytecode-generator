@@ -100,7 +100,7 @@ public class ControlFlowGenerator extends Generator {
         FieldVarType type = RandomSupplier.getFieldVarType();
         FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
         FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
-        if (type != FieldVarType.String) {
+        if (type != FieldVarType.STRING) {
             addOperandToCondition(op1, type, condition);
             String eqRelOp = getRandomEqRelOperator();
             condition.append(eqRelOp);
@@ -192,8 +192,8 @@ public class ControlFlowGenerator extends Generator {
 
 
     private void generateBody(MethodLogger contextMethod, ControlType controlType, String... condition) {
-        RandomCodeGenerator.Context.controlContext.setContextMethod(contextMethod);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.controlContext);
+        RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(contextMethod);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.CONTROL_CONTEXT);
         if (controlType == ControlType.ifType) {
             this.closeIStatement();
         } else if (controlType == ControlType.forWhileType) {

@@ -28,7 +28,7 @@ public class ClazzFileContainer {
             throw new AssertionError(e);
         }
 
-        MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.Void);
+        MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.VOID);
         this.clazzLogger = new ClazzLogger(main);
     }
 

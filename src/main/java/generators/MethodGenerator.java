@@ -39,7 +39,7 @@ public class MethodGenerator extends MethodCaller {
             }
         }
         String returnStatement;
-        if (returnType == FieldVarType.Void) {
+        if (returnType == FieldVarType.VOID) {
             returnStatement = "";
         } else {
             returnStatement = "return " + RandomSupplier.getRandomValue(returnType) + ";";
@@ -59,8 +59,8 @@ public class MethodGenerator extends MethodCaller {
 
     public void generateRandomMethodWithBody(int maximumParameters) {
         MethodLogger method = this.generateRandomMethod(maximumParameters);
-        RandomCodeGenerator.Context.methodContext.setContextMethod(method);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.methodContext);
+        RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
         this.overrideReturnStatement(method);
     }
 
@@ -69,14 +69,14 @@ public class MethodGenerator extends MethodCaller {
         if (method == null) {
             return;
         }
-        RandomCodeGenerator.Context.methodContext.setContextMethod(method);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.methodContext);
+        RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
         this.overrideReturnStatement(method);
     }
 
     /**
      * @param modifiers the Integer-Representation of the modifiers
-     * @return a String-Representation of these modifiers
+     * @return a STRING-Representation of these modifiers
      */
     private static String modifiersToString(int modifiers) {
         StringBuilder b = new StringBuilder();
@@ -271,7 +271,7 @@ public class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
-        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.Void);
+        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
     }
