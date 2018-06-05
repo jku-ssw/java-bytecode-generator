@@ -11,16 +11,16 @@ import java.util.List;
  * Enum-Class of all possible Variable- and FieldTypes in the jb_generator.jb_generator
  */
 public enum FieldVarType {
-    BYTE,
-    SHORT,
-    INT,
-    LONG,
-    FLOAT,
-    DOUBLE,
-    BOOLEAN,
-    CHAR,
-    STRING,
-    VOID;
+    BYTE(CtClass.byteType),
+    SHORT(CtClass.shortType),
+    INT(CtClass.intType),
+    LONG(CtClass.longType),
+    FLOAT(CtClass.floatType),
+    DOUBLE(CtClass.doubleType),
+    BOOLEAN(CtClass.booleanType),
+    CHAR(CtClass.charType),
+    STRING(getStringCtType()),
+    VOID(CtClass.voidType);
 
     private static final List<FieldVarType> COMP_WITH_SHORT =
             Arrays.asList(FieldVarType.BYTE, FieldVarType.SHORT, FieldVarType.CHAR);
@@ -33,46 +33,16 @@ public enum FieldVarType {
 
     private CtClass clazzType;
 
-    FieldVarType() {
-        initClazzType();
+    private static CtClass getStringCtType() {
+        try {
+            return ClassPool.getDefault().get("java.lang.String");
+        } catch (NotFoundException e) {
+            throw new AssertionError(e);
+        }
     }
 
-    void initClazzType() {
-        switch (this) {
-            case BYTE:
-                this.clazzType = CtClass.byteType;
-                break;
-            case SHORT:
-                this.clazzType = CtClass.shortType;
-                break;
-            case INT:
-                this.clazzType = CtClass.intType;
-                break;
-            case LONG:
-                this.clazzType = CtClass.longType;
-                break;
-            case FLOAT:
-                this.clazzType = CtClass.floatType;
-                break;
-            case DOUBLE:
-                this.clazzType = CtClass.doubleType;
-                break;
-            case BOOLEAN:
-                this.clazzType = CtClass.booleanType;
-                break;
-            case CHAR:
-                this.clazzType = CtClass.charType;
-                break;
-            case STRING:
-                try {
-                    this.clazzType = ClassPool.getDefault().get("java.lang.String");
-                } catch (NotFoundException e) {
-                    throw new AssertionError(e);
-                }
-                break;
-            case VOID:
-                this.clazzType = CtClass.voidType;
-        }
+    FieldVarType(CtClass clazzType) {
+        this.clazzType = clazzType;
     }
 
     public CtClass getClazzType() {

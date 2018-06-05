@@ -66,7 +66,6 @@ public class RandomSupplier {
     }
 
     public static String getRandomValue(FieldVarType type) {
-        System.out.println(type.getName());
         if (type.getClazzType().getName().startsWith("java.lang")) {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) {
