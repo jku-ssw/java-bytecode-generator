@@ -102,7 +102,7 @@ public class ControlFlowGenerator extends Generator {
         FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
         if (type != FieldVarType.STRING) {
             addOperandToCondition(op1, type, condition);
-            String eqRelOp = getRandomEqRelOperator();
+            String eqRelOp = getRandomRelOperator();
             condition.append(eqRelOp);
             addOperandToCondition(op2, type, condition);
         } else {
@@ -228,23 +228,9 @@ public class ControlFlowGenerator extends Generator {
         return deepness;
     }
 
-    private String getRandomEqRelOperator() {
-        switch (random.nextInt(6)) {
-            case 0:
-                return " == ";
-            case 1:
-                return " != ";
-            case 2:
-                return " > ";
-            case 3:
-                return " >= ";
-            case 4:
-                return " < ";
-            case 5:
-                return " <= ";
-            default:
-                return null;
-        }
+    private String getRandomRelOperator() {
+        String[] relOps = {" == ", " != ", " > ", " >= ", " < ", " <= "};
+        return relOps[random.nextInt(relOps.length)];
     }
 
     //TODO ev. Condition-concatination with conditional Operators) => max number of conditions => user!!
