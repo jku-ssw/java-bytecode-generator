@@ -18,6 +18,7 @@ public class TestRandomCodeGenerator extends TestGenerator {
     void multipleCodeGeneration() {
         for (int i = 0; i < 50; i++) {
             //TODO random args
+            args = new String[]{};
             ControlValueParser parser = new ControlValueParser(args);
             GenerationController controller = parser.parse();
             RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("TestClazz" + i, controller);

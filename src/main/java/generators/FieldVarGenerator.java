@@ -190,7 +190,7 @@ public class FieldVarGenerator extends Generator {
         FieldVarLogger f1, f2;
         f1 = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
         if (f1 != null) {
-            f2 = this.getClazzLogger().getNonFinalInitializedFieldOfTypeUsableInMethod(method, f1.getType());
+            f2 = this.getClazzLogger().getNonFinalInitializedCompatibleFieldUsableInMethod(method, f1.getType());
             if (f2 != null) return srcAssignVariableToVariable(f1, f2);
             else return null;
         } else {
@@ -213,7 +213,7 @@ public class FieldVarGenerator extends Generator {
         if (f1 == null) {
             return null;
         }
-        f2 = this.getClazzLogger().getInitializedLocalVarOfType(method, f1.getType());
+        f2 = this.getClazzLogger().getInitializedCompatibleLocalVar(method, f1.getType());
         if (f2 != null) {
             return srcAssignVariableToVariable(f1, f2);
         } else {
@@ -235,7 +235,7 @@ public class FieldVarGenerator extends Generator {
         if (f1 == null) {
             return null;
         }
-        FieldVarLogger f2 = this.getClazzLogger().getInitializedLocalVarOfType(method, f1.getType());
+        FieldVarLogger f2 = this.getClazzLogger().getInitializedCompatibleLocalVar(method, f1.getType());
         if (f2 != null) {
             return srcAssignVariableToVariable(f1, f2);
         } else {
@@ -256,7 +256,7 @@ public class FieldVarGenerator extends Generator {
         if (f1 == null) {
             return null;
         }
-        FieldVarLogger f2 = this.getClazzLogger().getNonFinalInitializedFieldOfTypeUsableInMethod(method, f1.getType());
+        FieldVarLogger f2 = this.getClazzLogger().getNonFinalInitializedCompatibleFieldUsableInMethod(method, f1.getType());
         if (f2 != null) {
             return srcAssignVariableToVariable(f1, f2);
         } else {

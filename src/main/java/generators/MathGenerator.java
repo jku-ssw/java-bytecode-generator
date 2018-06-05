@@ -95,7 +95,7 @@ public class MathGenerator extends MethodCaller {
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, returnType);
+            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleFieldUsableInMethod(method, returnType);
             if (fieldVar == null) {
                 return null;
             }
@@ -129,7 +129,7 @@ public class MathGenerator extends MethodCaller {
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalLocalVarOfType(method, returnType);
+            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleLocalVar(method, returnType);
             if (fieldVar == null) {
                 return null;
             }

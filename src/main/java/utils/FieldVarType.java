@@ -19,7 +19,7 @@ public enum FieldVarType {
     DOUBLE(CtClass.doubleType),
     BOOLEAN(CtClass.booleanType),
     CHAR(CtClass.charType),
-    STRING(getStringCtType()),
+    STRING(getCtClassString()),
     VOID(CtClass.voidType);
 
     private static final List<FieldVarType> COMP_WITH_SHORT =
@@ -33,7 +33,7 @@ public enum FieldVarType {
 
     private CtClass clazzType;
 
-    private static CtClass getStringCtType() {
+    private static CtClass getCtClassString() {
         try {
             return ClassPool.getDefault().get("java.lang.String");
         } catch (NotFoundException e) {

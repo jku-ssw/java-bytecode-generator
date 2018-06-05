@@ -133,19 +133,39 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+//    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+//        if (method.isStatic()) {
+//            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+//        } else {
+//            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+//        }
+//    }
+
+    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
-            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> v.isStatic() && !
+                    v.isFinal() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
         } else {
-            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> !v.isFinal() &&
+                    FieldVarType.getCompatibleTypes(type).contains(v.getType()));
         }
     }
 
-    public FieldVarLogger getNonFinalInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+//    public FieldVarLogger getNonFinalInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+//        if (method.isStatic()) {
+//            return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() && !v.isFinal() && v.getType() == type);
+//        } else {
+//            return this.getVariableWithPredicate(v -> !v.isFinal() && v.isInitialized() && v.getType() == type);
+//        }
+//    }
+
+    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
-            return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() && !v.isFinal() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() &&
+                    !v.isFinal() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
         } else {
-            return this.getVariableWithPredicate(v -> !v.isFinal() && v.isInitialized() && v.getType() == type);
+            return this.getVariableWithPredicate(v -> !v.isFinal() &&
+                    v.isInitialized() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
         }
     }
 
@@ -153,12 +173,22 @@ public class ClazzLogger extends MyLogger {
         return method.getVariableWithPredicate(v -> v.isInitialized() && v.getType() == type);
     }
 
+    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, FieldVarType type) {
+        return method.getVariableWithPredicate(v -> v.isInitialized() &&
+                FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+    }
+
     public FieldVarLogger getNonFinalLocalVar(MethodLogger method) {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
-        return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+//    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
+//        return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+//    }
+
+    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, FieldVarType type) {
+        return method.getVariableWithPredicate(v -> !v.isFinal() &&
+                FieldVarType.getCompatibleTypes(type).contains(v.getType()));
     }
 
     public FieldVarLogger getGlobalOrLocalVarOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {

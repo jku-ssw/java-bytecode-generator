@@ -187,7 +187,7 @@ public class MethodGenerator extends MethodCaller {
             return null;
         } else if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().
-                    getNonFinalFieldOfTypeUsableInMethod(method, calledMethod.getReturnType());
+                    getNonFinalCompatibleFieldUsableInMethod(method, calledMethod.getReturnType());
             if (fieldVar == null) {
                 return null;
             } else {
@@ -209,7 +209,7 @@ public class MethodGenerator extends MethodCaller {
             return null;
         } else if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().
-                    getNonFinalLocalVarOfType(method, calledMethod.getReturnType());
+                    getNonFinalCompatibleLocalVar(method, calledMethod.getReturnType());
             if (fieldVar == null) {
                 return null;
             } else {
