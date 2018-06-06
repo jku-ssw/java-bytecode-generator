@@ -66,7 +66,16 @@ public class RandomCodeGenerator {
     }
 
     public void generate() {
+        //generate code in main, run and all method-signatures
         generate(Context.PROGRAM_CONTEXT);
+
+        //generate method-bodies
+        if(this.getClazzLogger().hasMethods()) {
+            for(MethodLogger method: this.getClazzLogger().getMethods()) {
+                method_generator.generateMethodBody(method);
+            }
+        }
+
         //compute HashValue of all locals
         computeHash();
     }
@@ -147,12 +156,12 @@ public class RandomCodeGenerator {
             }
 
             if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodProbability()) {
-                method_generator.generateRandomMethodWithBody(controller.getMaximumMethodParameters());
+                method_generator.generateRandomMethod(controller.getMaximumMethodParameters());
             }
 
-//            if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodOverloadProbability()) {
-//                method_generator.overLoadRandomMethodWithBody(controller.getMaximumMethodParameters());
-//            }
+            if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodOverloadProbability()) {
+                method_generator.overloadRandomMethod(controller.getMaximumMethodParameters());
+            }
 
             if (r <= controller.getMethodCallProbability()) {
                 int callKind = random.nextInt(3);

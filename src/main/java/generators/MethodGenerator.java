@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class MethodGenerator extends MethodCaller {
 
     private final RandomCodeGenerator randomCodeGenerator;
-
     private final Random random = new Random();
 
     public MethodGenerator(RandomCodeGenerator randomCodeGenerator) {
@@ -57,23 +56,6 @@ public class MethodGenerator extends MethodCaller {
         }
     }
 
-    public void generateRandomMethodWithBody(int maximumParameters) {
-        MethodLogger method = this.generateRandomMethod(maximumParameters);
-        RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
-        this.overrideReturnStatement(method);
-    }
-
-    public void overLoadRandomMethodWithBody(int maximumParameters) {
-        MethodLogger method = this.overloadRandomMethod(maximumParameters);
-        if (method == null) {
-            return;
-        }
-        RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
-        randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
-        this.overrideReturnStatement(method);
-    }
-
     /**
      * @param modifiers the Integer-Representation of the modifiers
      * @return a STRING-Representation of these modifiers
@@ -109,6 +91,12 @@ public class MethodGenerator extends MethodCaller {
         } else {
             return false;
         }
+    }
+
+    public void generateMethodBody(MethodLogger method) {
+        RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
+        randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
+        this.overrideReturnStatement(method);
     }
 
     //===============================================Method Calling=====================================================

@@ -35,6 +35,10 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
+    public List<MethodLogger> getMethods() {
+        return methods;
+    }
+
     public MethodLogger getRun() {
         return this.run;
     }

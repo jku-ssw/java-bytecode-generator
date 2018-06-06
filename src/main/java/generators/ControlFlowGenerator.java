@@ -83,7 +83,6 @@ public class ControlFlowGenerator extends Generator {
         openIfContexts.getLast().hasElse = true;
     }
 
-    //TODO condition
     private void openElseIfStatement(MethodLogger contextMethod) {
         openIfContexts.getLast().numberOfElseIf++;
         controlSrc.append("} else if(" + getIfCondition(contextMethod) + " ) {");
