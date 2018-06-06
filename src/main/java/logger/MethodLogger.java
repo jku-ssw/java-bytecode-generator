@@ -20,6 +20,7 @@ public class MethodLogger extends MyLogger {
     private FieldVarType returnType;
 
     private List<MethodLogger> methodsExcludedForCalling;
+    private List<MethodLogger> calledByThisMethod;
 
     public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType... paramTypes) {
         this.name = name;
@@ -28,14 +29,24 @@ public class MethodLogger extends MyLogger {
         this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
         this.methodsExcludedForCalling = new ArrayList<>();
+        this.calledByThisMethod = new ArrayList<>();
     }
 
     public void addMethodToExcludedForCalling(MethodLogger callingMethod) {
         methodsExcludedForCalling.add(callingMethod);
     }
 
+    public void addMethodTocalledByThisMethod(MethodLogger callingMethod) {
+        calledByThisMethod.add(callingMethod);
+    }
+
+
     public List<MethodLogger> getMethodsExcludedForCalling() {
         return methodsExcludedForCalling;
+    }
+
+    public List<MethodLogger> getMethodsCalledByThisMethod () {
+        return calledByThisMethod;
     }
 
     public String getName() {

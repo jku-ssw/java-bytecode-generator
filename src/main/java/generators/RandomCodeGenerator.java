@@ -150,8 +150,12 @@ public class RandomCodeGenerator {
                 method_generator.generateRandomMethodWithBody(controller.getMaximumMethodParameters());
             }
 
+//            if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodOverloadProbability()) {
+//                method_generator.overLoadRandomMethodWithBody(controller.getMaximumMethodParameters());
+//            }
+
             if (r <= controller.getMethodCallProbability()) {
-                int callKind = 2;//random.nextInt(3);
+                int callKind = random.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
@@ -215,9 +219,6 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodOverloadProbability()) {
-                method_generator.overLoadRandomMethodWithBody(controller.getMaximumMethodParameters());
-            }
             if (r <= controller.getPrintProbability()) {
                 String src = null;
                 if (context == Context.CONTROL_CONTEXT) {
@@ -288,7 +289,7 @@ public class RandomCodeGenerator {
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
                 if (field.getType() != FieldVarType.STRING) {
-                    src.append("hashValue += " + field.getName() + ";");
+                    src.append("hashValue += (int)" + field.getName() + ";");
                 } else {
                     src.append("if(" + field.getName() + " != null) {");
                     src.append("hashValue += " + field.getName() + ".hashCode();}");
@@ -298,16 +299,16 @@ public class RandomCodeGenerator {
         try {
             CtMethod run = fieldVar_generator.getCtMethod(this.getClazzLogger().getRun());
             run.insertAfter(src.toString() +
-                    " System.out.println(\"#############GLOBAL HASH: \" + hashValue + \"  #############\");");
+                    " System.out.println(\"#############   GLOBAL HASH: \" + hashValue + \"  #############\");");
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
     }
 }
 
-//TODO make assignments also with compatible types
+//TODO function calls maybe also with compatible types
+//TODO probability value borders
 //TODO user option for filename and location
-//TODO probability for avoiding Overflow-exceptions
 //TODO only use initialized Local Vars if in CONTROL_CONTEXT????(Bad Local Variable Bug)
 //TODO math and logical operators
 //TODO tests

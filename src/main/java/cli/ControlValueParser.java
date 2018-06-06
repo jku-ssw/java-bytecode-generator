@@ -92,7 +92,6 @@ public class ControlValueParser {
 
     public ControlValueParser(String[] args) {
         this.args = args;
-        this.parse();
     }
 
     /**

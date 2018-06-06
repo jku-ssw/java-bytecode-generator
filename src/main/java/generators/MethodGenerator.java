@@ -164,12 +164,14 @@ public class MethodGenerator extends MethodCaller {
     public String srcGenerateRandomMethodCall(MethodLogger method) {
         if (this.getClazzLogger().hasMethods()) {
             MethodLogger calledMethod = getClazzLogger().getRandomCallableMethod(method);
+
             if (calledMethod == null) {
                 return null;
             }
             FieldVarType[] paramTypes = calledMethod.getParamsTypes();
             ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
             calledMethod.addMethodToExcludedForCalling(method);
+            method.addMethodTocalledByThisMethod(calledMethod);
             return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
         } else {
             return null;
@@ -227,13 +229,10 @@ public class MethodGenerator extends MethodCaller {
         FieldVarType[] paramTypes = calledMethod.getParamsTypes();
         ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
         calledMethod.addMethodToExcludedForCalling(method);
-        return this.srcSetFieldVarToReturnValue(fieldVar, calledMethod, values);
-    }
-
-    private String srcSetFieldVarToReturnValue(FieldVarLogger field, MethodLogger calledMethod, ParamWrapper[] paramValues) {
-        field.setInitialized();
-        return field.getName() + " = "
-                + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), paramValues);
+        method.addMethodTocalledByThisMethod(calledMethod);
+        fieldVar.setInitialized();
+        return fieldVar.getName() + " = "
+                + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), values);
     }
 
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {

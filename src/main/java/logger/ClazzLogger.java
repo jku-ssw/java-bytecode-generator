@@ -6,6 +6,7 @@ import utils.RandomSupplier;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,9 +64,15 @@ public class ClazzLogger extends MyLogger {
         } else {
             callableMethods = new ArrayList<>(methods);
         }
-        //exclude methods that have called the callerMethod and the callerMethod itself
+        //exclude methods that have called the callerMethod
         callableMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
+        //exclude callerMethod itself
         callableMethods.remove(callerMethod);
+        //exclude methods, that call methods in methodsExludedForCalling of this callerMethod
+        callableMethods = callableMethods.stream().filter(m ->
+                Collections.disjoint(m.getMethodsCalledByThisMethod(),
+                        callerMethod.getMethodsExcludedForCalling())).collect(Collectors.toList());
+
         return callableMethods.isEmpty() ? null : callableMethods.get(random.nextInt((callableMethods.size())));
     }
 
