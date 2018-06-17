@@ -175,22 +175,6 @@ public class ClazzLogger extends MyLogger {
                 FieldVarType.getCompatibleTypes(type).contains(v.getType()));
     }
 
-    public FieldVarLogger getGlobalOrLocalCompatibleUsableInMethod(MethodLogger method, FieldVarType type) {
-        FieldVarLogger l;
-        if (RANDOM.nextBoolean()) {
-            l = getInitializedCompatibleLocalVar(method, type);
-            if (l == null) {
-                l = getInitializedCompatibleFieldUsableInMethod(method, type);
-            }
-        } else {
-            l = getInitializedCompatibleFieldUsableInMethod(method, type);
-            if (l == null) {
-                l = getInitializedCompatibleLocalVar(method, type);
-            }
-        }
-        return l;
-    }
-
     public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         if (method.isStatic()) {
             return this.getVariableWithPredicate(v -> v.isInitialized() && v.isStatic() && v.getType() == type);
@@ -199,22 +183,7 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public FieldVarLogger getInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
-        if (method.isStatic()) {
-            return this.getVariableWithPredicate(v -> v.isInitialized() &&
-                    v.isStatic() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
-        } else {
-            return this.getVariableWithPredicate(v -> v.isInitialized() &&
-                    FieldVarType.getCompatibleTypes(type).contains(v.getType()));
-        }
-    }
-
-    public FieldVarLogger getGlobalOrLocalInitializedOfTypesUsableInMethod(MethodLogger method, List<FieldVarType> types) {
-        FieldVarType type = types.get(RANDOM.nextInt(types.size()));
-        return getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
-    }
-
-    public FieldVarLogger getGlobalOrLocalInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         FieldVarLogger l;
         if (RANDOM.nextBoolean()) {
             l = getInitializedLocalVarOfType(method, type);
@@ -228,5 +197,17 @@ public class ClazzLogger extends MyLogger {
             }
         }
         return l;
+    }
+
+    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(v -> v.isStatic() && !v.isFinal() && v.getType() == type);
+        } else {
+            return this.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
+        }
+    }
+
+    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
+        return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
     }
 }

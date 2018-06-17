@@ -79,9 +79,9 @@ public class RandomSupplier {
     public static String getRandomValueNotNull(FieldVarType type) {
         switch (type) {
             case BYTE:
-                return "(byte)" + (byte) RANDOM.nextInt(Byte.MAX_VALUE + 1);
+                return "(byte)" + RANDOM.nextInt(Byte.MAX_VALUE + 1);
             case SHORT:
-                return "(short)" + (short) RANDOM.nextInt(Short.MAX_VALUE + 1);
+                return "(short)" + RANDOM.nextInt(Short.MAX_VALUE + 1);
             case INT:
                 return "" + RANDOM.nextInt();
             case LONG:
@@ -100,12 +100,6 @@ public class RandomSupplier {
                 return null;
         }
     }
-
-    public static String getRandomValueNotNullOfTypes(List<FieldVarType> types) {
-        FieldVarType type = types.get(RANDOM.nextInt(types.size()));
-        return getRandomValueNotNull(type);
-    }
-
 
     public static String getString() {
         int length = RANDOM.nextInt(MAX_STRING_LENGTH + 1);

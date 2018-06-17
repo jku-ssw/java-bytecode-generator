@@ -302,7 +302,7 @@ public class RandomCodeGenerator {
                     globalOrLocalOrNotAssign = 2;
                 }
 
-                OpStatKind opStatKind = OpStatKind.BITWISE;//getOpStatKind();
+                OpStatKind opStatKind = OpStatKind.ARITHMETIC;//getOpStatKind();
 
                 int maxOperations = controller.getMaxOperatorsInOperatorStatement();
 

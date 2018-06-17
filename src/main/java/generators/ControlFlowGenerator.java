@@ -97,8 +97,8 @@ public class ControlFlowGenerator extends Generator {
     private String getIfCondition(MethodLogger method) {
         StringBuilder condition = new StringBuilder();
         FieldVarType type = RandomSupplier.getFieldVarType();
-        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
-        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
+        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
+        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
         if (type != FieldVarType.STRING) {
             addOperandToCondition(op1, type, condition);
             String eqRelOp = MathGenerator.getRandomRelOperator();
