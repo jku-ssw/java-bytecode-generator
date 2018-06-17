@@ -19,7 +19,7 @@ import java.util.Random;
 abstract class Generator {
 
     final ClazzFileContainer clazzContainer;
-    final Random random = new Random();
+    static final Random RANDOM = new Random();
 
     public Generator(ClazzFileContainer clazzContainer) {
         this.clazzContainer = clazzContainer;

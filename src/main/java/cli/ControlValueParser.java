@@ -58,6 +58,24 @@ public class ControlValueParser {
                 true, "The maximum branching-factor for if-statements");
         options.addOption(CLIOptions.OF.toString(), "overflow_avoidance",
                 true, "The probability to avoid Overflow-Exceptions");
+        options.addOption(CLIOptions.OS.toString(), "operator_statement_probability",
+                true, "The probability to generate statements using operators");
+        options.addOption(CLIOptions.AS.toString(), "arithmetic_statement_probability",
+                true, "The probability to generate statements using arithmetic operators");
+        options.addOption(CLIOptions.LS.toString(), "logical_statement_probability",
+                true, "The probability to generate statements using logical operators");
+        options.addOption(CLIOptions.BS.toString(), "bitwise_statement_probability",
+                true, "The probability to generate statements using bitwise operators");
+        options.addOption(CLIOptions.ALS.toString(), "arithmetic_and_logical_statement_probability",
+                true, "The probability to generate statements using arithmetic and logical operators");
+        options.addOption(CLIOptions.ABS.toString(), "arithmetic_bitwise_statement_probability",
+                true, "The probability to generate statements using arithmetic and bitwise operators");
+        options.addOption(CLIOptions.LBS.toString(), "logical_and_bitwise_statement_probability",
+                true, "The probability to generate statements using logical and bitwise operators");
+        options.addOption(CLIOptions.ALBS.toString(), "arithmetic_logical_bitwise_statement_probability",
+                true, "The probability to generate statements using arithmetic logical and bitwise operators");
+        options.addOption(CLIOptions.MOOS.toString(), "maximum_operators_in_operator_statement",
+                true, "The maximum number of operators in an operator statement");
         return options;
     }
 
@@ -87,6 +105,15 @@ public class ControlValueParser {
         defaultValues.put(CLIOptions.IF.toString(), 100);
         defaultValues.put(CLIOptions.IBF.toString(), 4);
         defaultValues.put(CLIOptions.OF.toString(), 100);
+        defaultValues.put(CLIOptions.OS.toString(), 100);
+        defaultValues.put(CLIOptions.AS.toString(), 100);
+        defaultValues.put(CLIOptions.LS.toString(), 100);
+        defaultValues.put(CLIOptions.BS.toString(), 100);
+        defaultValues.put(CLIOptions.ALS.toString(), 100);
+        defaultValues.put(CLIOptions.ABS.toString(), 100);
+        defaultValues.put(CLIOptions.LBS.toString(), 100);
+        defaultValues.put(CLIOptions.ALBS.toString(), 100);
+        defaultValues.put(CLIOptions.MOOS.toString(), 10);
         return defaultValues;
     }
 
@@ -106,7 +133,7 @@ public class ControlValueParser {
             if (cmd.hasOption(CLIOptions.H.toString())) {
                 help();
             }
-            for (CLIOptions optionKind: CLIOptions.values()) {
+            for (CLIOptions optionKind : CLIOptions.values()) {
                 if (optionKind == CLIOptions.H) continue;
                 String signature = optionKind.toString();
                 if (cmd.hasOption(signature)) {

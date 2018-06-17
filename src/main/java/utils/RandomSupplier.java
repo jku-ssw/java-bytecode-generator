@@ -1,6 +1,7 @@
 package utils;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Random;
 
 public class RandomSupplier {
@@ -99,6 +100,12 @@ public class RandomSupplier {
                 return null;
         }
     }
+
+    public static String getRandomValueNotNullOfTypes(List<FieldVarType> types) {
+        FieldVarType type = types.get(RANDOM.nextInt(types.size()));
+        return getRandomValueNotNull(type);
+    }
+
 
     public static String getString() {
         int length = RANDOM.nextInt(MAX_STRING_LENGTH + 1);

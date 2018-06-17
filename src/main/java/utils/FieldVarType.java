@@ -22,6 +22,9 @@ public enum FieldVarType {
     STRING(getCtClassString()),
     VOID(CtClass.voidType);
 
+    private static final List<FieldVarType> NUMERIC_TYPES =
+            Arrays.asList(FieldVarType.BYTE, FieldVarType.CHAR,
+                    FieldVarType.DOUBLE, FieldVarType.FLOAT, FieldVarType.INT, FieldVarType.LONG, FieldVarType.SHORT);
     private static final List<FieldVarType> COMP_WITH_SHORT =
             Arrays.asList(FieldVarType.BYTE, FieldVarType.SHORT, FieldVarType.CHAR);
     private static final List<FieldVarType> COMP_WITH_INT =
@@ -55,6 +58,10 @@ public enum FieldVarType {
         } else {
             return this.toString().toLowerCase();
         }
+    }
+
+    public static List<FieldVarType> getNumericTypes() {
+        return NUMERIC_TYPES;
     }
 
     public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {

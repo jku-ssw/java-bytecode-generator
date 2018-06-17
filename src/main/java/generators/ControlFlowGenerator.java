@@ -47,7 +47,7 @@ public class ControlFlowGenerator extends Generator {
 
     public void generateRandomIfElseStatement(MethodLogger contextMethod) {
         if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
-            switch (random.nextInt(3)) {
+            switch (RANDOM.nextInt(3)) {
                 case 0:
                     if (openIfContexts.getLast().hasElse == false &&
                             openIfContexts.getLast().numberOfElseIf < ifBranchingFactor) {
@@ -97,18 +97,18 @@ public class ControlFlowGenerator extends Generator {
     private String getIfCondition(MethodLogger method) {
         StringBuilder condition = new StringBuilder();
         FieldVarType type = RandomSupplier.getFieldVarType();
-        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
-        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarOfTypeUsableInMethod(method, type);
+        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
+        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
         if (type != FieldVarType.STRING) {
             addOperandToCondition(op1, type, condition);
-            String eqRelOp = getRandomRelOperator();
+            String eqRelOp = MathGenerator.getRandomRelOperator();
             condition.append(eqRelOp);
             addOperandToCondition(op2, type, condition);
         } else {
             if (op1 != null) {
                 condition.append(op1.getName() + " != null && ");
             }
-            if (random.nextBoolean()) condition.append("!");
+            if (RANDOM.nextBoolean()) condition.append("!");
             addOperandToCondition(op1, type, condition);
             condition.append(".equals(");
             addOperandToCondition(op1, type, condition);
@@ -135,11 +135,11 @@ public class ControlFlowGenerator extends Generator {
     private String openDoWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         deepness++;
-        if (random.nextBoolean()) {
+        if (RANDOM.nextBoolean()) {
             controlSrc.append("int " + varName + " = 0; do { " + varName + "++;");
-            return varName + " < " + random.nextInt(maxLoopIterations);
+            return varName + " < " + RANDOM.nextInt(maxLoopIterations);
         } else {
-            controlSrc.append("int " + varName + " = " + random.nextInt(maxLoopIterations) + "; do { " + varName + "--;");
+            controlSrc.append("int " + varName + " = " + RANDOM.nextInt(maxLoopIterations) + "; do { " + varName + "--;");
             return varName + " > 0";
         }
     }
@@ -159,11 +159,11 @@ public class ControlFlowGenerator extends Generator {
 
     private void openWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
-        if (random.nextBoolean()) {
+        if (RANDOM.nextBoolean()) {
             controlSrc.append("int " + varName + " = 0; while(" +
-                    varName + " < " + random.nextInt(maxLoopIterations) + ") { " + varName + "++; ");
+                    varName + " < " + RANDOM.nextInt(maxLoopIterations) + ") { " + varName + "++; ");
         } else {
-            controlSrc.append("int " + varName + " = " + random.nextInt(maxLoopIterations) + "; while(" +
+            controlSrc.append("int " + varName + " = " + RANDOM.nextInt(maxLoopIterations) + "; while(" +
                     varName + " > 0) { " + varName + "--; ");
         }
         ++deepness;
@@ -182,7 +182,7 @@ public class ControlFlowGenerator extends Generator {
     private void openForStatement() {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
-        int it = random.nextInt(this.maxLoopIterations + 1);
+        int it = RANDOM.nextInt(this.maxLoopIterations + 1);
         controlSrc.append("for(int " + varName + " = 0; " + varName + " < " + it + "; " + varName + "++) {");
         deepness++;
     }
@@ -225,11 +225,6 @@ public class ControlFlowGenerator extends Generator {
 
     public int getDeepness() {
         return deepness;
-    }
-
-    private String getRandomRelOperator() {
-        String[] relOps = {" == ", " != ", " > ", " >= ", " < ", " <= "};
-        return relOps[random.nextInt(relOps.length)];
     }
 
     //TODO ev. Condition-concatination with conditional Operators) => max number of conditions => user!!

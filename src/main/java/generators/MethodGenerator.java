@@ -152,7 +152,6 @@ public class MethodGenerator extends MethodCaller {
     public String srcGenerateRandomMethodCall(MethodLogger method) {
         if (this.getClazzLogger().hasMethods()) {
             MethodLogger calledMethod = getClazzLogger().getRandomCallableMethod(method);
-
             if (calledMethod == null) {
                 return null;
             }

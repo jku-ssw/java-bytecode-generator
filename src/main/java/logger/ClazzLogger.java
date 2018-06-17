@@ -4,11 +4,7 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClazzLogger extends MyLogger {
@@ -55,7 +51,7 @@ public class ClazzLogger extends MyLogger {
 
     public MethodLogger getRandomMethod() {
         if (hasMethods()) {
-            return methods.get(random.nextInt(methods.size()));
+            return methods.get(RANDOM.nextInt(methods.size()));
         } else {
             return null;
         }
@@ -77,16 +73,13 @@ public class ClazzLogger extends MyLogger {
                 Collections.disjoint(m.getMethodsCalledByThisMethod(),
                         callerMethod.getMethodsExcludedForCalling())).collect(Collectors.toList());
 
-        return callableMethods.isEmpty() ? null : callableMethods.get(random.nextInt((callableMethods.size())));
+        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt((callableMethods.size())));
     }
 
     private List<MethodLogger> getStaticMethods() {
         return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
     }
 
-    /**
-     * @return @code{true} if there are logged methods in this clazzLogger, otherwise @code{false}
-     */
     public boolean hasMethods() {
         return !methods.isEmpty();
     }
@@ -94,11 +87,11 @@ public class ClazzLogger extends MyLogger {
     public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
         List<ParamWrapper> values = new ArrayList<>();
         for (FieldVarType t : paramTypes) {
-            if (random.nextBoolean()) { //add global variable
+            if (RANDOM.nextBoolean()) { //add global variable
                 if (!addFieldToParamValues(values, method, t)) {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
-                        //add random value if no variables available
+                        //add RANDOM value if no variables available
                         values.add(new ParamWrapper(RandomSupplier.getRandomValue(t)));
                     }
                 }
@@ -106,7 +99,7 @@ public class ClazzLogger extends MyLogger {
                 if (!addLocalVariableToParamValues(values, method, t)) {
                     //add global variable if no local variable available
                     if (!addFieldToParamValues(values, method, t)) {
-                        //add random value if no variables available
+                        //add RANDOM value if no variables available
                         values.add(new ParamWrapper(RandomSupplier.getRandomValue(t)));
                     }
                 }
@@ -182,17 +175,17 @@ public class ClazzLogger extends MyLogger {
                 FieldVarType.getCompatibleTypes(type).contains(v.getType()));
     }
 
-    public FieldVarLogger getGlobalOrLocalVarOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getGlobalOrLocalCompatibleUsableInMethod(MethodLogger method, FieldVarType type) {
         FieldVarLogger l;
-        if (random.nextBoolean()) {
-            l = getInitializedLocalVarOfType(method, type);
+        if (RANDOM.nextBoolean()) {
+            l = getInitializedCompatibleLocalVar(method, type);
             if (l == null) {
-                l = getInitializedFieldOfTypeUsableInMethod(method, type);
+                l = getInitializedCompatibleFieldUsableInMethod(method, type);
             }
         } else {
-            l = getInitializedFieldOfTypeUsableInMethod(method, type);
+            l = getInitializedCompatibleFieldUsableInMethod(method, type);
             if (l == null) {
-                l = getInitializedLocalVarOfType(method, type);
+                l = getInitializedCompatibleLocalVar(method, type);
             }
         }
         return l;
@@ -204,5 +197,36 @@ public class ClazzLogger extends MyLogger {
         } else {
             return this.getVariableWithPredicate(v -> v.isInitialized() && v.getType() == type);
         }
+    }
+
+    public FieldVarLogger getInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
+        if (method.isStatic()) {
+            return this.getVariableWithPredicate(v -> v.isInitialized() &&
+                    v.isStatic() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+        } else {
+            return this.getVariableWithPredicate(v -> v.isInitialized() &&
+                    FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+        }
+    }
+
+    public FieldVarLogger getGlobalOrLocalInitializedOfTypesUsableInMethod(MethodLogger method, List<FieldVarType> types) {
+        FieldVarType type = types.get(RANDOM.nextInt(types.size()));
+        return getGlobalOrLocalInitializedOfTypeUsableInMethod(method, type);
+    }
+
+    public FieldVarLogger getGlobalOrLocalInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+        FieldVarLogger l;
+        if (RANDOM.nextBoolean()) {
+            l = getInitializedLocalVarOfType(method, type);
+            if (l == null) {
+                l = getInitializedFieldOfTypeUsableInMethod(method, type);
+            }
+        } else {
+            l = getInitializedFieldOfTypeUsableInMethod(method, type);
+            if (l == null) {
+                l = getInitializedLocalVarOfType(method, type);
+            }
+        }
+        return l;
     }
 }

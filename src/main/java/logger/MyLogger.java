@@ -2,7 +2,6 @@ package logger;
 
 import utils.FieldVarType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -11,7 +10,7 @@ import java.util.stream.Collectors;
 
 abstract class MyLogger {
     Map<String, FieldVarLogger> variables;
-    static Random random = new Random();
+    static Random RANDOM = new Random();
 
     public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
         FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
@@ -30,7 +29,7 @@ abstract class MyLogger {
         if (predicateVars.isEmpty()) {
             return null;
         }
-        return predicateVars.get(random.nextInt(predicateVars.size()));
+        return predicateVars.get(RANDOM.nextInt(predicateVars.size()));
     }
 
     public List<FieldVarLogger> getVariablesWithPredicate(Predicate<FieldVarLogger> predicate) {

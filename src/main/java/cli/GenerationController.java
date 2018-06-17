@@ -97,4 +97,40 @@ public class GenerationController {
     public int getAvoidOverFlowProbability() {
         return controlValues.get(CLIOptions.OF);
     }
+
+    public int getOperatorStatementProbability() {
+        return controlValues.get(CLIOptions.OS);
+    }
+
+    public int getArithmeticStatementProbability() {
+        return controlValues.get(CLIOptions.AS);
+    }
+
+    public int getLogicalStatementProbability() {
+        return controlValues.get(CLIOptions.LS);
+    }
+
+    public int getBitwiseStatementProbability() {
+        return controlValues.get(CLIOptions.BS);
+    }
+
+    public int getArithLogicalStatementProbability() {
+        return controlValues.get(CLIOptions.ALS);
+    }
+
+    public int getArithBitwiseStatementProbability() {
+        return controlValues.get(CLIOptions.ABS);
+    }
+
+    public int getLogicBitwiseStatementProbability() {
+        return controlValues.get(CLIOptions.LBS);
+    }
+
+    public int getArithLogicalBitwiseStatementProbability() {
+        return controlValues.get(CLIOptions.ALBS);
+    }
+
+    public int getMaxOperatorsInOperatorStatement() {
+        return controlValues.get(CLIOptions.MOOS);
+    }
 }

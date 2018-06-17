@@ -34,7 +34,7 @@ public class FieldVarGenerator extends Generator {
     public void generateRandomField() {
         FieldVarType ft = this.getRandomSupplier().getFieldVarType();
         String value = null;
-        if (this.random.nextBoolean()) { //50% chance to be initialized
+        if (this.RANDOM.nextBoolean()) { //50% chance to be initialized
             value = this.getRandomSupplier().getRandomValue(ft);
         }
         this.generateField(getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
@@ -55,7 +55,7 @@ public class FieldVarGenerator extends Generator {
         FieldVarType ft = getRandomSupplier().getFieldVarType();
         String value;
         //TODO fix bug local return value assignment in controlflow
-        //if (random.nextBoolean()) { //50% chance to be initialized
+        //if (RANDOM.nextBoolean()) { //50% chance to be initialized
         value = getRandomSupplier().getRandomValue(ft);
         //}
         this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
@@ -90,7 +90,7 @@ public class FieldVarGenerator extends Generator {
     }
 
     public String srcGenerateRandomPrintStatement(MethodLogger method) {
-        if (random.nextBoolean()) { //print local Variable
+        if (RANDOM.nextBoolean()) { //print local Variable
             FieldVarLogger fvl = method.getVariableWithPredicate(v -> v.isInitialized());
             if (fvl == null) {
                 return null;

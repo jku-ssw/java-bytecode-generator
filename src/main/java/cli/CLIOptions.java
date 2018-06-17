@@ -23,7 +23,16 @@ enum CLIOptions {
     DOWHILE,
     IF,
     IBF,
-    OF;
+    OF,
+    OS,
+    AS,
+    LS,
+    BS,
+    ALS,
+    ABS,
+    LBS,
+    ALBS,
+    MOOS;
 
     @Override
     public String toString() {
