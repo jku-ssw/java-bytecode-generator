@@ -5,6 +5,7 @@ import javassist.CtMethod;
 import logger.FieldVarLogger;
 import logger.MethodLogger;
 import utils.FieldVarType;
+import utils.Operator;
 import utils.RandomSupplier;
 
 import java.util.LinkedList;
@@ -101,8 +102,8 @@ public class ControlFlowGenerator extends Generator {
         FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
         if (type != FieldVarType.STRING) {
             addOperandToCondition(op1, type, condition);
-            String eqRelOp = MathGenerator.getRandomRelOperator();
-            condition.append(eqRelOp);
+            Operator relOp = Operator.getRandomRelationalOperator();
+            condition.append(relOp);
             addOperandToCondition(op2, type, condition);
         } else {
             if (op1 != null) {
@@ -119,7 +120,7 @@ public class ControlFlowGenerator extends Generator {
 
     private static void addOperandToCondition(FieldVarLogger operand, FieldVarType type, StringBuilder condition) {
         if (operand == null) {
-            condition.append(RandomSupplier.getRandomValueNotNull(type));
+            condition.append(RandomSupplier.getRandomCastedValueNotNull(type));
         } else {
             condition.append(operand.getName());
         }

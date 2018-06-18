@@ -52,11 +52,12 @@ public enum FieldVarType {
         return this.clazzType;
     }
 
-    public String getName() {
+    @Override
+    public String toString() {
         if(this == STRING) {
             return "String";
         } else {
-            return this.toString().toLowerCase();
+            return super.toString().toLowerCase();
         }
     }
 

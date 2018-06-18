@@ -35,7 +35,7 @@ public class FieldVarGenerator extends Generator {
         FieldVarType ft = this.getRandomSupplier().getFieldVarType();
         String value = null;
         if (this.RANDOM.nextBoolean()) { //50% chance to be initialized
-            value = this.getRandomSupplier().getRandomValue(ft);
+            value = this.getRandomSupplier().getRandomCastedValue(ft);
         }
         this.generateField(getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
     }
@@ -56,7 +56,7 @@ public class FieldVarGenerator extends Generator {
         String value;
         //TODO fix bug local return value assignment in controlflow
         //if (RANDOM.nextBoolean()) { //50% chance to be initialized
-        value = getRandomSupplier().getRandomValue(ft);
+        value = getRandomSupplier().getRandomCastedValue(ft);
         //}
         this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
     }
@@ -134,7 +134,7 @@ public class FieldVarGenerator extends Generator {
             if (f == null) {
                 return;
             } else {
-                setVarValue(f, method, getRandomSupplier().getRandomValue(f.getType()));
+                setVarValue(f, method, getRandomSupplier().getRandomCastedValue(f.getType()));
             }
         }
     }
@@ -147,7 +147,7 @@ public class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return this.srcSetVarValue(f, getRandomSupplier().getRandomValue(f.getType()));
+            return this.srcSetVarValue(f, getRandomSupplier().getRandomCastedValue(f.getType()));
         }
     }
 
@@ -159,7 +159,7 @@ public class FieldVarGenerator extends Generator {
         if (f == null) {
             return;
         } else {
-            setVarValue(f, method, getRandomSupplier().getRandomValue(f.getType()));
+            setVarValue(f, method, getRandomSupplier().getRandomCastedValue(f.getType()));
         }
     }
 
@@ -171,7 +171,7 @@ public class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return srcSetVarValue(f, getRandomSupplier().getRandomValue(f.getType()));
+            return srcSetVarValue(f, getRandomSupplier().getRandomCastedValue(f.getType()));
         }
     }
 

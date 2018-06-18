@@ -1,8 +1,10 @@
 package utils;
 
 import java.lang.reflect.Modifier;
-import java.util.List;
 import java.util.Random;
+
+import static utils.FieldVarType.BYTE;
+import static utils.FieldVarType.SHORT;
 
 public class RandomSupplier {
     private int methodCharNum = 97;
@@ -66,22 +68,22 @@ public class RandomSupplier {
         return FieldVarType.values()[r];
     }
 
-    public static String getRandomValue(FieldVarType type) {
+    public static String getRandomCastedValue(FieldVarType type) {
         if (type.getClazzType().getName().startsWith("java.lang")) {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) {
                 return "null";
             }
         }
-        return getRandomValueNotNull(type);
+        return getRandomCastedValueNotNull(type);
     }
 
-    public static String getRandomValueNotNull(FieldVarType type) {
+    public static String getRandomCastedValueNotNull(FieldVarType type) {
         switch (type) {
             case BYTE:
-                return "(byte)" + RANDOM.nextInt(Byte.MAX_VALUE + 1);
+                return "(byte)" + (byte) RANDOM.nextInt();
             case SHORT:
-                return "(short)" + RANDOM.nextInt(Short.MAX_VALUE + 1);
+                return "(short)" + (short) RANDOM.nextInt();
             case INT:
                 return "" + RANDOM.nextInt();
             case LONG:
@@ -97,7 +99,56 @@ public class RandomSupplier {
             case STRING:
                 return "\"" + getString() + "\"";
             default:
-                return null;
+                throw new java.lang.AssertionError();
+        }
+    }
+
+    public static String getRandomNumericValue(FieldVarType type, boolean notZero) {
+        switch (type) {
+            case BYTE:
+            case SHORT:
+            case INT:
+                int i = RANDOM.nextInt();
+                if (type == BYTE) {
+                    i = (byte) i;
+                } else if (type == SHORT) {
+                    i = (short) i;
+                }
+                if (notZero) {
+                    return "" + (i != 0 ? i : i++);
+                } else {
+                    return "" + i;
+                }
+            case LONG:
+                long l = RANDOM.nextLong();
+                if (notZero) {
+                    return "" + (l != 0 ? l : l++) + "L";
+                } else {
+                    return "" + l + "L";
+                }
+            case FLOAT:
+                float f = RANDOM.nextFloat();
+                if (notZero) {
+                    return "" + (f != 0f ? f : f++) + "f";
+                } else {
+                    return "" + f + "f";
+                }
+            case DOUBLE:
+                double d = RANDOM.nextDouble();
+                if(notZero) {
+                    return "" + (d != 0d ? d : d++) + "d";
+                } else {
+                    return "" + d + "d";
+                }
+            case CHAR:
+                char c = STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length()));
+                if(notZero) {
+                    return "\'" + (c != 0 ? c : c++) + "\'";
+                } else {
+                    return "\'" + c + "\'";
+                }
+            default:
+                throw new java.lang.AssertionError();
         }
     }
 

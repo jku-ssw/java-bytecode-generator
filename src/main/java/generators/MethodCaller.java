@@ -30,7 +30,7 @@ abstract class MethodCaller extends Generator {
             if (paramType == fvl.getType()) {
                 return fvl.getName();
             } else {
-                throw new AssertionError("Invalid parameter value for parameter type " + paramType.getName());
+                throw new AssertionError("Invalid parameter value for parameter type " + paramType);
             }
         } else if (param.isValue()) {
             return param.getParamValue().toString();

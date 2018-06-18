@@ -293,7 +293,7 @@ public class RandomCodeGenerator {
             if (r < controller.getOperatorStatementProbability()) {
                 int globalOrLocalOrNotAssign;
                 if (r < controller.getLocalAssignProbability() && r < controller.getGlobalAssignProbability()) {
-                    globalOrLocalOrNotAssign = RANDOM.nextInt(2);
+                    globalOrLocalOrNotAssign = RANDOM.nextInt(3);
                 } else if (r < controller.getGlobalAssignProbability()) {
                     globalOrLocalOrNotAssign = 0;
                 } else if (r < controller.getLocalAssignProbability()) {
@@ -302,17 +302,23 @@ public class RandomCodeGenerator {
                     globalOrLocalOrNotAssign = 2;
                 }
 
-                OpStatKind opStatKind = OpStatKind.ARITHMETIC;//getOpStatKind();
+                OpStatKind opStatKind = getOpStatKind();
+
+                if(opStatKind == null) {
+                    break;
+                }
 
                 int maxOperations = controller.getMaxOperatorsInOperatorStatement();
-
                 switch (globalOrLocalOrNotAssign) {
                     case 0:
-                        //math_generator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind);
+                        math_generator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                        break;
                     case 1:
-                        //math_generator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind);
+                        math_generator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                        break;
                     case 2:
                         math_generator.generateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true); //TODO userinput for not avoidDivByZero
+                        break;
                 }
             }
         }
@@ -332,42 +338,42 @@ public class RandomCodeGenerator {
                     }
                 case LOGICAL:
                     if (opProb < controller.getLogicalStatementProbability()) {
-                        return ARITHMETIC;
+                        return LOGICAL;
                     } else {
                         selectedKind = BITWISE;
                         break;
                     }
                 case BITWISE:
                     if (opProb < controller.getBitwiseStatementProbability()) {
-                        return ARITHMETIC;
+                        return BITWISE;
                     } else {
                         selectedKind = ARITHMETIC_LOGICAL;
                         break;
                     }
                 case ARITHMETIC_LOGICAL:
                     if (opProb < controller.getArithLogicalStatementProbability()) {
-                        return ARITHMETIC;
+                        return ARITHMETIC_LOGICAL;
                     } else {
                         selectedKind = ARITHMETIC_BITWISE;
                         break;
                     }
                 case ARITHMETIC_BITWISE:
                     if (opProb < controller.getArithBitwiseStatementProbability()) {
-                        return ARITHMETIC;
+                        return ARITHMETIC_BITWISE;
                     } else {
                         selectedKind = BITWISE_LOGICAL;
                         break;
                     }
                 case BITWISE_LOGICAL:
                     if (opProb < controller.getLogicBitwiseStatementProbability()) {
-                        return ARITHMETIC;
+                        return BITWISE_LOGICAL;
                     } else {
                         selectedKind = ARITHMETIC_LOGICAL_BITWISE;
                         break;
                     }
                 case ARITHMETIC_LOGICAL_BITWISE:
                     if (opProb < controller.getArithLogicalBitwiseStatementProbability()) {
-                        return ARITHMETIC;
+                        return ARITHMETIC_LOGICAL_BITWISE;
                     } else {
                         selectedKind = ARITHMETIC;
                     }
@@ -392,11 +398,13 @@ public class RandomCodeGenerator {
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
-                if (field.getType() != FieldVarType.STRING) {
-                    src.append("hashValue += (int)" + field.getName() + ";");
-                } else {
+                if(field.getType() == FieldVarType.STRING) {
                     src.append("if(" + field.getName() + " != null) {");
                     src.append("hashValue += " + field.getName() + ".hashCode();}");
+                } else if (field.getType() == FieldVarType.BOOLEAN) {
+                    src.append("hashValue += " + field.getName() + "? 1 : 0;");
+                } else {
+                    src.append("hashValue += (int)" + field.getName() + ";");
                 }
             }
         }

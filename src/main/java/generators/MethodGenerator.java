@@ -28,26 +28,26 @@ public class MethodGenerator extends MethodCaller {
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
-            paramsStr.append(paramTypes[0].getName() + " " + paramName);
+            paramsStr.append(paramTypes[0] + " " + paramName);
             ml.logVariable(paramName, paramTypes[0], 0, true);
             for (int i = 1; i < paramTypes.length; i++) {
                 paramsStr.append(", ");
                 paramName = this.getRandomSupplier().getParVarName(i + 1);
                 ml.logVariable(paramName, paramTypes[i], 0, true);
-                paramsStr.append(paramTypes[i].getName() + " " + paramName);
+                paramsStr.append(paramTypes[i] + " " + paramName);
             }
         }
         String returnStatement;
         if (returnType == FieldVarType.VOID) {
             returnStatement = "";
         } else {
-            returnStatement = "return " + RandomSupplier.getRandomValue(returnType) + ";";
+            returnStatement = "return " + RandomSupplier.getRandomCastedValue(returnType) + ";";
         }
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
         try {
             newMethod = CtNewMethod.make(modifiersToString(modifiers) +
-                    returnType.getName() + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
+                    returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
                     "} ", this.getClazzFile());
             this.getClazzFile().addMethod(newMethod);
             return ml;

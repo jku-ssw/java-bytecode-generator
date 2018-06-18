@@ -77,7 +77,6 @@ abstract class Generator {
         try {
             CtMethod ctMethod = this.getCtMethod(method);
             ctMethod.insertAfter(src);
-            System.out.println("INSERTED: " + src);
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
