@@ -4,6 +4,7 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class ClazzLogger extends MyLogger {
     }
 
     public void logMethod(MethodLogger ml) {
-        ml.addMethodToExcludedForCalling(ml);
+       // ml.addToExcludedForCalling(ml);
         methods.add(ml);
     }
 
@@ -57,23 +58,36 @@ public class ClazzLogger extends MyLogger {
         }
     }
 
-    public MethodLogger getRandomCallableMethod(MethodLogger callerMethod) {
+    public MethodLogger getRandomCallableMethod(MethodLogger callingMethod) {
         List<MethodLogger> callableMethods;
-        if (callerMethod.isStatic()) {
+        if (callingMethod.isStatic()) {
             callableMethods = getStaticMethods();
         } else {
             callableMethods = new ArrayList<>(methods);
         }
         //exclude methods that have called the callerMethod
-        callableMethods.removeAll(callerMethod.getMethodsExcludedForCalling());
-        //exclude callerMethod itself
-        callableMethods.remove(callerMethod);
-        //exclude methods, that call methods in methodsExludedForCalling of this callerMethod
-        callableMethods = callableMethods.stream().filter(m ->
-                Collections.disjoint(m.getMethodsCalledByThisMethod(),
-                        callerMethod.getMethodsExcludedForCalling())).collect(Collectors.toList());
+        //callableMethods.removeAll(callingMethod.getMethodsExcludedForCalling());
+//        for(MethodLogger m: callingMethod.getMethodsExcludedForCalling()) {
+//            callableMethods.removeAll(m.getMethodsExcludedForCalling());
+//        }
+        callableMethods.remove(callingMethod);
+        removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
+        //exclude methods, that cannot call methods in methodsExcludedForCalling of this callerMethod
+//        callableMethods = callableMethods.stream().filter(m ->
+//                Collections.disjoint(m.getMethodsCalledByThisMethod(),
+//                        callingMethod.getMethodsExcludedForCalling())).collect(Collectors.toList());
 
-        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt((callableMethods.size())));
+        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
+    }
+
+    private void removeAllExcludedForCalling(List<MethodLogger> callableMethods, Set<MethodLogger> excludedForCalling) {
+        if(excludedForCalling.isEmpty()) {
+            return;
+        }
+        callableMethods.removeAll(excludedForCalling);
+        for(MethodLogger m: excludedForCalling) {
+            removeAllExcludedForCalling(callableMethods, m.getMethodsExcludedForCalling());
+        }
     }
 
     private List<MethodLogger> getStaticMethods() {

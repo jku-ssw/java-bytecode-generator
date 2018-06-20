@@ -8,7 +8,7 @@ public class JBGenerator {
     public static void main(String[] args) {
         ControlValueParser parser = new ControlValueParser(args);
         GenerationController controller = parser.parse();
-        RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("MyGeneratedClazz", controller);
+        RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("MyClazz", controller);
         randomCodeGenerator.generate();
         randomCodeGenerator.writeFile();
     }

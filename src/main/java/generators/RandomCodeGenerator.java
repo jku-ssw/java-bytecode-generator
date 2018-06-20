@@ -16,6 +16,8 @@ import generators.MathGenerator.OpStatKind;
 
 import static generators.MathGenerator.OpStatKind.*;
 
+//-l 15 -f 90 -lv 59 -ga 100 -la 100 -m 50 -mc 100 -ml 5 -mli 5 -mp 7 -mo 20 -p 0 -jlm 70 -cf 10 -cl 1 -cd 4 -moos 10
+
 public class RandomCodeGenerator {
     enum Context {
         PROGRAM_CONTEXT,
@@ -77,6 +79,7 @@ public class RandomCodeGenerator {
         if (this.getClazzLogger().hasMethods()) {
             for (MethodLogger method : this.getClazzLogger().getMethods()) {
                 method_generator.generateMethodBody(method);
+                System.out.println(method.getName());
             }
         }
 
@@ -170,7 +173,7 @@ public class RandomCodeGenerator {
             }
 
             if (r <= controller.getMethodCallProbability()) {
-                int callKind = RANDOM.nextInt(3);
+                int callKind = 0;//RANDOM.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method

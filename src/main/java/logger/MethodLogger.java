@@ -4,10 +4,7 @@ import javassist.CtClass;
 import utils.FieldVarType;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * stores information about a Method
@@ -19,8 +16,8 @@ public class MethodLogger extends MyLogger {
     private FieldVarType[] paramTypes;
     private FieldVarType returnType;
 
-    private List<MethodLogger> methodsExcludedForCalling;
-    private List<MethodLogger> calledByThisMethod;
+    private Set<MethodLogger> methodsExcludedForCalling;
+    private Set<MethodLogger> calledByThisMethod;
 
     public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType... paramTypes) {
         this.name = name;
@@ -28,25 +25,26 @@ public class MethodLogger extends MyLogger {
         this.returnType = returnType;
         this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
-        this.methodsExcludedForCalling = new ArrayList<>();
-        this.calledByThisMethod = new ArrayList<>();
+        this.methodsExcludedForCalling = new HashSet<>();
+        //this.methodsExcludedForCalling.add(this);
+        this.calledByThisMethod = new HashSet<>();
     }
 
-    public void addMethodToExcludedForCalling(MethodLogger callingMethod) {
-        methodsExcludedForCalling.add(callingMethod);
+    public void addToExcludedForCalling(Set<MethodLogger> excludedForCalling) {
+        methodsExcludedForCalling.addAll(excludedForCalling);
     }
 
-    public void addMethodTocalledByThisMethod(MethodLogger callingMethod) {
-        calledByThisMethod.add(callingMethod);
+    public void addMethodToCalledByThisMethod(Set<MethodLogger> calledByThisMethod) {
+        this.calledByThisMethod.addAll(calledByThisMethod);
     }
 
 
-    public List<MethodLogger> getMethodsExcludedForCalling() {
-        return methodsExcludedForCalling;
+    public Set<MethodLogger> getMethodsExcludedForCalling() {
+        return new HashSet<>(methodsExcludedForCalling);
     }
 
-    public List<MethodLogger> getMethodsCalledByThisMethod () {
-        return calledByThisMethod;
+    public Set<MethodLogger> getMethodsCalledByThisMethod() {
+        return new HashSet<>(calledByThisMethod);
     }
 
     public String getName() {

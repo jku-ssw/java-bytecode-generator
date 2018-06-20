@@ -7,8 +7,7 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MethodGenerator extends MethodCaller {
@@ -56,50 +55,11 @@ public class MethodGenerator extends MethodCaller {
         }
     }
 
-    /**
-     * @param modifiers the Integer-Representation of the modifiers
-     * @return a STRING-Representation of these modifiers
-     */
-    private static String modifiersToString(int modifiers) {
-        StringBuilder b = new StringBuilder();
-        if (Modifier.isStatic(modifiers)) {
-            b.append("static ");
-        }
-        if (Modifier.isFinal(modifiers)) {
-            b.append("final ");
-        }
-        if (Modifier.isPrivate(modifiers)) {
-            b.append("private ");
-        }
-        if (Modifier.isProtected(modifiers)) {
-            b.append("protected ");
-        }
-        if (Modifier.isPublic(modifiers)) {
-            b.append("public ");
-        }
-        return b.toString();
-    }
-
-    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
-        if (types1.length == types2.length) {
-            for (int i = 0; i < types1.length; i++) {
-                if (types1[i] != types2[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public void generateMethodBody(MethodLogger method) {
         RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
         this.overrideReturnStatement(method);
     }
-
-    //===============================================Method Calling=====================================================
 
     public MethodLogger generateRandomMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
@@ -144,6 +104,21 @@ public class MethodGenerator extends MethodCaller {
         }
     }
 
+    //===============================================Method Calling=====================================================
+
+    private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
+        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
+        Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
+        excludedForCalling.add(method);
+        calledMethod.addToExcludedForCalling(excludedForCalling);
+        //calledMethod.addToExcludedForCalling(method);
+        Set<MethodLogger> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
+        calledByThisMethod.add(calledMethod);
+        method.addMethodToCalledByThisMethod(calledByThisMethod);
+        return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
+    }
+
     public void generateRandomMethodCall(MethodLogger method) {
         String src = srcGenerateRandomMethodCall(method);
         insertIntoMethodBody(method, src);
@@ -155,11 +130,16 @@ public class MethodGenerator extends MethodCaller {
             if (calledMethod == null) {
                 return null;
             }
-            FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-            ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
-            calledMethod.addMethodToExcludedForCalling(method);
-            method.addMethodTocalledByThisMethod(calledMethod);
-            return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
+            return srcCallMethod(calledMethod, method);
+//            FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+//            ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
+//            List<MethodLogger> excludedForCalling = new ArrayList<>();
+//            excludedForCalling.addAll(method.getMethodsExcludedForCalling());
+//            excludedForCalling.add(method);
+//            calledMethod.addToExcludedForCalling(excludedForCalling);
+//            //calledMethod.addToExcludedForCalling(method);
+//            //method.addMethodToCalledByThisMethod(calledMethod);
+//            return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
         } else {
             return null;
         }
@@ -180,7 +160,8 @@ public class MethodGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             } else {
-                return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
+                fieldVar.setInitialized();
+                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);//srcSetVariableToReturnValue(calledMethod, method, fieldVar);
             }
         } else {
             return null;
@@ -202,25 +183,46 @@ public class MethodGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             } else {
-                return srcSetVariableToReturnValue(calledMethod, method, fieldVar);
+                fieldVar.setInitialized();
+                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);//srcSetVariableToReturnValue(calledMethod, method, fieldVar);
             }
         } else {
             return null;
         }
     }
 
+    public MethodLogger generateAndCallRunMethod() {
+        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+        try {
+            this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
+            CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
+            this.getClazzFile().addConstructor(constructor);
+            String fileName = this.getClazzContainer().getFileName();
+            main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + constructor.getName() + "();" +
+                    fileName.toLowerCase() + ".run();");
+        } catch (CannotCompileException e) {
+            throw new AssertionError(e);
+        }
+        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.VOID);
+        this.getClazzLogger().setRun(runLogger);
+        return runLogger;
+    }
+
 
     //=================================================Utility==========================================================
 
-    private String srcSetVariableToReturnValue(MethodLogger calledMethod, MethodLogger method, FieldVarLogger fieldVar) {
-        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
-        calledMethod.addMethodToExcludedForCalling(method);
-        method.addMethodTocalledByThisMethod(calledMethod);
-        fieldVar.setInitialized();
-        return fieldVar.getName() + " = "
-                + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), values);
-    }
+//    private String srcSetVariableToReturnValue(MethodLogger calledMethod, MethodLogger method, FieldVarLogger fieldVar) {
+//        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+//        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
+//        List<MethodLogger> excludedForCalling = new ArrayList<>();
+//        excludedForCalling.addAll(method.getMethodsExcludedForCalling());
+//        excludedForCalling.add(method);
+//        calledMethod.addToExcludedForCalling(excludedForCalling);
+//        //method.addMethodToCalledByThisMethod(calledMethod);
+//        fieldVar.setInitialized();
+//        return fieldVar.getName() + " = "
+//                + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), values);
+//    }
 
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {
@@ -245,20 +247,36 @@ public class MethodGenerator extends MethodCaller {
         return false;
     }
 
-    public MethodLogger generateAndCallRunMethod() {
-        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
-        try {
-            this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
-            CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
-            this.getClazzFile().addConstructor(constructor);
-            String fileName = this.getClazzContainer().getFileName();
-            main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + constructor.getName() + "();" +
-                    fileName.toLowerCase() + ".run();");
-        } catch (CannotCompileException e) {
-            throw new AssertionError(e);
+    private static String modifiersToString(int modifiers) {
+        StringBuilder b = new StringBuilder();
+        if (Modifier.isStatic(modifiers)) {
+            b.append("static ");
         }
-        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.VOID);
-        this.getClazzLogger().setRun(runLogger);
-        return runLogger;
+        if (Modifier.isFinal(modifiers)) {
+            b.append("final ");
+        }
+        if (Modifier.isPrivate(modifiers)) {
+            b.append("private ");
+        }
+        if (Modifier.isProtected(modifiers)) {
+            b.append("protected ");
+        }
+        if (Modifier.isPublic(modifiers)) {
+            b.append("public ");
+        }
+        return b.toString();
+    }
+
+    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
+        if (types1.length == types2.length) {
+            for (int i = 0; i < types1.length; i++) {
+                if (types1[i] != types2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
