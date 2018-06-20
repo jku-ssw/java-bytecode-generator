@@ -151,39 +151,54 @@ public class MathGenerator extends MethodCaller {
     }
 
     public void generateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
-        StringBuilder src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero);
-        insertIntoMethodBody(method, src.toString());
+        String src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero);
+        if (src != null) {
+            insertIntoMethodBody(method, src);
+        }
     }
 
     public void generateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+        String src = srcGenerateRandomOperatorStatementToLocal(method, maxOperations, opStatKind, avoidDivByZero);
+        if (src != null) {
+            insertIntoMethodBody(method, src);
+        }
+    }
+
+    public String srcGenerateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
         FieldVarLogger f = fetchLocalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
-            return;
+            return null;
         }
-        StringBuilder src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero);
+        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
             src.insert(0, f.getName() + " = (" + f.getType() + ") (");
         }
         src.insert(src.indexOf(";"), ")");
-        insertIntoMethodBody(method, src.toString());
+        return src.toString();
     }
 
     public void generateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+        String src = srcGenerateRandomOperatorStatementToField(method, maxOperations, opStatKind, avoidDivByZero);
+        if (src != null) {
+            insertIntoMethodBody(method, src);
+        }
+    }
+
+    public String srcGenerateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
         FieldVarLogger f = fetchGlobalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
-            return;
+            return null;
         }
-        StringBuilder src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero);
+        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
             src.insert(0, f.getName() + " = (" + f.getType() + ") (");
         }
         src.insert(src.indexOf(";"), ")");
-        System.out.println(src.toString());
-        insertIntoMethodBody(method, src.toString());
+        return src.toString();
     }
 
     //================================================Utility===========================================================
@@ -284,7 +299,7 @@ public class MathGenerator extends MethodCaller {
         return types.get(RANDOM.nextInt(types.size()));
     }
 
-    private StringBuilder srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
         int numberOfOperands = 1 + RANDOM.nextInt(maxOperations);
         StringBuilder src = new StringBuilder();
         switch (opStatKind) {
@@ -309,9 +324,7 @@ public class MathGenerator extends MethodCaller {
             src = addIfToOperatorStatement(src, checkForDivByZero);
             checkForDivByZero.clear();
         }
-
-        System.out.println(src.toString());
-        return src;
+        return src.toString();
     }
 
     private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands, boolean avoidDivByZero) {
@@ -360,7 +373,7 @@ public class MathGenerator extends MethodCaller {
                     openRel = true;
                 }
             } else {
-                if(bitAndOrArithmetic == ARITHMETIC_BITWISE) {
+                if (bitAndOrArithmetic == ARITHMETIC_BITWISE) {
                     statement = generateArithmeticBitwiseStatement(method, numberOfOperands, avoidDivByZero);
                 } else {
                     statement = srcGenerateOperatorStatement(method, operandsInPartition, bitAndOrArithmetic, avoidDivByZero);

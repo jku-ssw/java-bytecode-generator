@@ -307,21 +307,36 @@ public class RandomCodeGenerator {
 
                 OpStatKind opStatKind = getOpStatKind();
 
-                if(opStatKind == null) {
+                if (opStatKind == null) {
                     break;
                 }
 
                 int maxOperations = controller.getMaxOperatorsInOperatorStatement();
+                String src = null;
                 switch (globalOrLocalOrNotAssign) {
                     case 0:
-                        math_generator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                        if (context == Context.CONTROL_CONTEXT) {
+                            src = math_generator.srcGenerateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                        } else {
+                            math_generator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                        }
                         break;
                     case 1:
-                        math_generator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                        if (context == Context.CONTROL_CONTEXT) {
+                            src = math_generator.srcGenerateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                        } else {
+                            math_generator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                        }
                         break;
                     case 2:
-                        math_generator.generateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true); //TODO userinput for not avoidDivByZero
-                        break;
+                        if (context == Context.CONTROL_CONTEXT) {
+                            src = math_generator.srcGenerateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true);
+                        } else {
+                            math_generator.generateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true);  //TODO userinput for not avoidDivByZero
+                        }
+                }
+                if (src != null) {
+                    controlFlow_generator.addCodeToControlSrc(src);
                 }
             }
         }
@@ -401,7 +416,7 @@ public class RandomCodeGenerator {
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
-                if(field.getType() == FieldVarType.STRING) {
+                if (field.getType() == FieldVarType.STRING) {
                     src.append("if(" + field.getName() + " != null) {");
                     src.append("hashValue += " + field.getName() + ".hashCode();}");
                 } else if (field.getType() == FieldVarType.BOOLEAN) {

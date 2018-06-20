@@ -11,41 +11,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class TestMathGenerator extends TestGenerator {
-    private String[] args = new String[]{
-            "-l", "10", "-f", "20", "-lv", "100", "-ga", "40", "-la", "60", "-m", "100", "-mc", "100",
-            "-ml", "3", "-mp", "7", "-mo", "0", "-p", "0", "jlm", "100", "-cf", "0", "-cl", "3", "-cd", "3"};
 
-
-//    @Test
-//    void testGenerateRandomMathMethodCall() throws CannotCompileException, IOException {
-//        ClazzFileContainer container = new ClazzFileContainer("MathTest");
-//        FieldVarGenerator fieldVarGenerator = new FieldVarGenerator(container);
-//        MethodLogger main = container.getClazzLogger().getMain();
-//
-//        //generate some fields and variables
-//        for (int i = 1; i < 20; i++) {
-//            fieldVarGenerator.generateRandomLocalVariable(main);
-//            fieldVarGenerator.generateRandomField();
-//        }
-//
-//        MathGenerator mathGenerator = new MathGenerator(container);
-//        for (int i = 0; i < 10; i++) {
-//            mathGenerator.generateRandomMathMethodCall(main, true);
-//            mathGenerator.setRandomFieldToMathReturnValue(main, true);
-//            mathGenerator.setRandomLocalVarToMathReturnValue(main, true);
-//        }
-//
-//        mathGenerator.getClazzFile().writeFile("src/test/generated_test_files");
-//        try {
-//            assertEquals(true, executeAndDeleteFile("MathTest"));
-//        } catch (IOException | InterruptedException e) {
-//            throw new AssertionError(e);
-//        }
-//    }
+    private static String ARITHMETIC_EXCEPTION = "java.lang.ArithmeticException";
 
     @Test
-    void testGenerationOfOverflowMethodsAvoidingOverflows() {
-        ClazzFileContainer container = new ClazzFileContainer("MathTestWithoutOverflow");
+    void testGenerationOfJavaLangMathMethodsAvoidingOverflows() throws CannotCompileException {
+        generateMathMethodCalls("MathTestWithoutOverflow",true);
+    }
+
+    @Test
+    void testGenerationOfJavaLangMathMethodsNotAvoidingOverflows() throws CannotCompileException {
+        generateMathMethodCalls("MathTestWithOverflow", false);
+    }
+
+    private static MathGenerator createMathGeneratorWithFieldsAndLocals(String clazzName) {
+        ClazzFileContainer container = new ClazzFileContainer(clazzName);
         FieldVarGenerator fieldVarGenerator = new FieldVarGenerator(container);
         MethodLogger main = container.getClazzLogger().getMain();
 
@@ -55,51 +35,91 @@ public class TestMathGenerator extends TestGenerator {
             fieldVarGenerator.generateRandomField();
         }
 
-        MathGenerator mathGenerator = new MathGenerator(container);
-        for (int i = 0; i < 10; i++) {
-            mathGenerator.generateRandomMathMethodCall(main, true);
-            mathGenerator.setRandomFieldToMathReturnValue(main, true);
-            mathGenerator.setRandomLocalVarToMathReturnValue(main, true);
+        return new MathGenerator(container);
+    }
+
+    private void generateMathMethodCalls(String clazzName, boolean avoidOverflows) throws CannotCompileException {
+        MathGenerator mathGenerator = createMathGeneratorWithFieldsAndLocals(clazzName);
+        MethodLogger main = mathGenerator.getClazzLogger().getMain();
+
+        //call some methods
+        for (int i = 0; i < 20; i++) {
+            String notAssign = mathGenerator.srcGenerateRandomMathMethodCall(main, avoidOverflows);
+            if(notAssign != null) {
+                mathGenerator.getCtMethod(main).insertAfter(notAssign);
+            }
+            String assignToField = mathGenerator.srcSetRandomFieldToMathReturnValue(main, avoidOverflows);
+            if(assignToField != null) {
+                mathGenerator.getCtMethod(main).insertAfter(assignToField);
+            }
+            String assignToLocal = mathGenerator.srcSetRandomLocalVarToMathReturnValue(main, avoidOverflows);
+            if(assignToLocal != null) {
+                mathGenerator.getCtMethod(main).insertAfter(assignToLocal);
+            }
+            System.out.println(notAssign + "\n" + assignToField + "\n" + assignToLocal);
         }
 
         mathGenerator.writeFile("src/test/generated_test_files");
         try {
-            assertEquals(true, executeAndDeleteFile("MathTestWithoutOverflow"));
+            if(avoidOverflows) {
+                assertEquals(true, executeAndDeleteFile(clazzName));
+            } else {
+                assertEquals(true, executeAndDeleteFile(clazzName, ARITHMETIC_EXCEPTION));
+            }
         } catch (IOException | InterruptedException e) {
             throw new AssertionError(e);
         }
     }
 
     @Test
-    void testGenerationOfOverflowMethodsNotAvoidingOverflows() {
-        ClazzFileContainer container = new ClazzFileContainer("MathTestWithOverflow");
-        FieldVarGenerator fieldVarGenerator = new FieldVarGenerator(container);
-        MethodLogger main = container.getClazzLogger().getMain();
-
-        //generate some fields and variables
-        for (int i = 1; i < 20; i++) {
-            fieldVarGenerator.generateRandomLocalVariable(main);
-            fieldVarGenerator.generateRandomField();
-        }
-
-        MathGenerator mathGenerator = new MathGenerator(container);
-        for (int i = 0; i < 10; i++) {
-            mathGenerator.generateRandomMathMethodCall(main, false);
-            mathGenerator.setRandomFieldToMathReturnValue(main, false);
-            mathGenerator.setRandomLocalVarToMathReturnValue(main, false);
-        }
-
-        mathGenerator.writeFile("src/test/generated_test_files");
-        try {
-            assertEquals(true, executeAndDeleteFile("MathTestWithOverflow", "java.lang.ArithmeticException"));
-        } catch (IOException | InterruptedException e) {
-            throw new AssertionError(e);
-        }
+    void testGenerateArithmeticOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("ArithmeticOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.ARITHMETIC, true);
     }
 
     @Test
-    void testGenerateOperatorStatements() {
+    void testGenerateBitwiseOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("BitwiseOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.BITWISE, true);
+    }
 
+    @Test
+    void testGenerateLogicalOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("LogicalOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.LOGICAL, true);
+    }
+
+    @Test
+    void testGenerateArithmeticLogicalOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("ArithmeticLogicalOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.ARITHMETIC_LOGICAL, true);
+    }
+
+    @Test
+    void testGenerateBitwiseLogicalOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("BitwiseLogicalOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.BITWISE_LOGICAL, true);
+    }
+
+    @Test
+    void testGenerateArithmeticLogicalBitwiseOperatorStatementsAvoidDivByZero() throws CannotCompileException {
+        testGenerateOperatorStatements("ArithmeticBitwiseLogicalOperatorStatementsAvoidDivByZero", MathGenerator.OpStatKind.ARITHMETIC_LOGICAL_BITWISE, true);
+    }
+
+    private void testGenerateOperatorStatements(String clazzName, MathGenerator.OpStatKind opStatKind, boolean avoidDivByZero) throws CannotCompileException {
+        MathGenerator mathGenerator = createMathGeneratorWithFieldsAndLocals(clazzName);
+        MethodLogger main = mathGenerator.getClazzLogger().getMain();
+
+        for (int i = 0; i < 20; i++) {
+            String notAssign = mathGenerator.srcGenerateRandomOperatorStatement(main, 20, opStatKind, avoidDivByZero);
+            if(notAssign != null) {
+                mathGenerator.getCtMethod(main).insertAfter(notAssign);
+            }
+            String assignToField = mathGenerator.srcGenerateRandomOperatorStatementToField(main, 20, opStatKind, avoidDivByZero);
+            if(assignToField != null) {
+                mathGenerator.getCtMethod(main).insertAfter(assignToField);
+            }
+            String assignToLocal = mathGenerator.srcGenerateRandomOperatorStatementToLocal(main, 20, opStatKind, avoidDivByZero);
+            if(assignToLocal != null) {
+                mathGenerator.getCtMethod(main).insertAfter(assignToLocal);
+            }
+            System.out.println(notAssign + "\n" + assignToField + "\n" + assignToLocal);
+        }
     }
 
 
