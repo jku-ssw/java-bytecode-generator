@@ -23,9 +23,9 @@ public class TestRandomCodeGenerator extends TestGenerator {
             GenerationController controller = parser.parse();
             RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("TestClazz" + i, controller);
             randomCodeGenerator.generate();
-            randomCodeGenerator.writeFile("src/test/generated_test_files");
+            randomCodeGenerator.writeFile("src/test/resources/generated_test_files");
             try {
-                assertEquals(true, executeAndDeleteFile("TestClazz" + i));
+                assertEquals(true, executeFile("TestClazz" + i));
             } catch (IOException | InterruptedException e) {
                 throw new AssertionError(e);
             }

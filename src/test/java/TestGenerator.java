@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class TestGenerator {
-    boolean executeAndDeleteFile(String fileName, String... allowedExceptions) throws IOException, InterruptedException {
-        Process p = Runtime.getRuntime().exec("java " + fileName, null, new File("src/test/generated_test_files"));
+    boolean executeFile(String fileName, String... allowedExceptions) throws IOException, InterruptedException {
+        Process p = Runtime.getRuntime().exec("java " + fileName, null, new File("src/test/resources/generated_test_files"));
         BufferedReader brIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
         BufferedReader brErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
         String line;
@@ -15,18 +15,18 @@ public abstract class TestGenerator {
             System.out.println(line);
         }
         while ((line = brErr.readLine()) != null) {
+            if(!line.contains("Exception")) continue;
             if(checkIfExceptionAllowed(line, allowedExceptions)) {
-                System.out.println(line);
                 continue;
             } else {
-                new IOException("Execution of " + fileName + " failed " + "Not allowed exception: " + line);
+                throw new IOException("Execution of " + fileName + " failed.\nNot allowed exception: " + line);
             }
         }
         int exitCode = p.waitFor();
         if (exitCode != 0 && allowedExceptions.length == 0) {
             throw new IOException("Execution of " + fileName + " failed " + exitCode);
         } else {
-            assertEquals(true, new File("src/test/generated_test_files/" + fileName + ".class").delete());
+            //assertEquals(true, new File("src/test/generated_test_files/" + fileName + ".class").delete());
             brIn.close();
             brErr.close();
             return true;
@@ -35,6 +35,8 @@ public abstract class TestGenerator {
 
     private boolean checkIfExceptionAllowed(String line, String[] allowedExceptions) {
         for(String exception: allowedExceptions) {
+            System.out.println(exception);
+            System.out.println(line);
             if(line.contains(exception)) {
                 return true;
             }

@@ -17,7 +17,8 @@ public class MathGenerator extends MethodCaller {
 
     private static Map<String, String> OVERFLOW_METHODS;
 
-    private Set<String> checkForDivByZero = new HashSet<>();
+    private final Set<String> checkForDivByZero = new HashSet<>();
+    private final Set<FieldVarLogger> incDecrementOperands = new HashSet<>();
 
 
     public enum OpStatKind {
@@ -155,6 +156,35 @@ public class MathGenerator extends MethodCaller {
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
+    }
+
+    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+        int numberOfOperands = 1 + RANDOM.nextInt(maxOperations);
+        StringBuilder src = new StringBuilder();
+        switch (opStatKind) {
+            case ARITHMETIC:
+            case LOGICAL:
+            case BITWISE:
+                src = srcGenerateOperatorStatement(method, numberOfOperands, opStatKind, avoidDivByZero);
+                break;
+            case ARITHMETIC_BITWISE:
+                src = generateArithmeticBitwiseStatement(method, numberOfOperands, avoidDivByZero);
+                break;
+            case ARITHMETIC_LOGICAL:
+                src = generateCombinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands, avoidDivByZero);
+                break;
+            case BITWISE_LOGICAL:
+                src = generateCombinedWithLogicalStatement(BITWISE, method, numberOfOperands, avoidDivByZero);
+                break;
+            case ARITHMETIC_LOGICAL_BITWISE:
+                src = generateCombinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands, avoidDivByZero);
+        }
+        if (!checkForDivByZero.isEmpty()) {
+            src = addIfToOperatorStatement(src, checkForDivByZero);
+            checkForDivByZero.clear();
+        }
+        incDecrementOperands.clear();
+        return src.toString();
     }
 
     public void generateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
@@ -299,34 +329,6 @@ public class MathGenerator extends MethodCaller {
         return types.get(RANDOM.nextInt(types.size()));
     }
 
-    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
-        int numberOfOperands = 1 + RANDOM.nextInt(maxOperations);
-        StringBuilder src = new StringBuilder();
-        switch (opStatKind) {
-            case ARITHMETIC:
-            case LOGICAL:
-            case BITWISE:
-                src = srcGenerateOperatorStatement(method, numberOfOperands, opStatKind, avoidDivByZero);
-                break;
-            case ARITHMETIC_BITWISE:
-                src = generateArithmeticBitwiseStatement(method, numberOfOperands, avoidDivByZero);
-                break;
-            case ARITHMETIC_LOGICAL:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands, avoidDivByZero);
-                break;
-            case BITWISE_LOGICAL:
-                src = generateCombinedWithLogicalStatement(BITWISE, method, numberOfOperands, avoidDivByZero);
-                break;
-            case ARITHMETIC_LOGICAL_BITWISE:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands, avoidDivByZero);
-        }
-        if (!checkForDivByZero.isEmpty()) {
-            src = addIfToOperatorStatement(src, checkForDivByZero);
-            checkForDivByZero.clear();
-        }
-        return src.toString();
-    }
-
     private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands, boolean avoidDivByZero) {
         StringBuilder src = new StringBuilder();
         int maxPartitionSize = 1 + numberOfOperands / 2;
@@ -407,7 +409,7 @@ public class MathGenerator extends MethodCaller {
             FieldVarLogger f = fetchOperand(method, opStatKind, operator);
             String operand;
             FieldVarType type;
-            if (f == null) {
+            if (f == null || (operator == DIV || operator == MOD) && incDecrementOperands.contains(f)) {
                 type = getOperandType(opStatKind);
                 if (type == FieldVarType.BOOLEAN) {
                     operand = RandomSupplier.getRandomCastedValue(type);
@@ -435,6 +437,9 @@ public class MathGenerator extends MethodCaller {
             operator = getOperator(opStatKind, useNonUnary);
             if (operator.isUnary()) {
                 operatorStatement.append(operator + operand);
+                if (f != null && (operator == PLUS_PLUS || operator == MINUS_MINUS)) {
+                    incDecrementOperands.add(f);
+                }
                 operator = getOperator(opStatKind, true);
                 operatorStatement.append(operator);
             } else {
@@ -503,22 +508,5 @@ public class MathGenerator extends MethodCaller {
         FieldVarType type = getOperandType(opStatKind);
         return this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
     }
-
-
-    //TODO arith Statement probability
-
-    //TODO bitwise Statement probability
-
-    //TODO if both mix according to probabilities
-
-    //TODO logical Statement probability
-
-    //TODO random arithmetic Statement
-
-    //TODO random arithmetic and btiwise Statement
-
-    //TODO random boolsch Statement
-
-    //TODO random boolsch arithmetic bitwise
 
 }

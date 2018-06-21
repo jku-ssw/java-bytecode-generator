@@ -79,7 +79,6 @@ public class RandomCodeGenerator {
         if (this.getClazzLogger().hasMethods()) {
             for (MethodLogger method : this.getClazzLogger().getMethods()) {
                 method_generator.generateMethodBody(method);
-                System.out.println(method.getName());
             }
         }
 
@@ -95,7 +94,6 @@ public class RandomCodeGenerator {
                 fieldVar_generator.generateRandomField();
             }
 
-            //TODO maybe add local variable declaration in CONTROL_CONTEXT
             if (r <= controller.getLocalVariableProbability() && context != Context.CONTROL_CONTEXT) {
                 fieldVar_generator.generateRandomLocalVariable(context.contextMethod);
             }
@@ -409,8 +407,6 @@ public class RandomCodeGenerator {
         fieldVar_generator.writeFile(directoryName);
     }
 
-
-    //TODO refactor
     private void computeHash() {
         StringBuilder src = new StringBuilder("int hashValue = 0; ");
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
@@ -436,10 +432,3 @@ public class RandomCodeGenerator {
     }
 }
 
-//TODO 3 probability value borders
-//TODO 1 user option for filename and location
-//TODO 7 only use initialized Local Vars if in CONTROL_CONTEXT????(Bad Local Variable Bug)
-//TODO 6 math and logical operators
-//TODO 5 tests
-//TODO 4 RANDOM probabilities in tests
-//TODO rework global Hash

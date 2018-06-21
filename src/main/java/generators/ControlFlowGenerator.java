@@ -227,8 +227,6 @@ public class ControlFlowGenerator extends Generator {
     public int getDeepness() {
         return deepness;
     }
-
-    //TODO ev. Condition-concatination with conditional Operators) => max number of conditions => user!!
 }
 
 
