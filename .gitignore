@@ -68,3 +68,4 @@ fabric.properties
 
 /.idea/
 /gradle/
+!/gradle/
