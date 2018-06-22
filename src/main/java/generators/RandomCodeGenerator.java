@@ -16,8 +16,6 @@ import generators.MathGenerator.OpStatKind;
 
 import static generators.MathGenerator.OpStatKind.*;
 
-//-l 15 -f 90 -lv 59 -ga 100 -la 100 -m 50 -mc 100 -ml 5 -mli 5 -mp 7 -mo 20 -p 0 -jlm 70 -cf 10 -cl 1 -cd 4 -moos 10
-
 public class RandomCodeGenerator {
     enum Context {
         PROGRAM_CONTEXT,
@@ -37,21 +35,20 @@ public class RandomCodeGenerator {
     private final GenerationController controller;
 
     //Generators
-    private final FieldVarGenerator fieldVar_generator;
-    private final MethodGenerator method_generator;
-    private final MathGenerator math_generator;
-    private final ControlFlowGenerator controlFlow_generator;
-
+    private final FieldVarGenerator fieldVarGenerator;
+    private final MethodGenerator methodGenerator;
+    private final MathGenerator mathGenerator;
+    private final ControlFlowGenerator controlFlowGenerator;
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         this.controller = controller;
         ClazzFileContainer container = new ClazzFileContainer(fileName);
-        this.fieldVar_generator = new FieldVarGenerator(container);
-        this.method_generator = new MethodGenerator(this);
-        this.math_generator = new MathGenerator(container);
-        this.controlFlow_generator = new ControlFlowGenerator(this);
+        this.fieldVarGenerator = new FieldVarGenerator(container);
+        this.methodGenerator = new MethodGenerator(this);
+        this.mathGenerator = new MathGenerator(container, controller.avoidOverflows(), controller.avoidDivByZero());
+        this.controlFlowGenerator = new ControlFlowGenerator(this);
 
-        MethodLogger run = this.method_generator.generateAndCallRunMethod();
+        MethodLogger run = this.methodGenerator.generateAndCallRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
         Context.PROGRAM_CONTEXT.contextMethod = run;
         Context.METHOD_CONTEXT.lengthWeighting = controller.getMethodLengthWeighting();
@@ -63,12 +60,12 @@ public class RandomCodeGenerator {
     }
 
     public ClazzFileContainer getClazzFileContainer() {
-        return fieldVar_generator.getClazzContainer();
+        return fieldVarGenerator.getClazzContainer();
     }
 
 
     private ClazzLogger getClazzLogger() {
-        return fieldVar_generator.getClazzLogger();
+        return fieldVarGenerator.getClazzLogger();
     }
 
     public void generate() {
@@ -78,7 +75,7 @@ public class RandomCodeGenerator {
         //generate method-bodies
         if (this.getClazzLogger().hasMethods()) {
             for (MethodLogger method : this.getClazzLogger().getMethods()) {
-                method_generator.generateMethodBody(method);
+                methodGenerator.generateMethodBody(method);
             }
         }
 
@@ -91,11 +88,11 @@ public class RandomCodeGenerator {
             int r = 1 + RANDOM.nextInt(100);
 
             if (context == Context.PROGRAM_CONTEXT && r <= controller.getFieldProbability()) {
-                fieldVar_generator.generateRandomField();
+                fieldVarGenerator.generateRandomField();
             }
 
             if (r <= controller.getLocalVariableProbability() && context != Context.CONTROL_CONTEXT) {
-                fieldVar_generator.generateRandomLocalVariable(context.contextMethod);
+                fieldVarGenerator.generateRandomLocalVariable(context.contextMethod);
             }
 
             if (r <= controller.getGlobalAssignProbability()) {
@@ -104,30 +101,30 @@ public class RandomCodeGenerator {
                 switch (assignKind) {
                     case 0: //set field to RANDOM value
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcSetRandomFieldValue(context.contextMethod);
+                            src = fieldVarGenerator.srcSetRandomFieldValue(context.contextMethod);
                         } else {
-                            fieldVar_generator.setRandomFieldValue(context.contextMethod);
+                            fieldVarGenerator.setRandomFieldValue(context.contextMethod);
                         }
                         break;
                     case 1: //assign field to field
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcRandomlyAssignFieldToField(context.contextMethod);
+                            src = fieldVarGenerator.srcRandomlyAssignFieldToField(context.contextMethod);
                         } else {
-                            fieldVar_generator.randomlyAssignFieldToField(context.contextMethod);
+                            fieldVarGenerator.randomlyAssignFieldToField(context.contextMethod);
                         }
                         break;
                     case 2: // assign local var to field
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcRandomlyAssignLocalVarToField(context.contextMethod);
+                            src = fieldVarGenerator.srcRandomlyAssignLocalVarToField(context.contextMethod);
                         } else {
-                            fieldVar_generator.randomlyAssignLocalVarToField(context.contextMethod);
+                            fieldVarGenerator.randomlyAssignLocalVarToField(context.contextMethod);
                         }
                         break;
                     case 3:
 
                 }
                 if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
+                    controlFlowGenerator.addCodeToControlSrc(src);
                 }
             }
 
@@ -137,118 +134,113 @@ public class RandomCodeGenerator {
                 switch (assignKind) {
                     case 0: //set local variable to RANDOM value
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcSetRandomLocalVariableValue(context.contextMethod);
+                            src = fieldVarGenerator.srcSetRandomLocalVariableValue(context.contextMethod);
                         } else {
-                            fieldVar_generator.setRandomLocalVariableValue(context.contextMethod);
+                            fieldVarGenerator.setRandomLocalVariableValue(context.contextMethod);
                         }
                         break;
                     case 1: //assign local variable to local variable
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcRandomlyAssignLocalVarToLocalVar(context.contextMethod);
+                            src = fieldVarGenerator.srcRandomlyAssignLocalVarToLocalVar(context.contextMethod);
                         } else {
-                            fieldVar_generator.randomlyAssignLocalVarToLocalVar(context.contextMethod);
+                            fieldVarGenerator.randomlyAssignLocalVarToLocalVar(context.contextMethod);
                         }
                         break;
                     case 2: // assign field to local variable
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = fieldVar_generator.srcRandomlyAssignFieldToLocalVar(context.contextMethod);
+                            src = fieldVarGenerator.srcRandomlyAssignFieldToLocalVar(context.contextMethod);
                         } else {
-                            fieldVar_generator.randomlyAssignFieldToLocalVar(context.contextMethod);
+                            fieldVarGenerator.randomlyAssignFieldToLocalVar(context.contextMethod);
                         }
                         break;
                 }
                 if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
+                    controlFlowGenerator.addCodeToControlSrc(src);
                 }
             }
 
             if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodProbability()) {
-                method_generator.generateRandomMethod(controller.getMaximumMethodParameters());
+                methodGenerator.generateRandomMethod(controller.getMaximumMethodParameters());
             }
 
             if (context == Context.PROGRAM_CONTEXT && r <= controller.getMethodOverloadProbability()) {
-                method_generator.overloadRandomMethod(controller.getMaximumMethodParameters());
+                methodGenerator.overloadRandomMethod(controller.getMaximumMethodParameters());
             }
 
             if (r <= controller.getMethodCallProbability()) {
-                int callKind = 0;//RANDOM.nextInt(3);
-                String src = null;
-                switch (callKind) {
-                    case 0: //call method
-                        if (context == Context.CONTROL_CONTEXT) {
-                            src = method_generator.srcGenerateRandomMethodCall(context.contextMethod);
-                        } else {
-                            method_generator.generateRandomMethodCall(context.contextMethod);
-                        }
-                        break;
-                    case 1: //assign return value of called method to field
-                        if (context == Context.CONTROL_CONTEXT)
-                            src = method_generator.srcSetRandomFieldToReturnValue(context.contextMethod);
-                        else {
-                            method_generator.setRandomFieldToReturnValue(context.contextMethod);
-                        }
-                        break;
-                    case 2: //assign return value of called method to local variable
-                        if (context == Context.CONTROL_CONTEXT) {
-                            src = method_generator.srcSetRandomLocalVarToReturnValue(context.contextMethod);
-                        } else {
-                            method_generator.setRandomLocalVarToReturnValue(context.contextMethod);
-                        }
-                        break;
-                }
-                if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
-                }
-            }
-            if (r <= controller.getJavaLangMathProbability()) {
-                boolean noOverflow = false;
-                if (r <= this.controller.getAvoidOverFlowProbability()) {
-                    noOverflow = true;
-                }
                 int callKind = RANDOM.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = math_generator.srcGenerateRandomMathMethodCall(context.contextMethod, noOverflow);
+                            src = methodGenerator.srcGenerateRandomMethodCall(context.contextMethod);
                         } else {
-                            math_generator.generateRandomMathMethodCall(context.contextMethod, noOverflow);
+                            methodGenerator.generateRandomMethodCall(context.contextMethod);
                         }
                         break;
                     case 1: //assign return value of called method to field
                         if (context == Context.CONTROL_CONTEXT)
-                            src = math_generator.srcSetRandomFieldToMathReturnValue(context.contextMethod, noOverflow);
+                            src = methodGenerator.srcSetRandomFieldToReturnValue(context.contextMethod);
                         else {
-                            math_generator.setRandomFieldToMathReturnValue(context.contextMethod, noOverflow);
+                            methodGenerator.setRandomFieldToReturnValue(context.contextMethod);
                         }
                         break;
                     case 2: //assign return value of called method to local variable
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = math_generator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod, noOverflow);
+                            src = methodGenerator.srcSetRandomLocalVarToReturnValue(context.contextMethod);
                         } else {
-                            math_generator.setRandomLocalVarToMathReturnValue(context.contextMethod, noOverflow);
+                            methodGenerator.setRandomLocalVarToReturnValue(context.contextMethod);
                         }
                         break;
                 }
                 if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
+                    controlFlowGenerator.addCodeToControlSrc(src);
+                }
+            }
+            if (r <= controller.getJavaLangMathProbability()) {
+                int callKind = RANDOM.nextInt(3);
+                String src = null;
+                switch (callKind) {
+                    case 0: //call method
+                        if (context == Context.CONTROL_CONTEXT) {
+                            src = mathGenerator.srcGenerateRandomMathMethodCall(context.contextMethod);
+                        } else {
+                            mathGenerator.generateRandomMathMethodCall(context.contextMethod);
+                        }
+                        break;
+                    case 1: //assign return value of called method to field
+                        if (context == Context.CONTROL_CONTEXT)
+                            src = mathGenerator.srcSetRandomFieldToMathReturnValue(context.contextMethod);
+                        else {
+                            mathGenerator.setRandomFieldToMathReturnValue(context.contextMethod);
+                        }
+                        break;
+                    case 2: //assign return value of called method to local variable
+                        if (context == Context.CONTROL_CONTEXT) {
+                            src = mathGenerator.srcSetRandomLocalVarToMathReturnValue(context.contextMethod);
+                        } else {
+                            mathGenerator.setRandomLocalVarToMathReturnValue(context.contextMethod);
+                        }
+                        break;
+                }
+                if (src != null) {
+                    controlFlowGenerator.addCodeToControlSrc(src);
                 }
             }
 
             if (r <= controller.getPrintProbability()) {
                 String src = null;
                 if (context == Context.CONTROL_CONTEXT) {
-                    src = fieldVar_generator.srcGenerateRandomPrintStatement(context.contextMethod);
+                    src = fieldVarGenerator.srcGenerateRandomPrintStatement(context.contextMethod);
                 } else {
-                    fieldVar_generator.generateRandomPrintStatement(context.contextMethod);
+                    fieldVarGenerator.generateRandomPrintStatement(context.contextMethod);
                 }
                 if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
+                    controlFlowGenerator.addCodeToControlSrc(src);
                 }
             }
 
-            if (r <= controller.getControlFlowProbability() &&
-                    controlFlow_generator.getDeepness() < controller.getControlFlowDeepness()) {
+            if (r <= controller.getControlFlowProbability() && controlFlowGenerator.getDeepness() < controller.getControlFlowDeepness()) {
                 int controlKind = RANDOM.nextInt(4);
                 boolean noStatementGenerated = true;
                 int ctrlTypeProb = 1 + RANDOM.nextInt(100);
@@ -256,7 +248,7 @@ public class RandomCodeGenerator {
                     switch (controlKind) {
                         case 0:
                             if (ctrlTypeProb <= controller.getIfProbability()) {
-                                controlFlow_generator.generateRandomIfElseStatement(context.contextMethod);
+                                controlFlowGenerator.generateRandomIfElseStatement(context.contextMethod);
                                 noStatementGenerated = false;
                             } else {
                                 controlKind = 1;
@@ -264,7 +256,7 @@ public class RandomCodeGenerator {
                             break;
                         case 1:
                             if (ctrlTypeProb < controller.getWhileProbability()) {
-                                controlFlow_generator.generateRandomWhileStatement(context.contextMethod);
+                                controlFlowGenerator.generateRandomWhileStatement(context.contextMethod);
                                 noStatementGenerated = false;
                             } else {
                                 controlKind = 2;
@@ -272,7 +264,7 @@ public class RandomCodeGenerator {
                             break;
                         case 2:
                             if (ctrlTypeProb < controller.getDoWhileProbability()) {
-                                controlFlow_generator.generateRandomDoWhileStatement(context.contextMethod);
+                                controlFlowGenerator.generateRandomDoWhileStatement(context.contextMethod);
                                 noStatementGenerated = false;
                             } else {
                                 controlKind = 3;
@@ -280,7 +272,7 @@ public class RandomCodeGenerator {
                             break;
                         case 3:
                             if (ctrlTypeProb < controller.getForProbability()) {
-                                controlFlow_generator.generateRandomForStatement(context.contextMethod);
+                                controlFlowGenerator.generateRandomForStatement(context.contextMethod);
                                 noStatementGenerated = false;
                             } else {
                                 controlKind = 0;
@@ -314,27 +306,27 @@ public class RandomCodeGenerator {
                 switch (globalOrLocalOrNotAssign) {
                     case 0:
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = math_generator.srcGenerateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                            src = mathGenerator.srcGenerateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind);
                         } else {
-                            math_generator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind, true);
+                            mathGenerator.generateRandomOperatorStatementToField(context.contextMethod, maxOperations, opStatKind);
                         }
                         break;
                     case 1:
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = math_generator.srcGenerateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                            src = mathGenerator.srcGenerateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind);
                         } else {
-                            math_generator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind, true);
+                            mathGenerator.generateRandomOperatorStatementToLocal(context.contextMethod, maxOperations, opStatKind);
                         }
                         break;
                     case 2:
                         if (context == Context.CONTROL_CONTEXT) {
-                            src = math_generator.srcGenerateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true);
+                            src = mathGenerator.srcGenerateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind);
                         } else {
-                            math_generator.generateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind, true);  //TODO userinput for not avoidDivByZero
+                            mathGenerator.generateRandomOperatorStatement(context.contextMethod, maxOperations, opStatKind);
                         }
                 }
                 if (src != null) {
-                    controlFlow_generator.addCodeToControlSrc(src);
+                    controlFlowGenerator.addCodeToControlSrc(src);
                 }
             }
         }
@@ -367,14 +359,14 @@ public class RandomCodeGenerator {
                         break;
                     }
                 case ARITHMETIC_LOGICAL:
-                    if (opProb < controller.getArithLogicalStatementProbability()) {
+                    if (opProb < controller.getArithmeticLogicalStatementProbability()) {
                         return ARITHMETIC_LOGICAL;
                     } else {
                         selectedKind = ARITHMETIC_BITWISE;
                         break;
                     }
                 case ARITHMETIC_BITWISE:
-                    if (opProb < controller.getArithBitwiseStatementProbability()) {
+                    if (opProb < controller.getArithmeticBitwiseStatementProbability()) {
                         return ARITHMETIC_BITWISE;
                     } else {
                         selectedKind = BITWISE_LOGICAL;
@@ -388,7 +380,7 @@ public class RandomCodeGenerator {
                         break;
                     }
                 case ARITHMETIC_LOGICAL_BITWISE:
-                    if (opProb < controller.getArithLogicalBitwiseStatementProbability()) {
+                    if (opProb < controller.getArithmeticLogicalBitwiseStatementProbability()) {
                         return ARITHMETIC_LOGICAL_BITWISE;
                     } else {
                         selectedKind = ARITHMETIC;
@@ -400,11 +392,11 @@ public class RandomCodeGenerator {
 
 
     public void writeFile() {
-        fieldVar_generator.writeFile();
+        fieldVarGenerator.writeFile();
     }
 
     public void writeFile(String directoryName) {
-        fieldVar_generator.writeFile(directoryName);
+        fieldVarGenerator.writeFile(directoryName);
     }
 
     private void computeHash() {
@@ -423,7 +415,7 @@ public class RandomCodeGenerator {
             }
         }
         try {
-            CtMethod run = fieldVar_generator.getCtMethod(this.getClazzLogger().getRun());
+            CtMethod run = fieldVarGenerator.getCtMethod(this.getClazzLogger().getRun());
             run.insertAfter(src.toString() +
                     " System.out.println(\"#############   GLOBAL HASH: \" + hashValue + \"  #############\");");
         } catch (CannotCompileException e) {

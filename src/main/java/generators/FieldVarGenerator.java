@@ -16,7 +16,7 @@ public class FieldVarGenerator extends Generator {
 
     //===========================================field generation=======================================================
 
-    public void generateField(String name, FieldVarType type, int modifiers, String value) {
+    private void generateField(String name, FieldVarType type, int modifiers, String value) {
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
@@ -42,7 +42,7 @@ public class FieldVarGenerator extends Generator {
 
     //==========================================local variable generation===============================================
 
-    public void generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    private void generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (src.equals("")) {
             return;

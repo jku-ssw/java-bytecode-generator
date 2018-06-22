@@ -11,8 +11,8 @@ import java.io.IOException;
 
 public class TestRandomCodeGenerator extends TestGenerator {
     private String[] args = new String[]{
-            "-l", "10", "-f", "20", "-lv", "100", "-ga", "40", "-la", "60", "-m", "100", "-mc", "100",
-            "-ml", "3", "-mp", "7", "-mo", "0", "-p", "0", "jlm", "100", "-cf", "0", "-cl", "3", "-cd", "3"};
+            "-l", "50", "-f", "0", "-lv", "100", "-ga", "40", "-la", "60", "-m", "100", "-mc", "100",
+            "-ml", "0", "-mp", "7", "-mo", "0", "-p", "0", "jlm", "100", "-cf", "0", "-cl", "3", "-cd", "3", "-os", "0"};
 
     @Test
     void multipleCodeGeneration() {

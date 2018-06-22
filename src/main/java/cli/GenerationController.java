@@ -6,16 +6,54 @@ import java.util.Map;
 public class GenerationController {
     private final Map<CLIOptions, Integer> controlValues = new HashMap<>();
 
+    boolean avoidOverflows = true;
+    boolean avoidDivByZero = true;
+
+    private String fileName;
+    private String location;
+
     void addControlValue(CLIOptions option, int value) {
         controlValues.put(option, value);
     }
 
-    public int getFieldProbability() {
-        return controlValues.get(CLIOptions.F);
+    void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    void setLocation(String location) {
+        this.location = location;
+    }
+
+    public boolean avoidOverflows() {
+        return avoidOverflows;
+    }
+
+    public void setAvoidOverflows(boolean avoidOverflows) {
+        this.avoidOverflows = avoidOverflows;
+    }
+
+    public boolean avoidDivByZero() {
+        return avoidDivByZero;
+    }
+
+    public void setAvoidDivByZero(boolean avoidDivByZero) {
+        this.avoidDivByZero = avoidDivByZero;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getLocation() {
+        return location;
     }
 
     public int getLocalVariableProbability() {
         return controlValues.get(CLIOptions.LV);
+    }
+
+    public int getFieldProbability() {
+        return controlValues.get(CLIOptions.F);
     }
 
     public int getGlobalAssignProbability() {
@@ -94,10 +132,6 @@ public class GenerationController {
         return controlValues.get(CLIOptions.IF);
     }
 
-    public int getAvoidOverFlowProbability() {
-        return controlValues.get(CLIOptions.OF);
-    }
-
     public int getOperatorStatementProbability() {
         return controlValues.get(CLIOptions.OS);
     }
@@ -114,11 +148,11 @@ public class GenerationController {
         return controlValues.get(CLIOptions.BS);
     }
 
-    public int getArithLogicalStatementProbability() {
+    public int getArithmeticLogicalStatementProbability() {
         return controlValues.get(CLIOptions.ALS);
     }
 
-    public int getArithBitwiseStatementProbability() {
+    public int getArithmeticBitwiseStatementProbability() {
         return controlValues.get(CLIOptions.ABS);
     }
 
@@ -126,11 +160,11 @@ public class GenerationController {
         return controlValues.get(CLIOptions.LBS);
     }
 
-    public int getArithLogicalBitwiseStatementProbability() {
+    public int getArithmeticLogicalBitwiseStatementProbability() {
         return controlValues.get(CLIOptions.ALBS);
     }
 
     public int getMaxOperatorsInOperatorStatement() {
-        return controlValues.get(CLIOptions.MOOS);
+        return controlValues.get(CLIOptions.MOPS);
     }
 }

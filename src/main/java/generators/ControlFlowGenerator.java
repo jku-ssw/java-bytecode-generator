@@ -30,7 +30,7 @@ public class ControlFlowGenerator extends Generator {
         doWhileType
     }
 
-    LinkedList<IfContext> openIfContexts = new LinkedList<>();
+    private final LinkedList<IfContext> openIfContexts = new LinkedList<>();
     private final StringBuilder controlSrc = new StringBuilder();
     private int deepness = 0;
     private final int ifBranchingFactor;

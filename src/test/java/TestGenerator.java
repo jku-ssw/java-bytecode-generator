@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -42,5 +39,55 @@ public abstract class TestGenerator {
             }
         }
         return false;
+    }
+
+    public int run(String clazz) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder("java", clazz);
+        pb.redirectError();
+        pb.directory(new File("src"));
+        Process p = pb.start();
+        InputStreamConsumer consumer = new InputStreamConsumer(p.getInputStream());
+        consumer.start();
+
+        int result = p.waitFor();
+
+        consumer.join();
+
+        System.out.println(consumer.getOutput());
+
+        return result;
+    }
+
+    public class InputStreamConsumer extends Thread {
+
+        private InputStream is;
+        private IOException exp;
+        private StringBuilder output;
+
+        public InputStreamConsumer(InputStream is) {
+            this.is = is;
+        }
+
+        @Override
+        public void run() {
+            int in = -1;
+            output = new StringBuilder(64);
+            try {
+                while ((in = is.read()) != -1) {
+                    output.append((char) in);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                exp = ex;
+            }
+        }
+
+        public StringBuilder getOutput() {
+            return output;
+        }
+
+        public IOException getException() {
+            return exp;
+        }
     }
 }

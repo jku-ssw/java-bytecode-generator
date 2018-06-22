@@ -23,7 +23,6 @@ enum CLIOptions {
     DOWHILE,
     IF,
     IBF,
-    OF,
     OS,
     AS,
     LS,
@@ -32,7 +31,11 @@ enum CLIOptions {
     ABS,
     LBS,
     ALBS,
-    MOOS;
+    MOPS,
+    OF,
+    DZ,
+    FILENAME,
+    DIRECTORY;
 
     @Override
     public String toString() {

@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class MethodGenerator extends MethodCaller {
 
     private final RandomCodeGenerator randomCodeGenerator;
-    private final Random random = new Random();
 
     public MethodGenerator(RandomCodeGenerator randomCodeGenerator) {
         super(randomCodeGenerator.getClazzFileContainer());
@@ -86,7 +85,7 @@ public class MethodGenerator extends MethodCaller {
         CtMethod ctMethod = this.getCtMethod(method);
         FieldVarType returnType = method.getReturnType();
         FieldVarLogger f;
-        if (random.nextBoolean()) {
+        if (RANDOM.nextBoolean()) {
             f = this.getClazzLogger().getInitializedLocalVarOfType(method, returnType);
             if (f != null) this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
         } else {
@@ -131,15 +130,6 @@ public class MethodGenerator extends MethodCaller {
                 return null;
             }
             return srcCallMethod(calledMethod, method);
-//            FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-//            ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
-//            List<MethodLogger> excludedForCalling = new ArrayList<>();
-//            excludedForCalling.addAll(method.getMethodsExcludedForCalling());
-//            excludedForCalling.add(method);
-//            calledMethod.addToExcludedForCalling(excludedForCalling);
-//            //calledMethod.addToExcludedForCalling(method);
-//            //method.addMethodToCalledByThisMethod(calledMethod);
-//            return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
         } else {
             return null;
         }
@@ -210,19 +200,6 @@ public class MethodGenerator extends MethodCaller {
 
 
     //=================================================Utility==========================================================
-
-//    private String srcSetVariableToReturnValue(MethodLogger calledMethod, MethodLogger method, FieldVarLogger fieldVar) {
-//        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-//        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
-//        List<MethodLogger> excludedForCalling = new ArrayList<>();
-//        excludedForCalling.addAll(method.getMethodsExcludedForCalling());
-//        excludedForCalling.add(method);
-//        calledMethod.addToExcludedForCalling(excludedForCalling);
-//        //method.addMethodToCalledByThisMethod(calledMethod);
-//        fieldVar.setInitialized();
-//        return fieldVar.getName() + " = "
-//                + generateMethodCallString(calledMethod.getName(), calledMethod.getParamsTypes(), values);
-//    }
 
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {

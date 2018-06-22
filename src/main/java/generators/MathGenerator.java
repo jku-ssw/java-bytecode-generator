@@ -1,9 +1,6 @@
 package generators;
 
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.Modifier;
-import javassist.NotFoundException;
+import javassist.*;
 import logger.FieldVarLogger;
 import logger.MethodLogger;
 import utils.*;
@@ -15,24 +12,23 @@ import static utils.Operator.*;
 
 public class MathGenerator extends MethodCaller {
 
-    private static Map<String, String> OVERFLOW_METHODS;
+    private static boolean noDivByZero;
+    private static boolean noOverflow;
+
+    private final static Map<String, String> OVERFLOW_METHODS = new HashMap<>();
 
     private final Set<String> checkForDivByZero = new HashSet<>();
     private final Set<FieldVarLogger> incDecrementOperands = new HashSet<>();
 
+    private static CtClass mathClazz;
 
-    public enum OpStatKind {
-        ARITHMETIC,
-        LOGICAL,
-        BITWISE,
-        ARITHMETIC_LOGICAL,
-        ARITHMETIC_BITWISE,
-        BITWISE_LOGICAL,
-        ARITHMETIC_LOGICAL_BITWISE
-    }
 
-    private static void initOverflowMethods() {
-        OVERFLOW_METHODS = new HashMap<>();
+    {
+        try {
+            mathClazz = ClassPool.getDefault().get("java.lang.Math");
+        } catch (NotFoundException e) {
+            throw new AssertionError(e);
+        }
         OVERFLOW_METHODS.put("java.lang.Math.addExact(int,int)", "if(%2$s > 0 ? Integer.MAX_VALUE - %2$s > %1$s : Integer.MIN_VALUE - %2$s < %1$s) {");
         OVERFLOW_METHODS.put("java.lang.Math.addExact(long,long)", "if(%2$s > 0 ? Long.MAX_VALUE - %2$s > %1$s : Long.MIN_VALUE - %2$s < %1$s) {");
         OVERFLOW_METHODS.put("java.lang.Math.decrementExact(int)", "if( %s > Integer.MIN_VALUE) {");
@@ -56,40 +52,39 @@ public class MathGenerator extends MethodCaller {
         OVERFLOW_METHODS.put("java.lang.Math.floorMod(long,long)", modDivCondition);
     }
 
-    private static CtClass mathClazz;
-
-    public MathGenerator(ClazzFileContainer cf) {
+    public MathGenerator(ClazzFileContainer cf, boolean noOverflow, boolean noDivByZero) {
         super(cf);
-        this.getClazzContainer().getClazzPool().importPackage("java.lang.Math");
-        includeMathPackage();
-        initOverflowMethods();
+        this.noOverflow = noOverflow;
+        this.noDivByZero = noDivByZero;
     }
 
-    private void includeMathPackage() {
-        try {
-            mathClazz = this.getClazzContainer().getClazzPool().get("java.lang.Math");
-        } catch (NotFoundException e) {
-            throw new AssertionError(e);
-        }
+    public enum OpStatKind {
+        ARITHMETIC,
+        LOGICAL,
+        BITWISE,
+        ARITHMETIC_LOGICAL,
+        ARITHMETIC_BITWISE,
+        BITWISE_LOGICAL,
+        ARITHMETIC_LOGICAL_BITWISE
     }
 
-    public void generateRandomMathMethodCall(MethodLogger method, boolean noOverflow) {
-        String callString = srcGenerateRandomMathMethodCall(method, noOverflow);
+    public void generateRandomMathMethodCall(MethodLogger method) {
+        String callString = srcGenerateRandomMathMethodCall(method);
         insertIntoMethodBody(method, callString);
     }
 
-    public String srcGenerateRandomMathMethodCall(MethodLogger method, boolean noOverflow) {
+    public String srcGenerateRandomMathMethodCall(MethodLogger method) {
         CtMethod mathMethod = getRandomMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
         FieldVarType[] paramTypes = getParamTypes(signature);
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
-        if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
-            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
-            if (noOverFlowIf == null) {
+        if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && (noOverflow || noDivByZero)) {
+            String noExceptionIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
+            if (noExceptionIf == null) {
                 return null;
             }
-            String src = noOverFlowIf + "Math." +
+            String src = noExceptionIf + "Math." +
                     this.generateMethodCallString(methodName, paramTypes, paramValues) + "}";
             return src;
         } else {
@@ -97,12 +92,12 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-    public void setRandomFieldToMathReturnValue(MethodLogger method, boolean noOverflow) {
-        String src = srcSetRandomFieldToMathReturnValue(method, noOverflow);
+    public void setRandomFieldToMathReturnValue(MethodLogger method) {
+        String src = srcSetRandomFieldToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomFieldToMathReturnValue(MethodLogger method, boolean noOverflow) {
+    public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
@@ -111,18 +106,18 @@ public class MathGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             }
-            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar, noOverflow);
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
         } else {
             return null;
         }
     }
 
 
-    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar, boolean noOverflow) {
+    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
         FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
-            String noOverFlowIf = getNoOverFlowIf(mathMethod.getLongName(), paramValues, paramTypes);
+            String noOverFlowIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
             String src = noOverFlowIf + fieldVar.getName() + " = " + "Math." +
                     this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
@@ -131,12 +126,12 @@ public class MathGenerator extends MethodCaller {
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
-    public void setRandomLocalVarToMathReturnValue(MethodLogger method, boolean noOverflow) {
-        String src = srcSetRandomLocalVarToMathReturnValue(method, noOverflow);
+    public void setRandomLocalVarToMathReturnValue(MethodLogger method) {
+        String src = srcSetRandomLocalVarToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method, boolean noOverflow) {
+    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getRandomMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
@@ -145,39 +140,39 @@ public class MathGenerator extends MethodCaller {
             if (fieldVar == null) {
                 return null;
             }
-            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar, noOverflow);
+            return srcSetVariableToMathReturnValue(mathMethod, method, fieldVar);
         } else {
             return null;
         }
     }
 
-    public void generateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
-        String src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero);
+    public void generateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
         int numberOfOperands = 1 + RANDOM.nextInt(maxOperations);
         StringBuilder src = new StringBuilder();
         switch (opStatKind) {
             case ARITHMETIC:
             case LOGICAL:
             case BITWISE:
-                src = srcGenerateOperatorStatement(method, numberOfOperands, opStatKind, avoidDivByZero);
+                src = srcGenerateOperatorStatement(method, numberOfOperands, opStatKind);
                 break;
             case ARITHMETIC_BITWISE:
-                src = generateArithmeticBitwiseStatement(method, numberOfOperands, avoidDivByZero);
+                src = generateArithmeticBitwiseStatement(method, numberOfOperands);
                 break;
             case ARITHMETIC_LOGICAL:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands, avoidDivByZero);
+                src = generateCombinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands);
                 break;
             case BITWISE_LOGICAL:
-                src = generateCombinedWithLogicalStatement(BITWISE, method, numberOfOperands, avoidDivByZero);
+                src = generateCombinedWithLogicalStatement(BITWISE, method, numberOfOperands);
                 break;
             case ARITHMETIC_LOGICAL_BITWISE:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands, avoidDivByZero);
+                src = generateCombinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands);
         }
         if (!checkForDivByZero.isEmpty()) {
             src = addIfToOperatorStatement(src, checkForDivByZero);
@@ -187,19 +182,19 @@ public class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void generateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
-        String src = srcGenerateRandomOperatorStatementToLocal(method, maxOperations, opStatKind, avoidDivByZero);
+    public void generateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcGenerateRandomOperatorStatementToLocal(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+    public String srcGenerateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger f = fetchLocalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero));
+        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -209,19 +204,19 @@ public class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void generateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
-        String src = srcGenerateRandomOperatorStatementToField(method, maxOperations, opStatKind, avoidDivByZero);
+    public void generateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcGenerateRandomOperatorStatementToField(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean avoidDivByZero) {
+    public String srcGenerateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger f = fetchGlobalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind, avoidDivByZero));
+        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -240,40 +235,45 @@ public class MathGenerator extends MethodCaller {
         return methods[random.nextInt(methods.length)];
     }
 
-    private static String getNoOverFlowIf(String longName, ParamWrapper[] paramValues, FieldVarType[] paramTypes) {
+    private static String getNoExceptionIf(String longName, ParamWrapper[] paramValues, FieldVarType[] paramTypes) {
         String[] params = new String[2];
         params[0] = paramToCorrectStringFormat(paramTypes[0], paramValues[0]);
         if (paramTypes.length == 2) {
             params[1] = paramToCorrectStringFormat(paramTypes[1], paramValues[1]);
         }
-        switch (longName) {
-            case "java.lang.Math.addExact(int,int)":
-            case "java.lang.Math.addExact(long,long)":
-            case "java.lang.Math.subtractExact(int,int)":
-            case "java.lang.Math.subtractExact(long,long)":
-                return String.format(OVERFLOW_METHODS.get(longName), params[1], params[0]);
-            case "java.lang.Math.decrementExact(int)":
-            case "java.lang.Math.decrementExact(long)":
-            case "java.lang.Math.incrementExact(int)":
-            case "java.lang.Math.incrementExact(long)":
-            case "java.lang.Math.negateExact(int)":
-            case "java.lang.Math.negateExact(long)":
-            case "java.lang.Math.toIntExact(long)":
-                return String.format(OVERFLOW_METHODS.get(longName), params[0]);
-            case "java.lang.Math.multiplyExact(int,int)":
-            case "java.lang.Math.multiplyExact(long,int)":
-            case "java.lang.Math.multiplyExact(long,long)":
-                return String.format(OVERFLOW_METHODS.get(longName), params[0], params[1]);
-            case "java.lang.Math.floorDiv(int,int)":
-            case "java.lang.Math.floorDiv(long,int)":
-            case "java.lang.Math.floorMod(int,int)":
-            case "java.lang.Math.floorMod(long,int)":
-            case "java.lang.Math.floorDiv(long,long)":
-            case "java.lang.Math.floorMod(long,long)":
-                return String.format(OVERFLOW_METHODS.get(longName), params[1]);
-            default:
-                return null;
+        if (noOverflow) {
+            switch (longName) {
+                case "java.lang.Math.addExact(int,int)":
+                case "java.lang.Math.addExact(long,long)":
+                case "java.lang.Math.subtractExact(int,int)":
+                case "java.lang.Math.subtractExact(long,long)":
+                    return String.format(OVERFLOW_METHODS.get(longName), params[1], params[0]);
+                case "java.lang.Math.decrementExact(int)":
+                case "java.lang.Math.decrementExact(long)":
+                case "java.lang.Math.incrementExact(int)":
+                case "java.lang.Math.incrementExact(long)":
+                case "java.lang.Math.negateExact(int)":
+                case "java.lang.Math.negateExact(long)":
+                case "java.lang.Math.toIntExact(long)":
+                    return String.format(OVERFLOW_METHODS.get(longName), params[0]);
+                case "java.lang.Math.multiplyExact(int,int)":
+                case "java.lang.Math.multiplyExact(long,int)":
+                case "java.lang.Math.multiplyExact(long,long)":
+                    return String.format(OVERFLOW_METHODS.get(longName), params[0], params[1]);
+            }
         }
+        if (noDivByZero) {
+            switch (longName) {
+                case "java.lang.Math.floorDiv(int,int)":
+                case "java.lang.Math.floorDiv(long,int)":
+                case "java.lang.Math.floorMod(int,int)":
+                case "java.lang.Math.floorMod(long,int)":
+                case "java.lang.Math.floorDiv(long,long)":
+                case "java.lang.Math.floorMod(long,long)":
+                    return String.format(OVERFLOW_METHODS.get(longName), params[1]);
+            }
+        }
+        return null;
     }
 
     private static FieldVarType getType(char t) {
@@ -329,7 +329,7 @@ public class MathGenerator extends MethodCaller {
         return types.get(RANDOM.nextInt(types.size()));
     }
 
-    private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands, boolean avoidDivByZero) {
+    private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands) {
         StringBuilder src = new StringBuilder();
         int maxPartitionSize = 1 + numberOfOperands / 2;
         Operator operator = null;
@@ -338,10 +338,10 @@ public class MathGenerator extends MethodCaller {
             StringBuilder statement;
             FieldVarType type;
             if (RANDOM.nextBoolean()) {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, ARITHMETIC, avoidDivByZero);
+                statement = srcGenerateOperatorStatement(method, operandsInPartition, ARITHMETIC);
                 operator = getNonDivNonUnaryArithmeticOperator();
             } else {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, BITWISE, avoidDivByZero);
+                statement = srcGenerateOperatorStatement(method, operandsInPartition, BITWISE);
                 operator = getOperator(BITWISE, true);
             }
             type = getOperandType(BITWISE);
@@ -357,7 +357,7 @@ public class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder generateCombinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands, boolean avoidDivByZero) {
+    private StringBuilder generateCombinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands) {
         StringBuilder src = new StringBuilder();
         int maxPartitionSize = 1 + numberOfOperands / 2;
         boolean openRel = false;
@@ -367,7 +367,7 @@ public class MathGenerator extends MethodCaller {
             int operandsInPartition = 1 + RANDOM.nextInt(maxPartitionSize);
             StringBuilder statement;
             if ((RANDOM.nextBoolean() && !openRel) || openLog) {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, LOGICAL, avoidDivByZero);
+                statement = srcGenerateOperatorStatement(method, operandsInPartition, LOGICAL);
                 operator = getOperator(LOGICAL, true);
                 openLog = !openLog;
                 if (!openLog) {
@@ -376,9 +376,9 @@ public class MathGenerator extends MethodCaller {
                 }
             } else {
                 if (bitAndOrArithmetic == ARITHMETIC_BITWISE) {
-                    statement = generateArithmeticBitwiseStatement(method, numberOfOperands, avoidDivByZero);
+                    statement = generateArithmeticBitwiseStatement(method, numberOfOperands);
                 } else {
-                    statement = srcGenerateOperatorStatement(method, operandsInPartition, bitAndOrArithmetic, avoidDivByZero);
+                    statement = srcGenerateOperatorStatement(method, operandsInPartition, bitAndOrArithmetic);
                 }
                 List<Operator> relOperators = Operator.getRelationalOperators();
                 operator = relOperators.get(RANDOM.nextInt(relOperators.size()));
@@ -399,7 +399,7 @@ public class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder srcGenerateOperatorStatement(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind, boolean avoidDivByZero) {
+    private StringBuilder srcGenerateOperatorStatement(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind) {
         Operator operator = null;
         StringBuilder operatorStatement = new StringBuilder();
         boolean useNonUnary;
@@ -446,7 +446,7 @@ public class MathGenerator extends MethodCaller {
                 operatorStatement.append(operand + operator);
             }
 
-            if (avoidDivByZero && (operator == MOD || operator == DIV)) {
+            if (noDivByZero && (operator == MOD || operator == DIV)) {
                 addToCheckForDivByZero = true;
             }
         }
