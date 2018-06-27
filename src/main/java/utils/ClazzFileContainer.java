@@ -4,10 +4,6 @@ import javassist.*;
 import logger.ClazzLogger;
 import logger.MethodLogger;
 
-/**
- * contains a CtClass-Object, that is exportable as a new Class-file
- * holds important information about the actual content of the Class-file
- */
 public class ClazzFileContainer {
 
     private final CtClass clazz;

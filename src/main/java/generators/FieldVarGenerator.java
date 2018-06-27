@@ -31,7 +31,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public void generateRandomField() {
+    public void generateField() {
         FieldVarType ft = this.getRandomSupplier().getFieldVarType();
         String value = null;
         if (this.RANDOM.nextBoolean()) { //50% chance to be initialized
@@ -51,13 +51,10 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public void generateRandomLocalVariable(MethodLogger method) {
+    public void generateLocalVariable(MethodLogger method) {
         FieldVarType ft = getRandomSupplier().getFieldVarType();
         String value;
-        //TODO fix bug local return value assignment in controlflow
-        //if (RANDOM.nextBoolean()) { //50% chance to be initialized
         value = getRandomSupplier().getRandomCastedValue(ft);
-        //}
         this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
     }
 
@@ -84,12 +81,12 @@ public class FieldVarGenerator extends Generator {
         return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
     }
 
-    public void generateRandomPrintStatement(MethodLogger method) {
-        String src = this.srcGenerateRandomPrintStatement(method);
+    public void generatePrintStatement(MethodLogger method) {
+        String src = this.srcGeneratePrintStatement(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcGenerateRandomPrintStatement(MethodLogger method) {
+    public String srcGeneratePrintStatement(MethodLogger method) {
         if (RANDOM.nextBoolean()) { //print local Variable
             FieldVarLogger fvl = method.getVariableWithPredicate(v -> v.isInitialized());
             if (fvl == null) {
@@ -126,7 +123,7 @@ public class FieldVarGenerator extends Generator {
         } else return null;
     }
 
-    public void setRandomFieldValue(MethodLogger method) {
+    public void setFieldValue(MethodLogger method) {
         if (!getClazzLogger().hasVariables()) {
             return;
         } else {
@@ -139,7 +136,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcSetRandomFieldValue(MethodLogger method) {
+    public String srcSetFieldValue(MethodLogger method) {
         if (!getClazzLogger().hasVariables()) {
             return null;
         }
@@ -151,7 +148,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public void setRandomLocalVariableValue(MethodLogger method) {
+    public void setLocalVarValue(MethodLogger method) {
         if (!method.hasVariables()) {
             return;
         }
@@ -163,7 +160,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcSetRandomLocalVariableValue(MethodLogger method) {
+    public String srcSetLocalVarValue(MethodLogger method) {
         if (!method.hasVariables()) {
             return null;
         }
@@ -177,13 +174,12 @@ public class FieldVarGenerator extends Generator {
 
     //=======================================assign variable to variable================================================
 
-    //field to field
-    public void randomlyAssignFieldToField(MethodLogger method) {
-        String src = srcRandomlyAssignFieldToField(method);
+    public void assignFieldToField(MethodLogger method) {
+        String src = srcAssignFieldToField(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcRandomlyAssignFieldToField(MethodLogger method) {
+    public String srcAssignFieldToField(MethodLogger method) {
         if (!getClazzLogger().hasVariables()) {
             return null;
         }
@@ -198,13 +194,12 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    //local variable to field
-    public void randomlyAssignLocalVarToField(MethodLogger method) {
-        String src = srcRandomlyAssignLocalVarToField(method);
+    public void assignLocalVarToField(MethodLogger method) {
+        String src = srcAssignLocalVarToField(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcRandomlyAssignLocalVarToField(MethodLogger method) {
+    public String srcAssignLocalVarToField(MethodLogger method) {
         if (!getClazzLogger().hasVariables() || !method.hasVariables()) {
             return null;
         }
@@ -221,13 +216,12 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    //local variable to local variable
-    public void randomlyAssignLocalVarToLocalVar(MethodLogger method) {
-        String src = srcRandomlyAssignLocalVarToLocalVar(method);
+    public void assignLocalVarToLocalVar(MethodLogger method) {
+        String src = srcAssignLocalVarToLocalVar(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcRandomlyAssignLocalVarToLocalVar(MethodLogger method) {
+    public String srcAssignLocalVarToLocalVar(MethodLogger method) {
         if (!method.hasVariables()) {
             return null;
         }
@@ -243,12 +237,12 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public void randomlyAssignFieldToLocalVar(MethodLogger method) {
-        String src = srcRandomlyAssignFieldToLocalVar(method);
+    public void assignFieldToLocalVar(MethodLogger method) {
+        String src = srcAssignFieldToLocalVar(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcRandomlyAssignFieldToLocalVar(MethodLogger method) {
+    public String srcAssignFieldToLocalVar(MethodLogger method) {
         if (!method.hasVariables()) {
             return null;
         }
@@ -264,7 +258,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    public String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
+    private String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
         var1.setInitialized();
         return var1.getName() + " = " + var2.getName() + ";";
     }

@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestMathGenerator extends TestGenerator {
 
-    private static String ARITHMETIC_EXCEPTION_DIV_BY_ZERO = "java.lang.ArithmeticException: / by zero";
     private static String ARITHMETIC_EXCEPTIONS = "java.lang.ArithmeticException";
 
     @Test
@@ -32,8 +31,8 @@ public class TestMathGenerator extends TestGenerator {
 
         //generate some fields and variables
         for (int i = 1; i < 20; i++) {
-            fieldVarGenerator.generateRandomLocalVariable(main);
-            fieldVarGenerator.generateRandomField();
+            fieldVarGenerator.generateLocalVariable(main);
+            fieldVarGenerator.generateField();
         }
 
         return new MathGenerator(container, noOverflows, noDivByZero);
@@ -45,15 +44,15 @@ public class TestMathGenerator extends TestGenerator {
 
         //call some methods
         for (int i = 0; i < 10; i++) {
-            String notAssign = mathGenerator.srcGenerateRandomMathMethodCall(main);
+            String notAssign = mathGenerator.srcGenerateMathMethodCall(main);
             if (notAssign != null) {
                 mathGenerator.getCtMethod(main).insertAfter(notAssign);
             }
-            String assignToField = mathGenerator.srcSetRandomFieldToMathReturnValue(main);
+            String assignToField = mathGenerator.srcSetFieldToMathReturnValue(main);
             if (assignToField != null) {
                 mathGenerator.getCtMethod(main).insertAfter(assignToField);
             }
-            String assignToLocal = mathGenerator.srcSetRandomLocalVarToMathReturnValue(main);
+            String assignToLocal = mathGenerator.srcSetLocalVarToMathReturnValue(main);
             if (assignToLocal != null) {
                 mathGenerator.getCtMethod(main).insertAfter(assignToLocal);
             }
@@ -107,16 +106,6 @@ public class TestMathGenerator extends TestGenerator {
     }
 
     @Test
-    void testGenerateBitwiseOperatorStatementsNotAvoidDivByZero() throws CannotCompileException {
-        testGenerateOperatorStatements("BitwiseOperatorStatementsNotAvoidDivByZero", MathGenerator.OpStatKind.BITWISE, false);
-    }
-
-    @Test
-    void testGenerateLogicalOperatorStatementsNotAvoidDivByZero() throws CannotCompileException {
-        testGenerateOperatorStatements("LogicalOperatorStatementsNotAvoidDivByZero", MathGenerator.OpStatKind.LOGICAL, false);
-    }
-
-    @Test
     void testGenerateArithmeticBitwiseOperatorStatementsNotAvoidDivByZero() throws CannotCompileException {
         testGenerateOperatorStatements("ArithmeticBitwiseOperatorStatementsNotAvoidDivByZero", MathGenerator.OpStatKind.ARITHMETIC_BITWISE, false);
     }
@@ -124,11 +113,6 @@ public class TestMathGenerator extends TestGenerator {
     @Test
     void testGenerateArithmeticLogicalOperatorStatementsNotAvoidDivByZero() throws CannotCompileException {
         testGenerateOperatorStatements("ArithmeticLogicalOperatorStatementsNotAvoidDivByZero", MathGenerator.OpStatKind.ARITHMETIC_LOGICAL, false);
-    }
-
-    @Test
-    void testGenerateBitwiseLogicalOperatorStatementsNotAvoidDivByZero() throws CannotCompileException {
-        testGenerateOperatorStatements("BitwiseLogicalOperatorStatementsNotAvoidDivByZero", MathGenerator.OpStatKind.BITWISE_LOGICAL, false);
     }
 
     @Test
@@ -141,23 +125,22 @@ public class TestMathGenerator extends TestGenerator {
         MethodLogger main = mathGenerator.getClazzLogger().getMain();
 
         for (int i = 0; i < 10; i++) {
-            System.out.println("here");
-            String notAssign = mathGenerator.srcGenerateRandomOperatorStatement(main, 20, opStatKind);
+            String notAssign = mathGenerator.srcGenerateOperatorStatement(main, 1, opStatKind);
             if (notAssign != null) {
                 mathGenerator.getCtMethod(main).insertAfter(notAssign);
             }
-            String assignToField = mathGenerator.srcGenerateRandomOperatorStatementToField(main, 20, opStatKind);
+            String assignToField = mathGenerator.srcSetFieldToOperatorStatement(main, 1, opStatKind);
             if (assignToField != null) {
                 mathGenerator.getCtMethod(main).insertAfter(assignToField);
             }
-            String assignToLocal = mathGenerator.srcGenerateRandomOperatorStatementToLocal(main, 20, opStatKind);
+            String assignToLocal = mathGenerator.srcSetLocalVarToOperatorStatement(main, 1, opStatKind);
             if (assignToLocal != null) {
                 mathGenerator.getCtMethod(main).insertAfter(assignToLocal);
             }
             System.out.println(notAssign + "\n" + assignToField + "\n" + assignToLocal);
         }
         mathGenerator.writeFile("src/test/resources/generated_test_files");
-        execute(clazzName, noDivByZero, ARITHMETIC_EXCEPTION_DIV_BY_ZERO);
+        execute(clazzName, noDivByZero, ARITHMETIC_EXCEPTIONS);
     }
 
     private void execute(String clazzName, boolean avoidException, String... excludedExceptions) {

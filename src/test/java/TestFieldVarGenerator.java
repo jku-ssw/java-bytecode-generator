@@ -36,12 +36,12 @@ public class TestFieldVarGenerator extends TestGenerator {
         if(method == null) {
             //add 20 random local variables
             for (int i = 0; i < 20; i++) {
-                fieldVarGenerator.generateRandomField();
+                fieldVarGenerator.generateField();
             }
         } else {
             //add 20 random local variables
             for(int i = 0; i < 20; i++) {
-                fieldVarGenerator.generateRandomLocalVariable(method);
+                fieldVarGenerator.generateLocalVariable(method);
             }
         }
     }
@@ -61,7 +61,7 @@ public class TestFieldVarGenerator extends TestGenerator {
 
         //add 20 random local variables
         for(int i = 0; i < 20; i++) {
-            fieldVarGenerator.generateRandomPrintStatement(main);
+            fieldVarGenerator.generatePrintStatement(main);
         }
 
         fieldVarGenerator.writeFile("src/test/resources/generated_test_files");

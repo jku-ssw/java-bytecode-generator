@@ -12,10 +12,6 @@ import utils.RandomSupplier;
 import java.io.IOException;
 import java.util.Random;
 
-/**
- * super-Class of all generators
- * capable of generating the smallest executable class-file
- */
 abstract class Generator {
 
     final ClazzFileContainer clazzContainer;

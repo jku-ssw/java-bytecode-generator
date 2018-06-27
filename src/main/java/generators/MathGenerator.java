@@ -22,7 +22,6 @@ public class MathGenerator extends MethodCaller {
 
     private static CtClass mathClazz;
 
-
     {
         try {
             mathClazz = ClassPool.getDefault().get("java.lang.Math");
@@ -68,13 +67,13 @@ public class MathGenerator extends MethodCaller {
         ARITHMETIC_LOGICAL_BITWISE
     }
 
-    public void generateRandomMathMethodCall(MethodLogger method) {
-        String callString = srcGenerateRandomMathMethodCall(method);
+    public void generateMathMethodCall(MethodLogger method) {
+        String callString = srcGenerateMathMethodCall(method);
         insertIntoMethodBody(method, callString);
     }
 
-    public String srcGenerateRandomMathMethodCall(MethodLogger method) {
-        CtMethod mathMethod = getRandomMathMethod();
+    public String srcGenerateMathMethodCall(MethodLogger method) {
+        CtMethod mathMethod = getMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
         FieldVarType[] paramTypes = getParamTypes(signature);
@@ -92,13 +91,13 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-    public void setRandomFieldToMathReturnValue(MethodLogger method) {
-        String src = srcSetRandomFieldToMathReturnValue(method);
+    public void setFieldToMathReturnValue(MethodLogger method) {
+        String src = srcSetFieldToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomFieldToMathReturnValue(MethodLogger method) {
-        CtMethod mathMethod = getRandomMathMethod();
+    public String srcSetFieldToMathReturnValue(MethodLogger method) {
+        CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
@@ -126,13 +125,13 @@ public class MathGenerator extends MethodCaller {
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
-    public void setRandomLocalVarToMathReturnValue(MethodLogger method) {
-        String src = srcSetRandomLocalVarToMathReturnValue(method);
+    public void setLocalVarToMathReturnValue(MethodLogger method) {
+        String src = srcSetLocalVarToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomLocalVarToMathReturnValue(MethodLogger method) {
-        CtMethod mathMethod = getRandomMathMethod();
+    public String srcSetLocalVarToMathReturnValue(MethodLogger method) {
+        CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
         FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
@@ -146,21 +145,21 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-    public void generateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
-        String src = srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind);
+    public void generateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcGenerateOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
-        int numberOfOperands = 1 + RANDOM.nextInt(maxOperations);
+    public String srcGenerateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        int numberOfOperands = 2 + ((maxOperations > 1) ? RANDOM.nextInt(maxOperations - 1) : 0);
         StringBuilder src = new StringBuilder();
         switch (opStatKind) {
             case ARITHMETIC:
             case LOGICAL:
             case BITWISE:
-                src = srcGenerateOperatorStatement(method, numberOfOperands, opStatKind);
+                src = srcGenerateOperatorStatementOfKind(method, numberOfOperands, opStatKind);
                 break;
             case ARITHMETIC_BITWISE:
                 src = generateArithmeticBitwiseStatement(method, numberOfOperands);
@@ -182,19 +181,19 @@ public class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void generateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
-        String src = srcGenerateRandomOperatorStatementToLocal(method, maxOperations, opStatKind);
+    public void setLocalVarToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcSetLocalVarToOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatementToLocal(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public String srcSetLocalVarToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger f = fetchLocalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind));
+        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -204,19 +203,19 @@ public class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void generateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
-        String src = srcGenerateRandomOperatorStatementToField(method, maxOperations, opStatKind);
+    public void setFieldToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        String src = srcSetFieldToOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateRandomOperatorStatementToField(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public String srcSetFieldToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger f = fetchGlobalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateRandomOperatorStatement(method, maxOperations, opStatKind));
+        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -228,7 +227,7 @@ public class MathGenerator extends MethodCaller {
 
     //================================================Utility===========================================================
 
-    private static CtMethod getRandomMathMethod() {
+    private static CtMethod getMathMethod() {
         CtMethod[] methods = mathClazz.getDeclaredMethods();
         methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
         Random random = new Random();
@@ -331,17 +330,17 @@ public class MathGenerator extends MethodCaller {
 
     private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands) {
         StringBuilder src = new StringBuilder();
-        int maxPartitionSize = 1 + numberOfOperands / 2;
+        int maxPartitionSize = numberOfOperands / 2;
         Operator operator = null;
         while (numberOfOperands > 0) {
-            int operandsInPartition = 1 + RANDOM.nextInt(maxPartitionSize);
+            int operandsInPartition = 1 + ((maxPartitionSize > 1) ? RANDOM.nextInt(maxPartitionSize - 1) : 0);
             StringBuilder statement;
             FieldVarType type;
             if (RANDOM.nextBoolean()) {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, ARITHMETIC);
+                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, ARITHMETIC);
                 operator = getNonDivNonUnaryArithmeticOperator();
             } else {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, BITWISE);
+                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, BITWISE);
                 operator = getOperator(BITWISE, true);
             }
             type = getOperandType(BITWISE);
@@ -359,39 +358,39 @@ public class MathGenerator extends MethodCaller {
 
     private StringBuilder generateCombinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands) {
         StringBuilder src = new StringBuilder();
-        int maxPartitionSize = 1 + numberOfOperands / 2;
+        List<Operator> relOperators = Operator.getRelationalOperators();
+        int maxPartitionSize = numberOfOperands / 2;
         boolean openRel = false;
-        boolean openLog = false;
         Operator operator = null;
-        while (numberOfOperands > 0) {
-            int operandsInPartition = 1 + RANDOM.nextInt(maxPartitionSize);
-            StringBuilder statement;
-            if ((RANDOM.nextBoolean() && !openRel) || openLog) {
-                statement = srcGenerateOperatorStatement(method, operandsInPartition, LOGICAL);
+        while (numberOfOperands > 0 || openRel) {
+            int operandsInPartition = 1 + ((maxPartitionSize > 1) ? RANDOM.nextInt(maxPartitionSize - 1) : 0);
+            StringBuilder statement = new StringBuilder();
+            if ((RANDOM.nextBoolean() && !openRel)) {
+                statement.append("(");
+                statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, LOGICAL));
+                statement.replace(statement.indexOf(";"), statement.indexOf(";") + 1, ")");
                 operator = getOperator(LOGICAL, true);
-                openLog = !openLog;
-                if (!openLog) {
-                    operator = Operator.getRandomRelationalOperator();
-                    openRel = true;
-                }
             } else {
-                if (bitAndOrArithmetic == ARITHMETIC_BITWISE) {
-                    statement = generateArithmeticBitwiseStatement(method, numberOfOperands);
-                } else {
-                    statement = srcGenerateOperatorStatement(method, operandsInPartition, bitAndOrArithmetic);
-                }
-                List<Operator> relOperators = Operator.getRelationalOperators();
-                operator = relOperators.get(RANDOM.nextInt(relOperators.size()));
-                openRel = !openRel;
                 if (!openRel) {
+                    src.append("(");
+                }
+                statement.append("(");
+                if (bitAndOrArithmetic == ARITHMETIC_BITWISE) {
+                    statement.append(generateArithmeticBitwiseStatement(method, operandsInPartition));
+                } else {
+                    statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, bitAndOrArithmetic));
+                }
+                openRel = !openRel;
+                statement.replace(statement.indexOf(";"), statement.indexOf(";") + 1, ")");
+                if (openRel) {
+                    operator = relOperators.get(RANDOM.nextInt(relOperators.size()));
+                } else {
                     operator = getOperator(LOGICAL, true);
-                    openLog = true;
+                    statement.append(")");
                 }
             }
-            statement.insert(0, "(");
-            statement.replace(statement.indexOf(";"), statement.indexOf(";") + 1, ")");
-            statement.append(operator);
             src.append(statement);
+            src.append(operator);
             numberOfOperands -= operandsInPartition;
         }
         src.delete(src.length() - operator.toString().length(), src.length());
@@ -399,7 +398,7 @@ public class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder srcGenerateOperatorStatement(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind) {
+    private StringBuilder srcGenerateOperatorStatementOfKind(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind) {
         Operator operator = null;
         StringBuilder operatorStatement = new StringBuilder();
         boolean useNonUnary;
@@ -413,13 +412,12 @@ public class MathGenerator extends MethodCaller {
                 type = getOperandType(opStatKind);
                 if (type == FieldVarType.BOOLEAN) {
                     operand = RandomSupplier.getRandomCastedValue(type);
+                } else if (operator == DIV || operator == MOD) {
+                    operand = RandomSupplier.getRandomNumericValue(type, true);
                 } else {
-                    if (operator == DIV || operator == MOD) {
-                        operand = RandomSupplier.getRandomNumericValue(type, true);
-                    } else {
-                        operand = RandomSupplier.getRandomNumericValue(type, false);
-                    }
+                    operand = RandomSupplier.getRandomNumericValue(type, false);
                 }
+
                 if (!(operand.equals("true") || operand.equals("false"))) {
                     useNonUnary = true;
                 }
@@ -436,16 +434,21 @@ public class MathGenerator extends MethodCaller {
             }
             operator = getOperator(opStatKind, useNonUnary);
             if (operator.isUnary()) {
-                operatorStatement.append(operator + operand);
                 if (f != null && (operator == PLUS_PLUS || operator == MINUS_MINUS)) {
                     incDecrementOperands.add(f);
+                    if (RANDOM.nextBoolean()) {
+                        operatorStatement.append(operand + operator);
+                    } else  {
+                        operatorStatement.append(operator + operand);
+                    }
+                } else {
+                    operatorStatement.append(operator + operand);
                 }
                 operator = getOperator(opStatKind, true);
                 operatorStatement.append(operator);
             } else {
                 operatorStatement.append(operand + operator);
             }
-
             if (noDivByZero && (operator == MOD || operator == DIV)) {
                 addToCheckForDivByZero = true;
             }

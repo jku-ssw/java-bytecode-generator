@@ -31,7 +31,6 @@ public enum Operator {
 
     COND_AND(" && "),
     COND_OR(" || "),
-    TERNARY("?: "),
 
     SHIFT_L(" << "),
     SHIFT_R(" >> "),
@@ -41,13 +40,12 @@ public enum Operator {
     BIT_OR(" | ");
 
     private static Random RANDOM = new Random();
-    //instance of?
 
     private final String operator;
     private static final List<Operator> unaryOperators = Arrays.asList(UN_PLUS, UN_MINUS, PLUS_PLUS, MINUS_MINUS, COMPLEMENT, UN_BIT_COMP);
     private static final List<Operator> arithmeticOperators = Arrays.asList(PLUS, MINUS, DIV, MUL, MOD, UN_PLUS, UN_MINUS, PLUS_PLUS, MINUS_MINUS);
     private static final List<Operator> bitwiseOperators = Arrays.asList(SHIFT_L, SHIFT_R, US_SHIFT_R, BIT_AND, BIT_EX_OR, BIT_OR, UN_BIT_COMP);
-    private static final List<Operator> logicalOperators = Arrays.asList(COMPLEMENT, COND_AND, COND_OR); //TERNARY);
+    private static final List<Operator> logicalOperators = Arrays.asList(COMPLEMENT, COND_AND, COND_OR);
 
     private static final List<Operator> relationalOperators = Arrays.asList(EQ, UNEQ, GRT, GRTE, LT, LTE);
 
@@ -72,10 +70,6 @@ public enum Operator {
 
     public static List<Operator> getRelationalOperators() {
         return relationalOperators;
-    }
-
-    public static Operator getRandomRelationalOperator() {
-        return relationalOperators.get(RANDOM.nextInt(relationalOperators.size()));
     }
 
     public static List<Operator> getOperatorsOfKind(MathGenerator.OpStatKind opStatKind) {

@@ -115,35 +115,35 @@ public class RandomSupplier {
                     i = (short) i;
                 }
                 if (notZero) {
-                    return "" + (i != 0 ? i : i++);
+                    return "" + (i != 0 ? i : ++i);
                 } else {
                     return "" + i;
                 }
             case LONG:
                 long l = RANDOM.nextLong();
                 if (notZero) {
-                    return "" + (l != 0 ? l : l++) + "L";
+                    return "" + (l != 0L ? l : ++l) + "L";
                 } else {
                     return "" + l + "L";
                 }
             case FLOAT:
                 float f = RANDOM.nextFloat();
                 if (notZero) {
-                    return "" + (f != 0f ? f : f++) + "f";
+                    return "" + (f != 0f ? f : ++f) + "f";
                 } else {
                     return "" + f + "f";
                 }
             case DOUBLE:
                 double d = RANDOM.nextDouble();
                 if(notZero) {
-                    return "" + (d != 0d ? d : d++) + "d";
+                    return "" + (d != 0d ? d : ++d) + "d";
                 } else {
                     return "" + d + "d";
                 }
             case CHAR:
                 char c = STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length()));
                 if(notZero) {
-                    return "\'" + (c != 0 ? c : c++) + "\'";
+                    return "\'" + (c != 0 ? c : ++c) + "\'";
                 } else {
                     return "\'" + c + "\'";
                 }

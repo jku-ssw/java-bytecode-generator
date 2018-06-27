@@ -7,9 +7,6 @@ import javassist.NotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Enum-Class of all possible Variable- and FieldTypes in the jb_generator.jb_generator
- */
 public enum FieldVarType {
     BYTE(CtClass.byteType),
     SHORT(CtClass.shortType),

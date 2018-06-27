@@ -41,10 +41,8 @@ public class ClazzLogger extends MyLogger {
     }
 
     public void logMethod(MethodLogger ml) {
-       // ml.addToExcludedForCalling(ml);
         methods.add(ml);
     }
-
 
     public List<MethodLogger> getOverloadedMethods(String name) {
         return methods.stream().filter(m -> m.getName().equals(name)).collect(Collectors.toList());
@@ -65,18 +63,8 @@ public class ClazzLogger extends MyLogger {
         } else {
             callableMethods = new ArrayList<>(methods);
         }
-        //exclude methods that have called the callerMethod
-        //callableMethods.removeAll(callingMethod.getMethodsExcludedForCalling());
-//        for(MethodLogger m: callingMethod.getMethodsExcludedForCalling()) {
-//            callableMethods.removeAll(m.getMethodsExcludedForCalling());
-//        }
         callableMethods.remove(callingMethod);
         removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
-        //exclude methods, that cannot call methods in methodsExcludedForCalling of this callerMethod
-//        callableMethods = callableMethods.stream().filter(m ->
-//                Collections.disjoint(m.getMethodsCalledByThisMethod(),
-//                        callingMethod.getMethodsExcludedForCalling())).collect(Collectors.toList());
-
         return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
     }
 
@@ -96,6 +84,26 @@ public class ClazzLogger extends MyLogger {
 
     public boolean hasMethods() {
         return !methods.isEmpty();
+    }
+
+    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = this.getInitializedFieldOfTypeUsableInMethod(method, type);
+        if (fvl != null) {
+            values.add(new ParamWrapper(fvl));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+        FieldVarLogger fvl = this.getInitializedLocalVarOfType(method, type);
+        if (fvl != null) {
+            values.add(new ParamWrapper(fvl));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
@@ -121,26 +129,6 @@ public class ClazzLogger extends MyLogger {
         }
         ParamWrapper[] paramValues = new ParamWrapper[values.size()];
         return values.toArray(paramValues);
-    }
-
-    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
-        FieldVarLogger fvl = this.getInitializedFieldOfTypeUsableInMethod(method, type);
-        if (fvl != null) {
-            values.add(new ParamWrapper(fvl));
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
-        FieldVarLogger fvl = this.getInitializedLocalVarOfType(method, type);
-        if (fvl != null) {
-            values.add(new ParamWrapper(fvl));
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public FieldVarLogger getNonFinalFieldUsableInMethod(MethodLogger method) {

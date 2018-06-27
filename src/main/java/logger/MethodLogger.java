@@ -6,9 +6,6 @@ import utils.FieldVarType;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-/**
- * stores information about a Method
- */
 public class MethodLogger extends MyLogger {
 
     private String name;
@@ -26,7 +23,6 @@ public class MethodLogger extends MyLogger {
         this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
         this.methodsExcludedForCalling = new HashSet<>();
-        //this.methodsExcludedForCalling.add(this);
         this.calledByThisMethod = new HashSet<>();
     }
 

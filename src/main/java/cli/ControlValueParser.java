@@ -100,12 +100,12 @@ public class ControlValueParser {
         defaultValues.put(CLIOptions.LA.toString(), 30);
         defaultValues.put(CLIOptions.M.toString(), 60);
         defaultValues.put(CLIOptions.MC.toString(), 100);
-        defaultValues.put(CLIOptions.ML.toString(), 5);
+        defaultValues.put(CLIOptions.ML.toString(), 3);
         defaultValues.put(CLIOptions.MP.toString(), 5);
         defaultValues.put(CLIOptions.MO.toString(), 0);
         defaultValues.put(CLIOptions.P.toString(), 0);
         defaultValues.put(CLIOptions.JLM.toString(), 100);
-        defaultValues.put(CLIOptions.CF.toString(), 10);
+        defaultValues.put(CLIOptions.CF.toString(), 5);
         defaultValues.put(CLIOptions.CL.toString(), 2);
         defaultValues.put(CLIOptions.CD.toString(), 4);
         defaultValues.put(CLIOptions.MLI.toString(), 1);
@@ -130,9 +130,6 @@ public class ControlValueParser {
         this.args = args;
     }
 
-    /**
-     * parses all Input-Options and stores them in generationController
-     */
     public GenerationController parse() {
         GenerationController generationController = new GenerationController();
         CommandLineParser parser = new DefaultParser();
@@ -197,9 +194,7 @@ public class ControlValueParser {
         return generationController;
     }
 
-    /**
-     * Writes information about all Options to the console
-     */
+
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("jb_generator", options);

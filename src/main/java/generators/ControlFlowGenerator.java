@@ -2,10 +2,7 @@ package generators;
 
 import javassist.CannotCompileException;
 import javassist.CtMethod;
-import logger.FieldVarLogger;
 import logger.MethodLogger;
-import utils.FieldVarType;
-import utils.Operator;
 import utils.RandomSupplier;
 
 import java.util.LinkedList;
@@ -36,17 +33,19 @@ public class ControlFlowGenerator extends Generator {
     private final int ifBranchingFactor;
     private final int maxLoopIterations;
     private final RandomCodeGenerator randomCodeGenerator;
+    private final MathGenerator mathGenerator;
 
-    public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator) {
+    public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator, MathGenerator mathGenerator) {
         super(randomCodeGenerator.getClazzFileContainer());
         this.randomCodeGenerator = randomCodeGenerator;
         this.ifBranchingFactor = randomCodeGenerator.getController().getIfBranchingFactor();
         this.maxLoopIterations = randomCodeGenerator.getController().getMaxLoopIterations();
+        this.mathGenerator = mathGenerator;
     }
 
     //==========================================IF ELSEIF ELSE==========================================================
 
-    public void generateRandomIfElseStatement(MethodLogger contextMethod) {
+    public void generateIfElseStatement(MethodLogger contextMethod) {
         if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
             switch (RANDOM.nextInt(3)) {
                 case 0:
@@ -89,46 +88,46 @@ public class ControlFlowGenerator extends Generator {
         controlSrc.append("} else if(" + getIfCondition(contextMethod) + " ) {");
     }
 
-    private void closeIStatement() {
+    private void closeIFStatement() {
         controlSrc.append("}");
         openIfContexts.removeLast();
         deepness--;
     }
 
     private String getIfCondition(MethodLogger method) {
-        StringBuilder condition = new StringBuilder();
-        FieldVarType type = RandomSupplier.getFieldVarType();
-        FieldVarLogger op1 = this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
-        FieldVarLogger op2 = this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
-        if (type != FieldVarType.STRING) {
-            addOperandToCondition(op1, type, condition);
-            Operator relOp = Operator.getRandomRelationalOperator();
-            condition.append(relOp);
-            addOperandToCondition(op2, type, condition);
-        } else {
-            if (op1 != null) {
-                condition.append(op1.getName() + " != null && ");
-            }
-            if (RANDOM.nextBoolean()) condition.append("!");
-            addOperandToCondition(op1, type, condition);
-            condition.append(".equals(");
-            addOperandToCondition(op1, type, condition);
-            condition.append(")");
+        MathGenerator.OpStatKind condKind = null;
+        switch (RANDOM.nextInt(4)) {
+            case 0:
+                condKind = MathGenerator.OpStatKind.LOGICAL;
+                break;
+            case 1:
+                condKind = MathGenerator.OpStatKind.ARITHMETIC_LOGICAL;
+                break;
+            case 2:
+                condKind = MathGenerator.OpStatKind.BITWISE_LOGICAL;
+                break;
+            case 3:
+                condKind = MathGenerator.OpStatKind.ARITHMETIC_LOGICAL_BITWISE;
+                break;
         }
+        String src = mathGenerator.srcGenerateOperatorStatement(
+                method, randomCodeGenerator.getController().getMaxOperatorsInOperatorStatement(), condKind);
+        StringBuilder condition;
+        if (src.contains("if")) {
+            condition = new StringBuilder(
+                    mathGenerator.srcGenerateOperatorStatement(
+                            method, randomCodeGenerator.getController().
+                                    getMaxOperatorsInOperatorStatement(), MathGenerator.OpStatKind.LOGICAL));
+        } else {
+            condition = new StringBuilder(src);
+        }
+        condition.deleteCharAt(condition.length() - 1);
         return condition.toString();
-    }
-
-    private static void addOperandToCondition(FieldVarLogger operand, FieldVarType type, StringBuilder condition) {
-        if (operand == null) {
-            condition.append(RandomSupplier.getRandomCastedValueNotNull(type));
-        } else {
-            condition.append(operand.getName());
-        }
     }
 
     //=================================================DO WHILE=========================================================
 
-    public void generateRandomDoWhileStatement(MethodLogger contextMethod) {
+    public void generateDoWhileStatement(MethodLogger contextMethod) {
         String condition = this.openDoWhileStatement();
         this.generateBody(contextMethod, ControlType.doWhileType, condition);
     }
@@ -145,7 +144,6 @@ public class ControlFlowGenerator extends Generator {
         }
     }
 
-    //TODO condition
     private void closeDoWhileStatement(String condition) {
         controlSrc.append("} while(" + condition + ");");
         deepness--;
@@ -153,7 +151,7 @@ public class ControlFlowGenerator extends Generator {
 
     //==================================================FOR/WHILE=======================================================
 
-    public void generateRandomWhileStatement(MethodLogger contextMethod) {
+    public void generateWhileStatement(MethodLogger contextMethod) {
         this.openWhileStatement();
         this.generateBody(contextMethod, ControlType.forWhileType);
     }
@@ -175,7 +173,7 @@ public class ControlFlowGenerator extends Generator {
         deepness--;
     }
 
-    public void generateRandomForStatement(MethodLogger contextMethod) {
+    public void generateForStatement(MethodLogger contextMethod) {
         this.openForStatement();
         this.generateBody(contextMethod, ControlType.forWhileType);
     }
@@ -195,7 +193,7 @@ public class ControlFlowGenerator extends Generator {
         RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(contextMethod);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.CONTROL_CONTEXT);
         if (controlType == ControlType.ifType) {
-            this.closeIStatement();
+            this.closeIFStatement();
         } else if (controlType == ControlType.forWhileType) {
             this.closeForWhileStatement();
         } else if (controlType == ControlType.doWhileType) {

@@ -7,7 +7,8 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MethodGenerator extends MethodCaller {
@@ -60,13 +61,13 @@ public class MethodGenerator extends MethodCaller {
         this.overrideReturnStatement(method);
     }
 
-    public MethodLogger generateRandomMethod(int maximumParameters) {
+    public MethodLogger generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
         return this.generateMethod(methodName, getRandomSupplier().getReturnType(),
                 getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getModifiers());
     }
 
-    public MethodLogger overloadRandomMethod(int maximumNumberOfParams) {
+    public MethodLogger overloadMethod(int maximumNumberOfParams) {
         MethodLogger methodToOverload = getClazzLogger().getRandomMethod();
         if (methodToOverload == null) {
             return null;
@@ -118,12 +119,12 @@ public class MethodGenerator extends MethodCaller {
         return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
     }
 
-    public void generateRandomMethodCall(MethodLogger method) {
-        String src = srcGenerateRandomMethodCall(method);
+    public void generateMethodCall(MethodLogger method) {
+        String src = srcGenerateMethodCall(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcGenerateRandomMethodCall(MethodLogger method) {
+    public String srcGenerateMethodCall(MethodLogger method) {
         if (this.getClazzLogger().hasMethods()) {
             MethodLogger calledMethod = getClazzLogger().getRandomCallableMethod(method);
             if (calledMethod == null) {
@@ -135,12 +136,12 @@ public class MethodGenerator extends MethodCaller {
         }
     }
 
-    public void setRandomFieldToReturnValue(MethodLogger method) {
-        String src = srcSetRandomFieldToReturnValue(method);
+    public void setFieldToReturnValue(MethodLogger method) {
+        String src = srcSetFieldToReturnValue(method);
         this.insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomFieldToReturnValue(MethodLogger method) {
+    public String srcSetFieldToReturnValue(MethodLogger method) {
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
         if (calledMethod == null) {
             return null;
@@ -151,19 +152,19 @@ public class MethodGenerator extends MethodCaller {
                 return null;
             } else {
                 fieldVar.setInitialized();
-                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);//srcSetVariableToReturnValue(calledMethod, method, fieldVar);
+                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);
             }
         } else {
             return null;
         }
     }
 
-    public void setRandomLocalVarToReturnValue(MethodLogger method) {
-        String src = srcSetRandomLocalVarToReturnValue(method);
+    public void setLocalVarToReturnValue(MethodLogger method) {
+        String src = srcSetLocalVarToReturnValue(method);
         this.insertIntoMethodBody(method, src);
     }
 
-    public String srcSetRandomLocalVarToReturnValue(MethodLogger method) {
+    public String srcSetLocalVarToReturnValue(MethodLogger method) {
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
         if (calledMethod == null) {
             return null;
@@ -174,7 +175,7 @@ public class MethodGenerator extends MethodCaller {
                 return null;
             } else {
                 fieldVar.setInitialized();
-                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);//srcSetVariableToReturnValue(calledMethod, method, fieldVar);
+                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);
             }
         } else {
             return null;

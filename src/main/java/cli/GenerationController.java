@@ -6,8 +6,8 @@ import java.util.Map;
 public class GenerationController {
     private final Map<CLIOptions, Integer> controlValues = new HashMap<>();
 
-    boolean avoidOverflows = true;
-    boolean avoidDivByZero = true;
+    private boolean avoidOverflows = true;
+    private boolean avoidDivByZero = true;
 
     private String fileName;
     private String location;

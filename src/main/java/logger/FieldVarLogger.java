@@ -4,9 +4,6 @@ import utils.FieldVarType;
 
 import java.lang.reflect.Modifier;
 
-/**
- * stores information about a Variable
- */
 public class FieldVarLogger {
     private final String name;
     private final int modifiers;
