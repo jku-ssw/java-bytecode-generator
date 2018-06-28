@@ -50,6 +50,24 @@ The probability to generate doWhile-loops
 The probability to generate an if-statement
 ##-ibf:
 The maximum branching-factor for if-statements
+##-os
+The probability to generate statements using operators
+##-as
+The probability to generate statements using arithmetic operators
+##-ls
+The probability to generate statements using logical operators
+##-bs
+The probability to generate statements using bitwise operators
+##-als
+The probability to generate statements using arithmetic and logical operators
+##-abs
+The probability to generate statements using arithmetic and bitwise operators
+##-lbs
+The probability to generate statements using logical and bitwise operators
+##-albs
+The probability to generate statements using arithmetic, logical and bitwise operators
+##-mops
+The maximum number of operators in a statement. Not exactly true for combined operators. 
 
 
 
