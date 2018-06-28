@@ -10,7 +10,7 @@ import java.util.*;
 import static utils.Operator.*;
 import static utils.Operator.OpStatKind.*;
 
-public class MathGenerator extends MethodCaller {
+class MathGenerator extends MethodCaller {
 
     private static boolean noDivByZero;
     private static boolean noOverflow;

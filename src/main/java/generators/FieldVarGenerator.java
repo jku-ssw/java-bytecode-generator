@@ -8,7 +8,7 @@ import logger.MethodLogger;
 import utils.ClazzFileContainer;
 import utils.FieldVarType;
 
-public class FieldVarGenerator extends Generator {
+class FieldVarGenerator extends Generator {
 
     public FieldVarGenerator(ClazzFileContainer clazzContainer) {
         super(clazzContainer);

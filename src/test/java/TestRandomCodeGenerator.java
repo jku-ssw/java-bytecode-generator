@@ -3,16 +3,20 @@ import cli.GenerationController;
 import generators.RandomCodeGenerator;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class TestRandomCodeGenerator extends TestGenerator {
+public class TestRandomCodeGenerator {
     private static String ARITHMETIC_EXCEPTIONS = "java.lang.ArithmeticException";
 
     private static boolean allowArithmeticExceptions;
@@ -38,6 +42,7 @@ public class TestRandomCodeGenerator extends TestGenerator {
                 "-bs", "" + RANDOM.nextInt(100), "-als", "" + RANDOM.nextInt(100),
                 "-abs", "" + RANDOM.nextInt(100), "-lbs", "" + RANDOM.nextInt(100),
                 "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(10)));
+
         allowArithmeticExceptions = RANDOM.nextBoolean();
         if (allowArithmeticExceptions) {
             options.add("-of");
@@ -66,5 +71,41 @@ public class TestRandomCodeGenerator extends TestGenerator {
                 throw new AssertionError(e);
             }
         }
+    }
+
+    boolean executeFile(String fileName, String... allowedExceptions) throws IOException, InterruptedException {
+        Process p = Runtime.getRuntime().exec("java " + fileName, null, new File("src/test/resources/generated_test_files"));
+        BufferedReader brIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader brErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        String line;
+        while ((line = brIn.readLine()) != null) {
+            System.out.println(line);
+        }
+        while ((line = brErr.readLine()) != null) {
+            if(!line.startsWith(" ")) continue;
+            if(checkIfExceptionAllowed(line, allowedExceptions)) {
+                continue;
+            } else {
+                throw new IOException("Execution of " + fileName + " failed.\nNot allowed exception: " + line);
+            }
+        }
+        if (!p.waitFor(1, TimeUnit.MINUTES) && allowedExceptions.length == 0) {
+            throw new IOException("Execution of " + fileName + " failed ");
+        } else {
+            brIn.close();
+            brErr.close();
+            return true;
+        }
+    }
+
+    private boolean checkIfExceptionAllowed(String line, String[] allowedExceptions) {
+        for(String exception: allowedExceptions) {
+            System.out.println(exception);
+            System.out.println(line);
+            if(line.contains(exception)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
