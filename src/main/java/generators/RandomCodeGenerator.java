@@ -12,9 +12,9 @@ import utils.FieldVarType;
 import java.util.List;
 import java.util.Random;
 
-import generators.MathGenerator.OpStatKind;
+import static utils.Operator.OpStatKind;
+import static utils.Operator.OpStatKind.*;
 
-import static generators.MathGenerator.OpStatKind.*;
 
 public class RandomCodeGenerator {
     enum Context {
@@ -301,7 +301,7 @@ public class RandomCodeGenerator {
                     break;
                 }
 
-                int maxOperations = controller.getMaxOperatorsInOperatorStatement();
+                int maxOperations = controller.getMaxOperators();
                 String src = null;
                 switch (globalOrLocalOrNotAssign) {
                     case 0:
@@ -338,49 +338,49 @@ public class RandomCodeGenerator {
         for (int i = 0; i < OpStatKind.values().length; i++) {
             switch (selectedKind) {
                 case ARITHMETIC:
-                    if (opProb < controller.getArithmeticStatementProbability()) {
+                    if (opProb < controller.getArithmeticProbability()) {
                         return ARITHMETIC;
                     } else {
                         selectedKind = LOGICAL;
                         break;
                     }
                 case LOGICAL:
-                    if (opProb < controller.getLogicalStatementProbability()) {
+                    if (opProb < controller.getLogicalProbability()) {
                         return LOGICAL;
                     } else {
                         selectedKind = BITWISE;
                         break;
                     }
                 case BITWISE:
-                    if (opProb < controller.getBitwiseStatementProbability()) {
+                    if (opProb < controller.getBitwiseProbability()) {
                         return BITWISE;
                     } else {
                         selectedKind = ARITHMETIC_LOGICAL;
                         break;
                     }
                 case ARITHMETIC_LOGICAL:
-                    if (opProb < controller.getArithmeticLogicalStatementProbability()) {
+                    if (opProb < controller.getArithmeticLogicalProbability()) {
                         return ARITHMETIC_LOGICAL;
                     } else {
                         selectedKind = ARITHMETIC_BITWISE;
                         break;
                     }
                 case ARITHMETIC_BITWISE:
-                    if (opProb < controller.getArithmeticBitwiseStatementProbability()) {
+                    if (opProb < controller.getArithmeticBitwiseProbability()) {
                         return ARITHMETIC_BITWISE;
                     } else {
                         selectedKind = BITWISE_LOGICAL;
                         break;
                     }
                 case BITWISE_LOGICAL:
-                    if (opProb < controller.getLogicBitwiseStatementProbability()) {
+                    if (opProb < controller.getLogicBitwiseProbability()) {
                         return BITWISE_LOGICAL;
                     } else {
                         selectedKind = ARITHMETIC_LOGICAL_BITWISE;
                         break;
                     }
                 case ARITHMETIC_LOGICAL_BITWISE:
-                    if (opProb < controller.getArithmeticLogicalBitwiseStatementProbability()) {
+                    if (opProb < controller.getArithmeticLogicalBitwiseProbability()) {
                         return ARITHMETIC_LOGICAL_BITWISE;
                     } else {
                         selectedKind = ARITHMETIC;

@@ -1,6 +1,8 @@
-import java.io.*;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 public abstract class TestGenerator {
     boolean executeFile(String fileName, String... allowedExceptions) throws IOException, InterruptedException {
@@ -19,11 +21,9 @@ public abstract class TestGenerator {
                 throw new IOException("Execution of " + fileName + " failed.\nNot allowed exception: " + line);
             }
         }
-        int exitCode = p.waitFor();
-        if (exitCode != 0 && allowedExceptions.length == 0) {
-            throw new IOException("Execution of " + fileName + " failed " + exitCode);
+        if (!p.waitFor(1, TimeUnit.MINUTES) && allowedExceptions.length == 0) {
+            throw new IOException("Execution of " + fileName + " failed ");
         } else {
-            //assertEquals(true, new File("src/test/generated_test_files/" + fileName + ".class").delete());
             brIn.close();
             brErr.close();
             return true;

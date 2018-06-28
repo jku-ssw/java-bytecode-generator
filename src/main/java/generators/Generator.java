@@ -65,7 +65,6 @@ abstract class Generator {
         return getClazzContainer().getRandomSupplier();
     }
 
-    //=================================================Utility==========================================================
     void insertIntoMethodBody(MethodLogger method, String src) {
         if (src == null) {
             return;

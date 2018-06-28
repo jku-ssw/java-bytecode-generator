@@ -136,35 +136,35 @@ public class GenerationController {
         return controlValues.get(CLIOptions.OS);
     }
 
-    public int getArithmeticStatementProbability() {
+    public int getArithmeticProbability() {
         return controlValues.get(CLIOptions.AS);
     }
 
-    public int getLogicalStatementProbability() {
+    public int getLogicalProbability() {
         return controlValues.get(CLIOptions.LS);
     }
 
-    public int getBitwiseStatementProbability() {
+    public int getBitwiseProbability() {
         return controlValues.get(CLIOptions.BS);
     }
 
-    public int getArithmeticLogicalStatementProbability() {
+    public int getArithmeticLogicalProbability() {
         return controlValues.get(CLIOptions.ALS);
     }
 
-    public int getArithmeticBitwiseStatementProbability() {
+    public int getArithmeticBitwiseProbability() {
         return controlValues.get(CLIOptions.ABS);
     }
 
-    public int getLogicBitwiseStatementProbability() {
+    public int getLogicBitwiseProbability() {
         return controlValues.get(CLIOptions.LBS);
     }
 
-    public int getArithmeticLogicalBitwiseStatementProbability() {
+    public int getArithmeticLogicalBitwiseProbability() {
         return controlValues.get(CLIOptions.ALBS);
     }
 
-    public int getMaxOperatorsInOperatorStatement() {
+    public int getMaxOperators() {
         return controlValues.get(CLIOptions.MOPS);
     }
 }

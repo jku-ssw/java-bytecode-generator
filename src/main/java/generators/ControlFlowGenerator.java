@@ -7,7 +7,10 @@ import utils.RandomSupplier;
 
 import java.util.LinkedList;
 
-public class ControlFlowGenerator extends Generator {
+import static utils.Operator.OpStatKind;
+import static utils.Operator.OpStatKind.*;
+
+class ControlFlowGenerator extends Generator {
     private class IfContext {
         int numberOfElseIf;
         boolean hasElse;
@@ -85,7 +88,7 @@ public class ControlFlowGenerator extends Generator {
 
     private void openElseIfStatement(MethodLogger contextMethod) {
         openIfContexts.getLast().numberOfElseIf++;
-        controlSrc.append("} else if(" + getIfCondition(contextMethod) + " ) {");
+        controlSrc.append("} else if(" + getIfCondition(contextMethod) + ") {");
     }
 
     private void closeIFStatement() {
@@ -95,32 +98,30 @@ public class ControlFlowGenerator extends Generator {
     }
 
     private String getIfCondition(MethodLogger method) {
-        MathGenerator.OpStatKind condKind = null;
+        OpStatKind condKind = null;
         switch (RANDOM.nextInt(4)) {
             case 0:
-                condKind = MathGenerator.OpStatKind.LOGICAL;
+                condKind = LOGICAL;
                 break;
             case 1:
-                condKind = MathGenerator.OpStatKind.ARITHMETIC_LOGICAL;
+                condKind = ARITHMETIC_LOGICAL;
                 break;
             case 2:
-                condKind = MathGenerator.OpStatKind.BITWISE_LOGICAL;
+                condKind = BITWISE_LOGICAL;
                 break;
             case 3:
-                condKind = MathGenerator.OpStatKind.ARITHMETIC_LOGICAL_BITWISE;
+                condKind = ARITHMETIC_LOGICAL_BITWISE;
                 break;
         }
-        String src = mathGenerator.srcGenerateOperatorStatement(
-                method, randomCodeGenerator.getController().getMaxOperatorsInOperatorStatement(), condKind);
-        StringBuilder condition;
-        if (src.contains("if")) {
-            condition = new StringBuilder(
-                    mathGenerator.srcGenerateOperatorStatement(
-                            method, randomCodeGenerator.getController().
-                                    getMaxOperatorsInOperatorStatement(), MathGenerator.OpStatKind.LOGICAL));
+        String src;
+        if (condKind == ARITHMETIC_LOGICAL || condKind == ARITHMETIC_LOGICAL_BITWISE) {
+            src = mathGenerator.srcGenerateOperatorStatement(
+                    method, randomCodeGenerator.getController().getMaxOperators(), condKind, true);
         } else {
-            condition = new StringBuilder(src);
+            src = mathGenerator.srcGenerateOperatorStatement(
+                    method, randomCodeGenerator.getController().getMaxOperators(), condKind, false);
         }
+        StringBuilder condition = new StringBuilder(src);
         condition.deleteCharAt(condition.length() - 1);
         return condition.toString();
     }
@@ -137,9 +138,10 @@ public class ControlFlowGenerator extends Generator {
         deepness++;
         if (RANDOM.nextBoolean()) {
             controlSrc.append("int " + varName + " = 0; do { " + varName + "++;");
-            return varName + " < " + RANDOM.nextInt(maxLoopIterations);
+            return varName + " < " + getNumberOfLoopIterations(maxLoopIterations);
         } else {
-            controlSrc.append("int " + varName + " = " + RANDOM.nextInt(maxLoopIterations) + "; do { " + varName + "--;");
+            controlSrc.append("int " + varName + " = " +
+                    getNumberOfLoopIterations(maxLoopIterations) + "; do { " + varName + "--;");
             return varName + " > 0";
         }
     }
@@ -160,9 +162,9 @@ public class ControlFlowGenerator extends Generator {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         if (RANDOM.nextBoolean()) {
             controlSrc.append("int " + varName + " = 0; while(" +
-                    varName + " < " + RANDOM.nextInt(maxLoopIterations) + ") { " + varName + "++; ");
+                    varName + " < " + getNumberOfLoopIterations(maxLoopIterations) + ") { " + varName + "++; ");
         } else {
-            controlSrc.append("int " + varName + " = " + RANDOM.nextInt(maxLoopIterations) + "; while(" +
+            controlSrc.append("int " + varName + " = " + getNumberOfLoopIterations(maxLoopIterations) + "; while(" +
                     varName + " > 0) { " + varName + "--; ");
         }
         ++deepness;
@@ -181,7 +183,7 @@ public class ControlFlowGenerator extends Generator {
     private void openForStatement() {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
-        int it = RANDOM.nextInt(this.maxLoopIterations + 1);
+        int it = getNumberOfLoopIterations(maxLoopIterations);
         controlSrc.append("for(int " + varName + " = 0; " + varName + " < " + it + "; " + varName + "++) {");
         deepness++;
     }
@@ -224,6 +226,10 @@ public class ControlFlowGenerator extends Generator {
 
     public int getDeepness() {
         return deepness;
+    }
+
+    private int getNumberOfLoopIterations(int maxLoopIterations) {
+        return maxLoopIterations == 0 ? 0 : RANDOM.nextInt(maxLoopIterations);
     }
 }
 

@@ -51,7 +51,7 @@ public class RandomSupplier {
     }
 
     public static FieldVarType[] getParameterTypes(int maxParameters) {
-        int n = RANDOM.nextInt(maxParameters);
+        int n = maxParameters == 0 ? 0 : RANDOM.nextInt(maxParameters);
         return getNParameterTypes(n);
     }
 
@@ -135,14 +135,14 @@ public class RandomSupplier {
                 }
             case DOUBLE:
                 double d = RANDOM.nextDouble();
-                if(notZero) {
+                if (notZero) {
                     return "" + (d != 0d ? d : ++d) + "d";
                 } else {
                     return "" + d + "d";
                 }
             case CHAR:
                 char c = STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length()));
-                if(notZero) {
+                if (notZero) {
                     return "\'" + (c != 0 ? c : ++c) + "\'";
                 } else {
                     return "\'" + c + "\'";

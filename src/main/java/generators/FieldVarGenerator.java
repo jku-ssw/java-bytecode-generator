@@ -14,7 +14,7 @@ public class FieldVarGenerator extends Generator {
         super(clazzContainer);
     }
 
-    //===========================================field generation=======================================================
+    //===========================================FIELD GENERATION=======================================================
 
     private void generateField(String name, FieldVarType type, int modifiers, String value) {
         try {
@@ -40,15 +40,11 @@ public class FieldVarGenerator extends Generator {
         this.generateField(getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
     }
 
-    //==========================================local variable generation===============================================
+    //==========================================LOCAL VARIABLE GENERATION===============================================
 
     private void generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
-        if (src.equals("")) {
-            return;
-        } else {
-            insertIntoMethodBody(method, src);
-        }
+        insertIntoMethodBody(method, src);
     }
 
     public void generateLocalVariable(MethodLogger method) {
@@ -59,23 +55,19 @@ public class FieldVarGenerator extends Generator {
     }
 
     private String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
-        boolean initialized = false;
         CtMethod ctMethod = this.getCtMethod(method);
-        String src = null;
+        String src;
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
-            if (value != null) {
-                src = name + " = " + value + ";";
-                initialized = true;
-            }
-            method.logVariable(name, type, 0, initialized);
+            src = name + " = " + value + ";";
+            method.logVariable(name, type, 0, true);
             return src;
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
     }
 
-    //=============================================print variables======================================================
+    //=============================================PRINT VARIABLES======================================================
 
     private String srcGeneratePrintStatement(FieldVarLogger variable) {
         return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
@@ -108,7 +100,8 @@ public class FieldVarGenerator extends Generator {
             }
         }
     }
-    //==========================================set variable values=====================================================
+
+    //==========================================SET VARIABLE VALUES=====================================================
 
     private void setVarValue(FieldVarLogger fieldVar, MethodLogger method, String value) {
         String src = srcSetVarValue(fieldVar, value);
@@ -172,7 +165,7 @@ public class FieldVarGenerator extends Generator {
         }
     }
 
-    //=======================================assign variable to variable================================================
+    //=======================================ASSIGN VARIABLE TO VARIABLE================================================
 
     public void assignFieldToField(MethodLogger method) {
         String src = srcAssignFieldToField(method);
@@ -250,7 +243,8 @@ public class FieldVarGenerator extends Generator {
         if (f1 == null) {
             return null;
         }
-        FieldVarLogger f2 = this.getClazzLogger().getNonFinalInitializedCompatibleFieldUsableInMethod(method, f1.getType());
+        FieldVarLogger f2 = this.getClazzLogger().
+                getNonFinalInitializedCompatibleFieldUsableInMethod(method, f1.getType());
         if (f2 != null) {
             return srcAssignVariableToVariable(f1, f2);
         } else {

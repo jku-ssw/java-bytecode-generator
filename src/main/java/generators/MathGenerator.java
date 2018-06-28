@@ -7,8 +7,8 @@ import utils.*;
 
 import java.util.*;
 
-import static generators.MathGenerator.OpStatKind.*;
 import static utils.Operator.*;
+import static utils.Operator.OpStatKind.*;
 
 public class MathGenerator extends MethodCaller {
 
@@ -28,20 +28,28 @@ public class MathGenerator extends MethodCaller {
         } catch (NotFoundException e) {
             throw new AssertionError(e);
         }
-        OVERFLOW_METHODS.put("java.lang.Math.addExact(int,int)", "if(%2$s > 0 ? Integer.MAX_VALUE - %2$s > %1$s : Integer.MIN_VALUE - %2$s < %1$s) {");
-        OVERFLOW_METHODS.put("java.lang.Math.addExact(long,long)", "if(%2$s > 0 ? Long.MAX_VALUE - %2$s > %1$s : Long.MIN_VALUE - %2$s < %1$s) {");
+        OVERFLOW_METHODS.put("java.lang.Math.addExact(int,int)", "if(%2$s > 0 ? " +
+                "Integer.MAX_VALUE - %2$s > %1$s : Integer.MIN_VALUE - %2$s < %1$s) {");
+        OVERFLOW_METHODS.put("java.lang.Math.addExact(long,long)", "if(%2$s > 0 ? " +
+                "Long.MAX_VALUE - %2$s > %1$s : Long.MIN_VALUE - %2$s < %1$s) {");
         OVERFLOW_METHODS.put("java.lang.Math.decrementExact(int)", "if( %s > Integer.MIN_VALUE) {");
         OVERFLOW_METHODS.put("java.lang.Math.decrementExact(long)", "if( %s > Long.MIN_VALUE) {");
         OVERFLOW_METHODS.put("java.lang.Math.incrementExact(int)", "if( %s < Integer.MAX_VALUE) {");
         OVERFLOW_METHODS.put("java.lang.Math.incrementExact(long)", "if( %s < Long.MAX_VALUE) {");
         OVERFLOW_METHODS.put("java.lang.Math.negateExact(int)", "if( %s > Integer.MIN_VALUE) {");
         OVERFLOW_METHODS.put("java.lang.Math.negateExact(long)", "if( %s > Long.MIN_VALUE) {");
-        OVERFLOW_METHODS.put("java.lang.Math.subtractExact(int,int)", "if(%2$s > 0 ? Integer.MAX_VALUE - %2$s < %1$s: Integer.MIN_VALUE - %2$s > %1$s) {");
-        OVERFLOW_METHODS.put("java.lang.Math.subtractExact(long,long)", "if(%2$s > 0 ? Long.MAX_VALUE - %2$s < %1$s : Long.MIN_VALUE - %2$s > %1$s) {");
-        OVERFLOW_METHODS.put("java.lang.Math.toIntExact(long)", "if( %1$s <= Integer.MAX_VALUE && %1$s >= Integer.MIN_VALUE) {");
-        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(int,int)", "if(%1$s == 0 || Math.abs(Integer.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Integer.MIN_VALUE) {");
-        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(long,int)", "if(%1$s == 0 || Math.abs(Long.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Integer.MIN_VALUE) {");
-        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(long,long)", "if(%1$s == 0 || Math.abs(Long.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Long.MIN_VALUE) {");
+        OVERFLOW_METHODS.put("java.lang.Math.subtractExact(int,int)", "if(%2$s > 0 ? " +
+                "Integer.MAX_VALUE - %2$s < %1$s: Integer.MIN_VALUE - %2$s > %1$s) {");
+        OVERFLOW_METHODS.put("java.lang.Math.subtractExact(long,long)", "if(%2$s > 0 ? " +
+                "Long.MAX_VALUE - %2$s < %1$s : Long.MIN_VALUE - %2$s > %1$s) {");
+        OVERFLOW_METHODS.put("java.lang.Math.toIntExact(long)",
+                "if( %1$s <= Integer.MAX_VALUE && %1$s >= Integer.MIN_VALUE) {");
+        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(int,int)",
+                "if(%1$s == 0 || Math.abs(Integer.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Integer.MIN_VALUE) {");
+        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(long,int)", "" +
+                "if(%1$s == 0 || Math.abs(Long.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Integer.MIN_VALUE) {");
+        OVERFLOW_METHODS.put("java.lang.Math.multiplyExact(long,long)",
+                "if(%1$s == 0 || Math.abs(Long.MIN_VALUE/%1$s) > Math.abs(%2$s) && %2$s != Long.MIN_VALUE) {");
         String modDivCondition = "if(%s != 0) {";
         OVERFLOW_METHODS.put("java.lang.Math.floorDiv(int,int)", modDivCondition);
         OVERFLOW_METHODS.put("java.lang.Math.floorDiv(long,int)", modDivCondition);
@@ -57,15 +65,7 @@ public class MathGenerator extends MethodCaller {
         this.noDivByZero = noDivByZero;
     }
 
-    public enum OpStatKind {
-        ARITHMETIC,
-        LOGICAL,
-        BITWISE,
-        ARITHMETIC_LOGICAL,
-        ARITHMETIC_BITWISE,
-        BITWISE_LOGICAL,
-        ARITHMETIC_LOGICAL_BITWISE
-    }
+    //===============================================CALL MATH METHODS==================================================
 
     public void generateMathMethodCall(MethodLogger method) {
         String callString = srcGenerateMathMethodCall(method);
@@ -111,7 +111,6 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
-
     private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
         FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
@@ -145,33 +144,39 @@ public class MathGenerator extends MethodCaller {
         }
     }
 
+    //=============================================OPERATOR STATEMENTS==================================================
+
     public void generateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
-        String src = srcGenerateOperatorStatement(method, maxOperations, opStatKind);
+        String src = srcGenerateOperatorStatement(method, maxOperations, opStatKind, false);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
     public String srcGenerateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+        return srcGenerateOperatorStatement(method, maxOperations, opStatKind, false);
+    }
+
+    public String srcGenerateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean useNoVars) {
         int numberOfOperands = 2 + ((maxOperations > 1) ? RANDOM.nextInt(maxOperations - 1) : 0);
         StringBuilder src = new StringBuilder();
         switch (opStatKind) {
             case ARITHMETIC:
             case LOGICAL:
             case BITWISE:
-                src = srcGenerateOperatorStatementOfKind(method, numberOfOperands, opStatKind);
+                src = srcGenerateOperatorStatementOfKind(method, numberOfOperands, opStatKind, useNoVars);
                 break;
             case ARITHMETIC_BITWISE:
-                src = generateArithmeticBitwiseStatement(method, numberOfOperands);
+                src = arithmeticBitwiseStatement(method, numberOfOperands, useNoVars);
                 break;
             case ARITHMETIC_LOGICAL:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands);
+                src = combinedWithLogicalStatement(ARITHMETIC, method, numberOfOperands, useNoVars);
                 break;
             case BITWISE_LOGICAL:
-                src = generateCombinedWithLogicalStatement(BITWISE, method, numberOfOperands);
+                src = combinedWithLogicalStatement(BITWISE, method, numberOfOperands, useNoVars);
                 break;
             case ARITHMETIC_LOGICAL_BITWISE:
-                src = generateCombinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands);
+                src = combinedWithLogicalStatement(ARITHMETIC_BITWISE, method, numberOfOperands, useNoVars);
         }
         if (!checkForDivByZero.isEmpty()) {
             src = addIfToOperatorStatement(src, checkForDivByZero);
@@ -193,7 +198,7 @@ public class MathGenerator extends MethodCaller {
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind));
+        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind, false));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -215,7 +220,7 @@ public class MathGenerator extends MethodCaller {
         if (f == null) {
             return null;
         }
-        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind));
+        StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind, false));
         if (src.indexOf("if") != -1) {
             src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
         } else {
@@ -225,7 +230,7 @@ public class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    //================================================Utility===========================================================
+    //================================================UTILITY===========================================================
 
     private static CtMethod getMathMethod() {
         CtMethod[] methods = mathClazz.getDeclaredMethods();
@@ -328,7 +333,7 @@ public class MathGenerator extends MethodCaller {
         return types.get(RANDOM.nextInt(types.size()));
     }
 
-    private StringBuilder generateArithmeticBitwiseStatement(MethodLogger method, int numberOfOperands) {
+    private StringBuilder arithmeticBitwiseStatement(MethodLogger method, int numberOfOperands, boolean useNoVars) {
         StringBuilder src = new StringBuilder();
         int maxPartitionSize = numberOfOperands / 2;
         Operator operator = null;
@@ -337,10 +342,10 @@ public class MathGenerator extends MethodCaller {
             StringBuilder statement;
             FieldVarType type;
             if (RANDOM.nextBoolean()) {
-                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, ARITHMETIC);
+                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, ARITHMETIC, useNoVars);
                 operator = getNonDivNonUnaryArithmeticOperator();
             } else {
-                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, BITWISE);
+                statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, BITWISE, useNoVars);
                 operator = getOperator(BITWISE, true);
             }
             type = getOperandType(BITWISE);
@@ -356,9 +361,9 @@ public class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder generateCombinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands) {
+    private StringBuilder combinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands, boolean useNoVars) {
         StringBuilder src = new StringBuilder();
-        List<Operator> relOperators = Operator.getRelationalOperators();
+        List<Operator> relOperators = Operator.getOperatorsOfKind(RELATIONAL);
         int maxPartitionSize = numberOfOperands / 2;
         boolean openRel = false;
         Operator operator = null;
@@ -367,7 +372,7 @@ public class MathGenerator extends MethodCaller {
             StringBuilder statement = new StringBuilder();
             if ((RANDOM.nextBoolean() && !openRel)) {
                 statement.append("(");
-                statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, LOGICAL));
+                statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, LOGICAL, useNoVars));
                 statement.replace(statement.indexOf(";"), statement.indexOf(";") + 1, ")");
                 operator = getOperator(LOGICAL, true);
             } else {
@@ -376,9 +381,9 @@ public class MathGenerator extends MethodCaller {
                 }
                 statement.append("(");
                 if (bitAndOrArithmetic == ARITHMETIC_BITWISE) {
-                    statement.append(generateArithmeticBitwiseStatement(method, operandsInPartition));
+                    statement.append(arithmeticBitwiseStatement(method, operandsInPartition, useNoVars));
                 } else {
-                    statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, bitAndOrArithmetic));
+                    statement.append(srcGenerateOperatorStatementOfKind(method, operandsInPartition, bitAndOrArithmetic, useNoVars));
                 }
                 openRel = !openRel;
                 statement.replace(statement.indexOf(";"), statement.indexOf(";") + 1, ")");
@@ -398,14 +403,17 @@ public class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder srcGenerateOperatorStatementOfKind(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind) {
+    private StringBuilder srcGenerateOperatorStatementOfKind(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind, boolean useNoVars) {
         Operator operator = null;
         StringBuilder operatorStatement = new StringBuilder();
         boolean useNonUnary;
+        FieldVarLogger f = null;
         boolean addToCheckForDivByZero = false;
         for (int i = 0; i < nbrOfOperands; i++) {
             useNonUnary = false;
-            FieldVarLogger f = fetchOperand(method, opStatKind, operator);
+            if (!useNoVars) {
+                f = fetchOperand(method, opStatKind);
+            }
             String operand;
             FieldVarType type;
             if (f == null || (operator == DIV || operator == MOD) && incDecrementOperands.contains(f)) {
@@ -438,7 +446,7 @@ public class MathGenerator extends MethodCaller {
                     incDecrementOperands.add(f);
                     if (RANDOM.nextBoolean()) {
                         operatorStatement.append(operand + operator);
-                    } else  {
+                    } else {
                         operatorStatement.append(operator + operand);
                     }
                 } else {
@@ -507,7 +515,7 @@ public class MathGenerator extends MethodCaller {
         return types.get(RANDOM.nextInt(types.size()));
     }
 
-    private FieldVarLogger fetchOperand(MethodLogger method, OpStatKind opStatKind, Operator operator) {
+    private FieldVarLogger fetchOperand(MethodLogger method, OpStatKind opStatKind) {
         FieldVarType type = getOperandType(opStatKind);
         return this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
     }
