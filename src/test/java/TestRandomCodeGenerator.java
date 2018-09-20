@@ -27,7 +27,7 @@ public class TestRandomCodeGenerator {
 
     private static List<String> getRandomArgs() {
         List<String> options = new ArrayList<>(Arrays.asList(
-                "-l", "" + RANDOM.nextInt(40), "-f", "" + RANDOM.nextInt(100),
+                "-l", "" + RANDOM.nextInt(42), "-f", "" + RANDOM.nextInt(100),
                 "-lv", "" + RANDOM.nextInt(100), "-ga", "" + RANDOM.nextInt(100),
                 "-la", "" + RANDOM.nextInt(100), "-m", "" + RANDOM.nextInt(100),
                 "-mc", "" + RANDOM.nextInt(100), "-ml", "" + (RANDOM.nextInt(5)),
