@@ -120,7 +120,7 @@ class MathGenerator extends MethodCaller {
             String src = noOverFlowIf + fieldVar.getName() + " = " + "Math." +
                     this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
             return src;
-        } else return fieldVar.getName() + " = " + "Math." +
+        } else return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + "Math." +
                 this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 

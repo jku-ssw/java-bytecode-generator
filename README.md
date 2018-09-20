@@ -21,7 +21,7 @@ The probability for assigning values to variables
 ##-m:
 The probability to generate methods
 ##-mc:
-The probability to generate method-malls
+The probability to generate method-calls
 ##-ml:
 The maximum number of iterations for method-generation
 ##-mp:

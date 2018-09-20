@@ -48,34 +48,34 @@ class ControlFlowGenerator extends Generator {
 
     //==========================================IF ELSEIF ELSE==========================================================
 
-    public void generateIfElseStatement(MethodLogger contextMethod) {
+    public void generateIfElseStatement(MethodLogger method) {
         if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
             switch (RANDOM.nextInt(3)) {
                 case 0:
                     if (openIfContexts.getLast().hasElse == false &&
                             openIfContexts.getLast().numberOfElseIf < ifBranchingFactor) {
-                        openElseIfStatement(contextMethod);
-                        this.generateBody(contextMethod, ControlType.elseType);
+                        openElseIfStatement(method);
+                        this.generateBody(method, ControlType.elseType);
                     }
                     break;
                 case 1:
                     if (openIfContexts.getLast().hasElse == false) {
                         openElseStatement();
-                        this.generateBody(contextMethod, ControlType.elseType);
+                        this.generateBody(method, ControlType.elseType);
                     }
                     break;
                 case 2:
-                    openIfStatement(contextMethod);
-                    this.generateBody(contextMethod, ControlType.ifType);
+                    openIfStatement(method);
+                    this.generateBody(method, ControlType.ifType);
             }
         } else {
-            this.openIfStatement(contextMethod);
-            this.generateBody(contextMethod, ControlType.ifType);
+            this.openIfStatement(method);
+            this.generateBody(method, ControlType.ifType);
         }
     }
 
-    private void openIfStatement(MethodLogger contextMethod) {
-        controlSrc.append("if(" + getIfCondition(contextMethod) + ") {");
+    private void openIfStatement(MethodLogger method) {
+        controlSrc.append("if(" + getIfCondition(method) + ") {");
         deepness++;
         IfContext c = new IfContext(deepness);
         openIfContexts.add(c);
@@ -86,9 +86,9 @@ class ControlFlowGenerator extends Generator {
         openIfContexts.getLast().hasElse = true;
     }
 
-    private void openElseIfStatement(MethodLogger contextMethod) {
+    private void openElseIfStatement(MethodLogger method) {
         openIfContexts.getLast().numberOfElseIf++;
-        controlSrc.append("} else if(" + getIfCondition(contextMethod) + ") {");
+        controlSrc.append("} else if(" + getIfCondition(method) + ") {");
     }
 
     private void closeIFStatement() {
@@ -128,9 +128,9 @@ class ControlFlowGenerator extends Generator {
 
     //=================================================DO WHILE=========================================================
 
-    public void generateDoWhileStatement(MethodLogger contextMethod) {
+    public void generateDoWhileStatement(MethodLogger method) {
         String condition = this.openDoWhileStatement();
-        this.generateBody(contextMethod, ControlType.doWhileType, condition);
+        this.generateBody(method, ControlType.doWhileType, condition);
     }
 
     private String openDoWhileStatement() {
@@ -153,9 +153,9 @@ class ControlFlowGenerator extends Generator {
 
     //==================================================FOR/WHILE=======================================================
 
-    public void generateWhileStatement(MethodLogger contextMethod) {
+    public void generateWhileStatement(MethodLogger method) {
         this.openWhileStatement();
-        this.generateBody(contextMethod, ControlType.forWhileType);
+        this.generateBody(method, ControlType.forWhileType);
     }
 
     private void openWhileStatement() {
@@ -175,9 +175,9 @@ class ControlFlowGenerator extends Generator {
         deepness--;
     }
 
-    public void generateForStatement(MethodLogger contextMethod) {
+    public void generateForStatement(MethodLogger method) {
         this.openForStatement();
-        this.generateBody(contextMethod, ControlType.forWhileType);
+        this.generateBody(method, ControlType.forWhileType);
     }
 
     private void openForStatement() {
@@ -191,8 +191,8 @@ class ControlFlowGenerator extends Generator {
     //==================================================COMMON==========================================================
 
 
-    private void generateBody(MethodLogger contextMethod, ControlType controlType, String... condition) {
-        RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(contextMethod);
+    private void generateBody(MethodLogger method, ControlType controlType, String... condition) {
+        RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.CONTROL_CONTEXT);
         if (controlType == ControlType.ifType) {
             this.closeIFStatement();
@@ -202,7 +202,7 @@ class ControlFlowGenerator extends Generator {
             this.closeDoWhileStatement(condition[0]);
         }
         if (this.getDeepness() == 0) {
-            this.insertControlSrcIntoMethod(contextMethod);
+            this.insertControlSrcIntoMethod(method);
         }
     }
 

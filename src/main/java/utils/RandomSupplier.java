@@ -1,6 +1,7 @@
 package utils;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Random;
 
 import static utils.FieldVarType.BYTE;
@@ -69,7 +70,7 @@ public class RandomSupplier {
     }
 
     public static String getRandomCastedValue(FieldVarType type) {
-        if (type.getClazzType().getName().startsWith("java.lang")) {
+        if (Arrays.asList(FieldVarType.values()).contains(type.getClazzType().getName())) {
             //for Objects 25% chance to be initialized with null
             if (RANDOM.nextInt(4) == 0) {
                 return "null";

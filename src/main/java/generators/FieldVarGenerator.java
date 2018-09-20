@@ -44,22 +44,21 @@ class FieldVarGenerator extends Generator {
 
     private void generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
-        insertIntoMethodBody(method, src);
+        if (value != null) insertIntoMethodBody(method, src);
     }
 
     public void generateLocalVariable(MethodLogger method) {
         FieldVarType ft = getRandomSupplier().getFieldVarType();
-        String value;
-        value = getRandomSupplier().getRandomCastedValue(ft);
-        this.generateLocalVariable(getRandomSupplier().getVarName(), ft, method, value);
+        String value = this.getRandomSupplier().getRandomCastedValue(ft);
+        String name = getRandomSupplier().getVarName();
+        this.generateLocalVariable(name, ft, method, value);
     }
 
     private String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
         CtMethod ctMethod = this.getCtMethod(method);
-        String src;
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
-            src = name + " = " + value + ";";
+            String src = name + " = " + value + ";";
             method.logVariable(name, type, 0, true);
             return src;
         } catch (CannotCompileException e) {

@@ -22,7 +22,7 @@ class MethodGenerator extends MethodCaller {
 
     //============================================Method Generation=====================================================
 
-    public MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
+    private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
@@ -67,13 +67,13 @@ class MethodGenerator extends MethodCaller {
                 getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getModifiers());
     }
 
-    public MethodLogger overloadMethod(int maximumNumberOfParams) {
+    public MethodLogger overloadMethod(int maximumParameters) {
         MethodLogger methodToOverload = getClazzLogger().getRandomMethod();
         if (methodToOverload == null) {
             return null;
         }
         List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
-        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumNumberOfParams);
+        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
@@ -112,7 +112,6 @@ class MethodGenerator extends MethodCaller {
         Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
         calledMethod.addToExcludedForCalling(excludedForCalling);
-        //calledMethod.addToExcludedForCalling(method);
         Set<MethodLogger> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
         calledByThisMethod.add(calledMethod);
         method.addMethodToCalledByThisMethod(calledByThisMethod);
@@ -141,18 +140,24 @@ class MethodGenerator extends MethodCaller {
         this.insertIntoMethodBody(method, src);
     }
 
-    public String srcSetFieldToReturnValue(MethodLogger method) {
-        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
-        if (calledMethod == null) {
+    private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
+        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(fieldVar.getType());
+        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
+                method, compatibleTypes.get(RANDOM.nextInt(compatibleTypes.size())));
+        if(calledMethod == null) {
             return null;
-        } else if (this.getClazzLogger().hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().
-                    getNonFinalCompatibleFieldUsableInMethod(method, calledMethod.getReturnType());
+        }
+        fieldVar.setInitialized();
+        return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + srcCallMethod(calledMethod, method);
+    }
+
+    public String srcSetFieldToReturnValue(MethodLogger method) {
+        if (this.getClazzLogger().hasVariables()) {
+            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
             if (fieldVar == null) {
                 return null;
             } else {
-                fieldVar.setInitialized();
-                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);
+                return setVariableToReturnValue(fieldVar, method);
             }
         } else {
             return null;
@@ -165,17 +170,12 @@ class MethodGenerator extends MethodCaller {
     }
 
     public String srcSetLocalVarToReturnValue(MethodLogger method) {
-        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethod(method);
-        if (calledMethod == null) {
-            return null;
-        } else if (method.hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().
-                    getNonFinalCompatibleLocalVar(method, calledMethod.getReturnType());
+        if (method.hasVariables()) {
+            FieldVarLogger fieldVar = method.getVariableWithPredicate(v -> !v.isFinal());
             if (fieldVar == null) {
                 return null;
             } else {
-                fieldVar.setInitialized();
-                return fieldVar.getName() + " = " + srcCallMethod(calledMethod, method);
+                return setVariableToReturnValue(fieldVar, method);
             }
         } else {
             return null;
@@ -207,7 +207,7 @@ class MethodGenerator extends MethodCaller {
             FieldVarType[] parameterTypes = RandomSupplier.getParameterTypes(maximumNumberOfParams);
             List<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
                     m -> m.getParamsTypes().length == parameterTypes.length).collect(Collectors.toList());
-            if (equalOverloadedParamTypeExists(equalNumberOfParamMethods, parameterTypes)) {
+            if (equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 continue;
             } else {
                 return parameterTypes;
@@ -216,7 +216,7 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    private boolean equalOverloadedParamTypeExists(List<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
+    private boolean equalOverloadedParamTypesExists(List<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
         for (MethodLogger ml : equalNumberOfParamMethods) {
             if (this.equalParameterTypes(parameterTypes, ml.getParamsTypes())) {
                 return true;
@@ -256,5 +256,13 @@ class MethodGenerator extends MethodCaller {
         } else {
             return false;
         }
+    }
+
+    private boolean party(char x, boolean j) {
+        return true;
+    }
+
+    private boolean party(boolean j,char x) {
+        return true;
     }
 }

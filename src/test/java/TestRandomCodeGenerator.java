@@ -27,21 +27,21 @@ public class TestRandomCodeGenerator {
 
     private static List<String> getRandomArgs() {
         List<String> options = new ArrayList<>(Arrays.asList(
-                "-l", "" + RANDOM.nextInt(20), "-f", "" + RANDOM.nextInt(100),
+                "-l", "" + RANDOM.nextInt(40), "-f", "" + RANDOM.nextInt(100),
                 "-lv", "" + RANDOM.nextInt(100), "-ga", "" + RANDOM.nextInt(100),
                 "-la", "" + RANDOM.nextInt(100), "-m", "" + RANDOM.nextInt(100),
-                "-mc", "" + RANDOM.nextInt(100), "-ml", "" + RANDOM.nextInt(20),
-                "-mp", "" + RANDOM.nextInt(100), "-mo", "" + RANDOM.nextInt(100),
-                "-p", "" + RANDOM.nextInt(20), "jlm", "" + RANDOM.nextInt(100),
-                "-cf", "" + RANDOM.nextInt(100), "-cl", "" + RANDOM.nextInt(10),
-                "-cd", "" + RANDOM.nextInt(3), "-mli", "" + RANDOM.nextInt(3),
+                "-mc", "" + RANDOM.nextInt(100), "-ml", "" + (RANDOM.nextInt(5)),
+                "-mp", "" + RANDOM.nextInt(10), "-mo", "" + RANDOM.nextInt(100),
+                "-p", "" + RANDOM.nextInt(10), "-jlm", "" + RANDOM.nextInt(70) ,
+                "-cf", "" + RANDOM.nextInt(60), "-cl", "" + RANDOM.nextInt(5),
+                "-cd", "" + RANDOM.nextInt(5), "-mli", "" + RANDOM.nextInt(6),
                 "-while", "" + RANDOM.nextInt(100), "-for", "" + RANDOM.nextInt(100),
                 "-dowhile", "" + RANDOM.nextInt(100), "-if", "" + RANDOM.nextInt(100),
-                "-ibf", "" + RANDOM.nextInt(10), "-os", "" + RANDOM.nextInt(100),
+                "-ibf", "" + RANDOM.nextInt(8), "-os", "" + RANDOM.nextInt(100),
                 "-as", "" + RANDOM.nextInt(100), "-ls", "" + RANDOM.nextInt(100),
                 "-bs", "" + RANDOM.nextInt(100), "-als", "" + RANDOM.nextInt(100),
                 "-abs", "" + RANDOM.nextInt(100), "-lbs", "" + RANDOM.nextInt(100),
-                "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(10)));
+                "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(20)));
 
         allowArithmeticExceptions = RANDOM.nextBoolean();
         if (allowArithmeticExceptions) {
@@ -58,14 +58,14 @@ public class TestRandomCodeGenerator {
             List<String> options = getRandomArgs();
             ControlValueParser parser = new ControlValueParser(options.toArray(new String[0]));
             GenerationController controller = parser.parse();
-            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("TestClazz" + i, controller);
+            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("RandomProbabilities" + i, controller);
             randomCodeGenerator.generate();
             randomCodeGenerator.writeFile(DIRECTORY);
             try {
                 if (allowArithmeticExceptions) {
-                    assertEquals(true, executeFile("TestClazz" + i, ARITHMETIC_EXCEPTIONS));
+                    assertEquals(true, executeFile("RandomProbabilities" + i, ARITHMETIC_EXCEPTIONS));
                 } else {
-                    assertEquals(true, executeFile("TestClazz" + i));
+                    assertEquals(true, executeFile("RandomProbabilities" + i));
                 }
             } catch (IOException | InterruptedException e) {
                 throw new AssertionError(e);
@@ -82,8 +82,8 @@ public class TestRandomCodeGenerator {
             System.out.println(line);
         }
         while ((line = brErr.readLine()) != null) {
-            if(!line.startsWith(" ")) continue;
-            if(checkIfExceptionAllowed(line, allowedExceptions)) {
+            if (!line.startsWith(" ")) continue;
+            if (checkIfExceptionAllowed(line, allowedExceptions)) {
                 continue;
             } else {
                 throw new IOException("Execution of " + fileName + " failed.\nNot allowed exception: " + line);
@@ -99,10 +99,10 @@ public class TestRandomCodeGenerator {
     }
 
     private boolean checkIfExceptionAllowed(String line, String[] allowedExceptions) {
-        for(String exception: allowedExceptions) {
+        for (String exception : allowedExceptions) {
             System.out.println(exception);
             System.out.println(line);
-            if(line.contains(exception)) {
+            if (line.contains(exception)) {
                 return true;
             }
         }

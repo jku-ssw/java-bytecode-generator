@@ -63,7 +63,7 @@ public class ControlValueParser {
         options.addOption(OF.toString(), "overflow",
                 false, "Disable avoidance of overflow exceptions in the generated file");
         options.addOption(CLIOptions.DZ.toString(), "divided_by_zero",
-                false, "Disable avoidance of divided_by_zero-Exceptions in the generated file");
+                false, "Disable avoidance of divided_by_zero-exceptions in the generated file");
         options.addOption(CLIOptions.OS.toString(), "operator_statement",
                 true, "The probability to generate statements using operators");
         options.addOption(CLIOptions.AS.toString(), "arithmetic",

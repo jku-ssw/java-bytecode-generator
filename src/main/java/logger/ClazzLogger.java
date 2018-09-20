@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClazzLogger extends MyLogger {
+public class ClazzLogger extends Logger {
 
     private final List<MethodLogger> methods;
     private final MethodLogger main;
@@ -59,6 +59,11 @@ public class ClazzLogger extends MyLogger {
     }
 
     public MethodLogger getRandomCallableMethod(MethodLogger callingMethod) {
+        List<MethodLogger> callableMethods = getCallableMethods(callingMethod);
+        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
+    }
+
+    private List<MethodLogger> getCallableMethods(MethodLogger callingMethod) {
         List<MethodLogger> callableMethods;
         if (callingMethod.isStatic()) {
             callableMethods = getStaticMethods();
@@ -67,15 +72,21 @@ public class ClazzLogger extends MyLogger {
         }
         callableMethods.remove(callingMethod);
         removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
+        return callableMethods;
+    }
+
+    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType fieldVarType) {
+        List<MethodLogger> callableMethods = getCallableMethods(
+                callingMethod).stream().filter(m -> m.getReturnType() == fieldVarType).collect(Collectors.toList());
         return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
     }
 
     private void removeAllExcludedForCalling(List<MethodLogger> callableMethods, Set<MethodLogger> excludedForCalling) {
-        if(excludedForCalling.isEmpty()) {
+        if (excludedForCalling.isEmpty()) {
             return;
         }
         callableMethods.removeAll(excludedForCalling);
-        for(MethodLogger m: excludedForCalling) {
+        for (MethodLogger m : excludedForCalling) {
             removeAllExcludedForCalling(callableMethods, m.getMethodsExcludedForCalling());
         }
     }
@@ -214,4 +225,5 @@ public class ClazzLogger extends MyLogger {
     public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
         return method.getVariableWithPredicate(v -> !v.isFinal() && v.getType() == type);
     }
+
 }

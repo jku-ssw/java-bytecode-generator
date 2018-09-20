@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MethodLogger extends MyLogger {
+public class MethodLogger extends Logger {
 
     private String name;
     private int modifiers;

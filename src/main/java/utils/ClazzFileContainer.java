@@ -11,10 +11,10 @@ public class ClazzFileContainer {
     private final RandomSupplier randomSupplier;
     private final String fileName;
 
-    public ClazzFileContainer(String fielName) {
-        this.clazz = getClazzPool().makeClass(fielName);
+    public ClazzFileContainer(String fileName) {
+        this.clazz = ClassPool.getDefault().makeClass(fileName);
         this.randomSupplier = new RandomSupplier();
-        this.fileName = fielName;
+        this.fileName = fileName;
         try {
             CtMethod m = CtNewMethod.make(
                     "public static void main(String[] args) {}",
@@ -23,13 +23,8 @@ public class ClazzFileContainer {
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
-
         MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.VOID);
         this.clazzLogger = new ClazzLogger(main);
-    }
-
-    public ClassPool getClazzPool() {
-        return ClassPool.getDefault();
     }
 
     public CtClass getClazzFile() {
