@@ -4,12 +4,13 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.ClassFile;
 import logger.ClazzLogger;
 import logger.MethodLogger;
 import utils.ClazzFileContainer;
 import utils.RandomSupplier;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Random;
 
 abstract class Generator {
@@ -30,16 +31,26 @@ abstract class Generator {
     }
 
     public void writeFile() {
+        System.out.println("writing...");
         try {
-            this.getClazzFile().writeFile();
-        } catch (NotFoundException | IOException | CannotCompileException e) {
+            InputStream io = new ByteArrayInputStream(this.getClazzFile().toBytecode());
+            DataInputStream dis = new DataInputStream(io);
+            ClassFile cf = new ClassFile(dis);
+            cf.setMajorVersion(52);
+            cf.write(new DataOutputStream(new FileOutputStream(this.getClazzFile().getName() + ".class")));
+        } catch (IOException | CannotCompileException e) {
             throw new AssertionError(e);
         }
     }
 
-    public void writeFile(String directoryName) {
+    public void writeFile(String pathname) {
         try {
-            this.getClazzFile().writeFile(directoryName);
+            InputStream io = new ByteArrayInputStream(this.getClazzFile().toBytecode());
+            DataInputStream dis = new DataInputStream(io);
+            ClassFile cf = new ClassFile(dis);
+            cf.setMajorVersion(52);
+            File file = new File(pathname + "/" + this.getClazzFile().getName() + ".class");
+            cf.write(new DataOutputStream(new FileOutputStream(file)));
         } catch (IOException | CannotCompileException e) {
             throw new AssertionError(e);
         }

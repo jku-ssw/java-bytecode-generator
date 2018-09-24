@@ -167,4 +167,8 @@ public class GenerationController {
     public int getMaxOperators() {
         return controlValues.get(CLIOptions.MOPS);
     }
+
+    public int executeRunXTimes() {
+        return controlValues.get(CLIOptions.XRUNS);
+    }
 }

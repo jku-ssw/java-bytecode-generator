@@ -1,17 +1,12 @@
 package generators;
 
 import cli.GenerationController;
-import javassist.CannotCompileException;
-import javassist.CtMethod;
 import logger.ClazzLogger;
-import logger.FieldVarLogger;
 import logger.MethodLogger;
 import utils.ClazzFileContainer;
-import utils.FieldVarType;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 import static generators.RandomCodeGenerator.Context.CONTROL_CONTEXT;
@@ -58,7 +53,7 @@ public class RandomCodeGenerator {
         this.mathGenerator = new MathGenerator(container, controller.avoidOverflows(), controller.avoidDivByZero());
         this.controlFlowGenerator = new ControlFlowGenerator(this, mathGenerator);
 
-        MethodLogger run = this.methodGenerator.generateAndCallRunMethod();
+        MethodLogger run = this.methodGenerator.generateRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
         Context.PROGRAM_CONTEXT.contextMethod = run;
         METHOD_CONTEXT.lengthWeighting = controller.getMethodLengthWeighting();
@@ -88,7 +83,8 @@ public class RandomCodeGenerator {
             }
         }
         //compute HashValue of all globals
-        computeHash();
+        this.methodGenerator.generateHashMethod();
+        this.methodGenerator.callRunAndHashMethods(controller.executeRunXTimes());
     }
 
     void generate(Context context) {
@@ -412,30 +408,6 @@ public class RandomCodeGenerator {
 
     public void writeFile(String directoryName) {
         fieldVarGenerator.writeFile(directoryName);
-    }
-
-    private void computeHash() {
-        StringBuilder src = new StringBuilder("long hashValue = 0; ");
-        List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
-        if (this.getClazzLogger().hasVariables()) {
-            for (FieldVarLogger field : initGlobals) {
-                if (field.getType() == FieldVarType.STRING) {
-                    src.append("if(" + field.getName() + " != null) {");
-                    src.append("hashValue += " + field.getName() + ".hashCode();}");
-                } else if (field.getType() == FieldVarType.BOOLEAN) {
-                    src.append("hashValue += " + field.getName() + "? 1 : 0;");
-                } else {
-                    src.append("hashValue += (long)" + field.getName() + ";");
-                }
-            }
-        }
-        try {
-            CtMethod run = fieldVarGenerator.getCtMethod(this.getClazzLogger().getRun());
-            run.insertAfter(src.toString() +
-                    " System.out.println(\"#############   GLOBAL HASH: \" + hashValue + \"  #############\");");
-        } catch (CannotCompileException e) {
-            throw new AssertionError(e);
-        }
     }
 }
 

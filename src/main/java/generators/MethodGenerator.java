@@ -144,7 +144,7 @@ class MethodGenerator extends MethodCaller {
         List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(fieldVar.getType());
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(RANDOM.nextInt(compatibleTypes.size())));
-        if(calledMethod == null) {
+        if (calledMethod == null) {
             return null;
         }
         fieldVar.setInitialized();
@@ -182,21 +182,62 @@ class MethodGenerator extends MethodCaller {
         }
     }
 
-    public MethodLogger generateAndCallRunMethod() {
-        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+    MethodLogger generateRunMethod() {
         try {
             this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
             CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
             this.getClazzFile().addConstructor(constructor);
-            String fileName = this.getClazzContainer().getFileName();
-            main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + constructor.getName() + "();" +
-                    fileName.toLowerCase() + ".run();");
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
         MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
+    }
+
+    public void generateHashMethod() {
+        StringBuilder src = new StringBuilder("long hashValue = 0; ");
+        List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
+        if (this.getClazzLogger().hasVariables()) {
+            for (FieldVarLogger field : initGlobals) {
+                if (field.getType() == FieldVarType.STRING) {
+                    src.append("if(" + field.getName() + " != null) {");
+                    src.append("hashValue += " + field.getName() + ".hashCode();}");
+                } else if (field.getType() == FieldVarType.BOOLEAN) {
+                    src.append("hashValue += " + field.getName() + "? 1 : 0;");
+                } else {
+                    src.append("hashValue += (long)" + field.getName() + ";");
+                }
+            }
+        }
+        try {
+            CtMethod computeHash = CtNewMethod.make("private void computeHash() {}", this.getClazzFile());
+            computeHash.insertAfter(src.toString() +
+                    " System.out.println(\"#############   GLOBAL HASH: \" + hashValue + \"  #############\");");
+            this.getClazzFile().addMethod(computeHash);
+        } catch (CannotCompileException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public void callRunAndHashMethods(int xRuns) {
+        String fileName = this.getClazzContainer().getFileName();
+        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+        try {
+            if (xRuns <= 1) {
+                main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();"
+                        + fileName.toLowerCase() + ".run();" +
+                        fileName.toLowerCase() + ".computeHash();");
+            } else {
+                System.out.println("here");
+                main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();" +
+                        "for(int xRuns = 0; xRuns < " + xRuns + "; xRuns++) {" + fileName.toLowerCase() + ".run();" +
+                        "}" +
+                        fileName.toLowerCase() + ".computeHash();");
+            }
+        } catch (CannotCompileException e) {
+            throw new AssertionError(e);
+        }
     }
 
 
@@ -262,7 +303,8 @@ class MethodGenerator extends MethodCaller {
         return true;
     }
 
-    private boolean party(boolean j,char x) {
+    private boolean party(boolean j, char x) {
         return true;
     }
+
 }
