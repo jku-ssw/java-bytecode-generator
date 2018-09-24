@@ -1,6 +1,7 @@
 package utils;
 
 import javassist.*;
+import javassist.bytecode.ClassFile;
 import logger.ClazzLogger;
 import logger.MethodLogger;
 
@@ -13,6 +14,7 @@ public class ClazzFileContainer {
 
     public ClazzFileContainer(String fileName) {
         this.clazz = ClassPool.getDefault().makeClass(fileName);
+        System.out.println(ClassFile.MAJOR_VERSION);
         this.randomSupplier = new RandomSupplier();
         this.fileName = fileName;
         try {

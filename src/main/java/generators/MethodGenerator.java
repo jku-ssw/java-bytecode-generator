@@ -229,7 +229,6 @@ class MethodGenerator extends MethodCaller {
                         + fileName.toLowerCase() + ".run();" +
                         fileName.toLowerCase() + ".computeHash();");
             } else {
-                System.out.println("here");
                 main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();" +
                         "for(int xRuns = 0; xRuns < " + xRuns + "; xRuns++) {" + fileName.toLowerCase() + ".run();" +
                         "}" +

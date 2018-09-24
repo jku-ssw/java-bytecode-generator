@@ -28,17 +28,17 @@ public class TestRandomCodeGenerator {
 
     private static List<String> getRandomArgs() {
         List<String> options = new ArrayList<>(Arrays.asList(
-                "-l", "10" + RANDOM.nextInt(20), "-f", "" + RANDOM.nextInt(100),
+                "-l", "" + RANDOM.nextInt(50), "-f", "" + RANDOM.nextInt(100),
                 "-lv", "" + RANDOM.nextInt(100), "-ga", "" + RANDOM.nextInt(100),
-                "-la", "" + RANDOM.nextInt(100), "-m", "0",
-                "-mc", "100", "-ml", "" + (RANDOM.nextInt(5)),
-                "-mp", "" + RANDOM.nextInt(10), "-mo", "100",
-                "-p", "" + RANDOM.nextInt(10), "-jlm", "0",
-                "-cf", "100", "-cl", "" + RANDOM.nextInt(5),
+                "-la", "" + RANDOM.nextInt(100), "-m", "" + RANDOM.nextInt(100),
+                "-mc", "" + RANDOM.nextInt(100), "-ml", "" + (RANDOM.nextInt(10)),
+                "-mp", "" + RANDOM.nextInt(10), "-mo", "" + RANDOM.nextInt(100),
+                "-p", "" + RANDOM.nextInt(5), "-jlm", "",
+                "-cf", "0", "-cl", "" + RANDOM.nextInt(5),
                 "-cd", "8", "-mli", "" + RANDOM.nextInt(6),
                 "-while", "" + RANDOM.nextInt(100), "-for", "" + RANDOM.nextInt(100),
                 "-dowhile", "" + RANDOM.nextInt(100), "-if", "" + RANDOM.nextInt(100),
-                "-ibf", "" + RANDOM.nextInt(8), "-os", "100",
+                "-ibf", "" + RANDOM.nextInt(8), "-os", "0",
                 "-as", "" + RANDOM.nextInt(100), "-ls", "" + RANDOM.nextInt(100),
                 "-bs", "" + RANDOM.nextInt(100), "-als", "" + RANDOM.nextInt(100),
                 "-abs", "" + RANDOM.nextInt(100), "-lbs", "" + RANDOM.nextInt(100),
@@ -59,14 +59,14 @@ public class TestRandomCodeGenerator {
             List<String> options = getRandomArgs();
             ControlValueParser parser = new ControlValueParser(options.toArray(new String[0]));
             GenerationController controller = parser.parse();
-            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("DeeplyNestedControlFlow" + i, controller);
+            RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator("ManyMethods" + i, controller);
             randomCodeGenerator.generate();
             randomCodeGenerator.writeFile(DIRECTORY);
             try {
                 if (allowArithmeticExceptions) {
-                    assertEquals(true, executeFile("DeeplyNestedControlFlow" + i, ARITHMETIC_EXCEPTIONS));
+                    assertEquals(true, executeFile("ManyMethods" + i, ARITHMETIC_EXCEPTIONS));
                 } else {
-                    assertEquals(true, executeFile("DeeplyNestedControlFlow" + i));
+                    assertEquals(true, executeFile("ManyMethods" + i));
                 }
             } catch (IOException | InterruptedException e) {
                 throw new AssertionError(e);

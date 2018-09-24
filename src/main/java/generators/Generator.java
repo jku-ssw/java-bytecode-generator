@@ -31,26 +31,16 @@ abstract class Generator {
     }
 
     public void writeFile() {
-        System.out.println("writing...");
         try {
-            InputStream io = new ByteArrayInputStream(this.getClazzFile().toBytecode());
-            DataInputStream dis = new DataInputStream(io);
-            ClassFile cf = new ClassFile(dis);
-            cf.setMajorVersion(52);
-            cf.write(new DataOutputStream(new FileOutputStream(this.getClazzFile().getName() + ".class")));
-        } catch (IOException | CannotCompileException e) {
+            this.getClazzFile().writeFile();
+        } catch (NotFoundException | IOException | CannotCompileException e) {
             throw new AssertionError(e);
         }
     }
 
     public void writeFile(String pathname) {
         try {
-            InputStream io = new ByteArrayInputStream(this.getClazzFile().toBytecode());
-            DataInputStream dis = new DataInputStream(io);
-            ClassFile cf = new ClassFile(dis);
-            cf.setMajorVersion(52);
-            File file = new File(pathname + "/" + this.getClazzFile().getName() + ".class");
-            cf.write(new DataOutputStream(new FileOutputStream(file)));
+            this.getClazzFile().writeFile(pathname);
         } catch (IOException | CannotCompileException e) {
             throw new AssertionError(e);
         }
