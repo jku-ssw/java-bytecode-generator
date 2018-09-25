@@ -5,7 +5,7 @@ import javassist.CtMethod;
 import logger.MethodLogger;
 import utils.RandomSupplier;
 
-import java.util.LinkedList;
+import java.util.Stack;
 
 import static utils.Operator.OpStatKind;
 import static utils.Operator.OpStatKind.*;
@@ -30,7 +30,7 @@ class ControlFlowGenerator extends Generator {
         doWhileType
     }
 
-    private final LinkedList<IfContext> openIfContexts = new LinkedList<>();
+    private final Stack<IfContext> openIfContexts = new Stack<>();
     private final StringBuilder controlSrc = new StringBuilder();
     private int deepness = 0;
     private final int ifBranchingFactor;
@@ -49,24 +49,23 @@ class ControlFlowGenerator extends Generator {
     //==========================================IF ELSEIF ELSE==========================================================
 
     public void generateIfElseStatement(MethodLogger method) {
-        if (openIfContexts.size() != 0 && deepness == openIfContexts.getLast().deepness) {
-            switch (RANDOM.nextInt(3)) {
+        if (openIfContexts.size() != 0 && deepness == openIfContexts.peek().deepness) {
+            switch (RANDOM.nextInt(5)) {
                 case 0:
-                    if (openIfContexts.getLast().hasElse == false &&
-                            openIfContexts.getLast().numberOfElseIf < ifBranchingFactor) {
-                        openElseIfStatement(method);
-                        this.generateBody(method, ControlType.elseType);
-                    }
-                    break;
-                case 1:
-                    if (openIfContexts.getLast().hasElse == false) {
+                    if (openIfContexts.peek().hasElse == false) {
                         openElseStatement();
                         this.generateBody(method, ControlType.elseType);
                     }
                     break;
-                case 2:
+                case 1:
                     openIfStatement(method);
                     this.generateBody(method, ControlType.ifType);
+                    break;
+                default:
+                    if (openIfContexts.peek().hasElse == false && openIfContexts.peek().numberOfElseIf < ifBranchingFactor) {
+                        openElseIfStatement(method);
+                        this.generateBody(method, ControlType.elseType);
+                    }
             }
         } else {
             this.openIfStatement(method);
@@ -83,17 +82,17 @@ class ControlFlowGenerator extends Generator {
 
     private void openElseStatement() {
         controlSrc.append("} else {");
-        openIfContexts.getLast().hasElse = true;
+        openIfContexts.peek().hasElse = true;
     }
 
     private void openElseIfStatement(MethodLogger method) {
-        openIfContexts.getLast().numberOfElseIf++;
+        openIfContexts.peek().numberOfElseIf++;
         controlSrc.append("} else if(" + getIfCondition(method) + ") {");
     }
 
     private void closeIFStatement() {
         controlSrc.append("}");
-        openIfContexts.removeLast();
+        openIfContexts.pop();
         deepness--;
     }
 
@@ -209,6 +208,7 @@ class ControlFlowGenerator extends Generator {
     private void insertControlSrcIntoMethod(MethodLogger method) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
+            System.out.println(controlSrc.toString());
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
         } catch (CannotCompileException e) {

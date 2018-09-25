@@ -308,7 +308,6 @@ public class RandomCodeGenerator {
                 OpStatKind opStatKind = getOpStatKind();
 
                 if (opStatKind == null) {
-                    System.out.println("noOpStat");
                     continue;
                 }
 
