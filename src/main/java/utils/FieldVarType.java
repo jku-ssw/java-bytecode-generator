@@ -5,6 +5,7 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public enum FieldVarType {
@@ -17,6 +18,7 @@ public enum FieldVarType {
     BOOLEAN(CtClass.booleanType),
     CHAR(CtClass.charType),
     STRING(getCtClassString()),
+    DATE(getCtClassType("java.util.Date")),
     VOID(CtClass.voidType);
 
     private static final List<FieldVarType> NUMERIC_TYPES =
@@ -31,11 +33,20 @@ public enum FieldVarType {
     private static final List<FieldVarType> COMP_WITH_DOUBLE =
             Arrays.asList(FieldVarType.FLOAT, FieldVarType.DOUBLE);
 
+
     private CtClass clazzType;
 
     private static CtClass getCtClassString() {
         try {
             return ClassPool.getDefault().get("java.lang.String");
+        } catch (NotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private static CtClass getCtClassType(String classname) {
+        try {
+            return ClassPool.getDefault().get(classname);
         } catch (NotFoundException e) {
             throw new AssertionError(e);
         }
@@ -51,10 +62,13 @@ public enum FieldVarType {
 
     @Override
     public String toString() {
-        if(this == STRING) {
-            return "String";
-        } else {
-            return super.toString().toLowerCase();
+        switch(this) {
+            case STRING:
+                return "String";
+            case DATE:
+                return "java.util.Date";
+            default:
+                return super.toString().toLowerCase();
         }
     }
 
@@ -82,6 +96,8 @@ public enum FieldVarType {
                 return Arrays.asList(FieldVarType.CHAR);
             case STRING:
                 return Arrays.asList(FieldVarType.STRING);
+            case DATE:
+                return Collections.singletonList(FieldVarType.DATE);
             default:
                 return Arrays.asList(type);
         }

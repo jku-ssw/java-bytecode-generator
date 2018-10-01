@@ -99,6 +99,8 @@ public class RandomSupplier {
                 return "\'" + STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())) + "\'";
             case STRING:
                 return "\"" + getString() + "\"";
+            case DATE:
+                return "new java.util.Date(" + RANDOM.nextLong() + "L)";
             default:
                 throw new java.lang.AssertionError();
         }
