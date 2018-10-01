@@ -1,0 +1,10 @@
+.idea/
+.gradle/
+out/
+build/
+/src/test/resources/generated_test_files/
+*.iml
+
+# ignore generated JARs and Class Files in root folder
+/*.jar
+/*.class
