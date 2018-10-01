@@ -2,13 +2,30 @@ group 'at.jku.ssw'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'application'
 
-sourceCompatibility = 10
-targetCompatibility = 10
+sourceCompatibility = 8
+targetCompatibility = 8
 
 wrapper {
     gradleVersion    = '4.8'
 }
+
+mainClassName = 'jb_generator.JBGenerator'
+
+jar.baseName = 'jbgenerator'
+jar.archiveName = "${jar.baseName}.${jar.extension}"
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Java Bytecode Generator',
+                'Implementation-Version': version,
+                'Main-Class': mainClassName
+    }
+    archiveName = "${jar.baseName}.${jar.extension}"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
 
 repositories {
     mavenCentral()
