@@ -22,7 +22,7 @@ class MathGenerator extends MethodCaller {
 
     private static CtClass mathClazz;
 
-    {
+    static {
         try {
             mathClazz = ClassPool.getDefault().get("java.lang.Math");
         } catch (NotFoundException e) {
@@ -61,8 +61,8 @@ class MathGenerator extends MethodCaller {
 
     public MathGenerator(ClazzFileContainer cf, boolean noOverflow, boolean noDivByZero) {
         super(cf);
-        this.noOverflow = noOverflow;
-        this.noDivByZero = noDivByZero;
+        MathGenerator.noOverflow = noOverflow;
+        MathGenerator.noDivByZero = noDivByZero;
     }
 
     //===============================================CALL MATH METHODS==================================================
@@ -83,11 +83,10 @@ class MathGenerator extends MethodCaller {
             if (noExceptionIf == null) {
                 return null;
             }
-            String src = noExceptionIf + "Math." +
-                    this.generateMethodCallString(methodName, paramTypes, paramValues) + "}";
-            return src;
+            return noExceptionIf + "Math." +
+                    generateMethodCallString(methodName, paramTypes, paramValues) + "}";
         } else {
-            return "Math." + this.generateMethodCallString(methodName, paramTypes, paramValues);
+            return "Math." + generateMethodCallString(methodName, paramTypes, paramValues);
         }
     }
 
@@ -117,11 +116,10 @@ class MathGenerator extends MethodCaller {
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
             String noOverFlowIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
-            String src = noOverFlowIf + fieldVar.getName() + " = " + "Math." +
-                    this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
-            return src;
+            return noOverFlowIf + fieldVar.getName() + " = " + "Math." +
+                    generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
         } else return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + "Math." +
-                this.generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
+                generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
     public void setLocalVarToMathReturnValue(MethodLogger method) {
@@ -445,17 +443,17 @@ class MathGenerator extends MethodCaller {
                 if (f != null && (operator == PLUS_PLUS || operator == MINUS_MINUS)) {
                     incDecrementOperands.add(f);
                     if (RANDOM.nextBoolean()) {
-                        operatorStatement.append(operand + operator);
+                        operatorStatement.append(operand).append(operator);
                     } else {
-                        operatorStatement.append(operator + operand);
+                        operatorStatement.append(operator).append(operand);
                     }
                 } else {
-                    operatorStatement.append(operator + operand);
+                    operatorStatement.append(operator).append(operand);
                 }
                 operator = getOperator(opStatKind, true);
                 operatorStatement.append(operator);
             } else {
-                operatorStatement.append(operand + operator);
+                operatorStatement.append(operand).append(operator);
             }
             if (noDivByZero && (operator == MOD || operator == DIV)) {
                 addToCheckForDivByZero = true;
