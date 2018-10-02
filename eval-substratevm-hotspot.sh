@@ -1,24 +1,35 @@
 #!/bin/bash
 
 PREFIX="MyGeneratedClazz"
-FILES=$1
+NFILES=$1
 shift
 
-echo "Generating $FILES files"
-for i in `seq 1 $FILES`; do
+echo "SVM_JAVA_HOME=$SVM_JAVA_HOME"
+echo "HOTSPOT_JAVA_HOME=$HOTSPOT_JAVA_HOME"
+echo "Generating $NFILES class files"
+for i in `seq 1 $NFILES`; do
+  echo "Generating class file"
   FILENAME="$PREFIX$i"
-  if $SUBSTRATEVM_JAVA_HOME/bin/java -jar jbgenerator.jar -filename "$FILENAME" "$@" >/dev/null; then
-    echo "file created"
-    mx native-image "$FILENAME" &&\
-    echo "native image created" &&\
-    "./${FILENAME,,}" >"substratevm_out$i.txt" 2>&1 &&\
-    echo "native image executed"
+  if $SVM_JAVA_HOME/bin/java -jar jbgenerator.jar -filename "$FILENAME" "$@" >/dev/null 2>"jbgenerator.$i.err.txt"; then
+    echo "Class file \"$FILENAME.class\" created"
+    echo "Generating native image"
+    if mx native-image "$FILENAME" >/dev/null 2>"svm.$i.err.txt"; then
+      echo "Native image \"${FILENAME,,}\" created" &&\
 
-    $HOTSPOT_JAVA_HOME/bin/java "$FILENAME" >"hotspot_out$i.txt" 2>&1 &&\
-    echo "HotSpot version executed"
+      SVM_OUT="svm.$i.out.txt"
+      HOTSPOT_OUT="hotspot.$i.out.txt"
+      DIFF_OUT="diff.$i.txt"
 
-    if ! diff "substratevm_out$i.txt" "hotspot_out$i.txt" >"comp_out$i.txt" 2>&1; then
-      echo "Different outcome in file $FILENAME.class"
+      $HOTSPOT_JAVA_HOME/bin/java "$FILENAME" >"$HOTSPOT_OUT" 2>&1
+      echo "Class file executed"
+
+      "./${FILENAME,,}" >"$SVM_OUT" 2>&1
+      echo "Native image executed"
+
+      if ! diff "$SVM_OUT" "$HOTSPOT_OUT"; then
+        echo "Different outcome in file \"$FILENAME.class\""
+        diff "$SVM_OUT" "$HOTSPOT_OUT" >"$DIFF_OUT" 2>&1;
+      fi
     fi
   fi
 done
