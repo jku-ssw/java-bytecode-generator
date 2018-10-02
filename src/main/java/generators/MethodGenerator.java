@@ -27,13 +27,13 @@ class MethodGenerator extends MethodCaller {
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
-            paramsStr.append(paramTypes[0] + " " + paramName);
+            paramsStr.append(paramTypes[0]).append(" ").append(paramName);
             ml.logVariable(paramName, paramTypes[0], 0, true);
             for (int i = 1; i < paramTypes.length; i++) {
                 paramsStr.append(", ");
                 paramName = this.getRandomSupplier().getParVarName(i + 1);
                 ml.logVariable(paramName, paramTypes[i], 0, true);
-                paramsStr.append(paramTypes[i] + " " + paramName);
+                paramsStr.append(paramTypes[i]).append(" ").append(paramName);
             }
         }
         String returnStatement;
@@ -63,8 +63,8 @@ class MethodGenerator extends MethodCaller {
 
     public MethodLogger generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
-        return this.generateMethod(methodName, getRandomSupplier().getReturnType(),
-                getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getMethodModifiers());
+        return this.generateMethod(methodName, RandomSupplier.getReturnType(),
+                RandomSupplier.getParameterTypes(maximumParameters), RandomSupplier.getMethodModifiers());
     }
 
     public MethodLogger overloadMethod(int maximumParameters) {
@@ -72,14 +72,15 @@ class MethodGenerator extends MethodCaller {
         if (methodToOverload == null) {
             return null;
         }
+
         List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
         FieldVarType[]     paramTypes        = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
-        MethodLogger method = this.generateMethod(methodToOverload.getName(),
+
+        return this.generateMethod(methodToOverload.getName(),
                 RandomSupplier.getReturnType(), paramTypes, RandomSupplier.getMethodModifiers());
-        return method;
     }
 
     public void overrideReturnStatement(MethodLogger method) {
@@ -116,7 +117,7 @@ class MethodGenerator extends MethodCaller {
         Set<MethodLogger> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
         calledByThisMethod.add(calledMethod);
         method.addMethodToCalledByThisMethod(calledByThisMethod);
-        return this.generateMethodCallString(calledMethod.getName(), paramTypes, values);
+        return generateMethodCallString(calledMethod.getName(), paramTypes, values);
     }
 
     public void generateMethodCall(MethodLogger method) {
@@ -198,7 +199,7 @@ class MethodGenerator extends MethodCaller {
 
     public void generateHashMethod() {
         StringBuilder        src         = new StringBuilder("long hashValue = 0; ");
-        List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
+        List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
                 switch (field.getType()) {
@@ -249,7 +250,6 @@ class MethodGenerator extends MethodCaller {
         }
     }
 
-
     //=================================================Utility==========================================================
 
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
@@ -257,9 +257,7 @@ class MethodGenerator extends MethodCaller {
             FieldVarType[] parameterTypes = RandomSupplier.getParameterTypes(maximumNumberOfParams);
             List<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
                     m -> m.getParamsTypes().length == parameterTypes.length).collect(Collectors.toList());
-            if (equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
-                continue;
-            } else {
+            if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 return parameterTypes;
             }
         }
@@ -268,7 +266,7 @@ class MethodGenerator extends MethodCaller {
 
     private boolean equalOverloadedParamTypesExists(List<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
         for (MethodLogger ml : equalNumberOfParamMethods) {
-            if (this.equalParameterTypes(parameterTypes, ml.getParamsTypes())) {
+            if (equalParameterTypes(parameterTypes, ml.getParamsTypes())) {
                 return true;
             }
         }
@@ -309,14 +307,6 @@ class MethodGenerator extends MethodCaller {
         } else {
             return false;
         }
-    }
-
-    private boolean party(char x, boolean j) {
-        return true;
-    }
-
-    private boolean party(boolean j, char x) {
-        return true;
     }
 
 }
