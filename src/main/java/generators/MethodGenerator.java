@@ -64,7 +64,7 @@ class MethodGenerator extends MethodCaller {
     public MethodLogger generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
         return this.generateMethod(methodName, getRandomSupplier().getReturnType(),
-                getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getModifiers());
+                getRandomSupplier().getParameterTypes(maximumParameters), getRandomSupplier().getMethodModifiers());
     }
 
     public MethodLogger overloadMethod(int maximumParameters) {
@@ -78,7 +78,7 @@ class MethodGenerator extends MethodCaller {
             return null;
         }
         MethodLogger method = this.generateMethod(methodToOverload.getName(),
-                RandomSupplier.getReturnType(), paramTypes, RandomSupplier.getModifiers());
+                RandomSupplier.getReturnType(), paramTypes, RandomSupplier.getMethodModifiers());
         return method;
     }
 
@@ -291,6 +291,9 @@ class MethodGenerator extends MethodCaller {
         }
         if (Modifier.isPublic(modifiers)) {
             b.append("public ");
+        }
+        if (Modifier.isSynchronized(modifiers)) {
+            b.append("synchronized ");
         }
         return b.toString();
     }

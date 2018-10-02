@@ -37,7 +37,7 @@ class FieldVarGenerator extends Generator {
         if (this.RANDOM.nextBoolean()) { //50% chance to be initialized
             value = this.getRandomSupplier().getRandomCastedValue(ft);
         }
-        this.generateField(getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getModifiers(), value);
+        this.generateField(getRandomSupplier().getVarName(), ft, this.getRandomSupplier().getFieldModifiers(), value);
     }
 
     //==========================================LOCAL VARIABLE GENERATION===============================================

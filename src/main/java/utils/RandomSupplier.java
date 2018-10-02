@@ -1,8 +1,9 @@
 package utils;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static utils.FieldVarType.BYTE;
 import static utils.FieldVarType.SHORT;
@@ -14,7 +15,15 @@ public class RandomSupplier {
     private int methodRepeat = 0;
     static private final Random RANDOM = new Random();
     static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    static final int MAX_STRING_LENGTH = 20;
+    private static final int MAX_STRING_LENGTH = 20;
+    public static final List<Integer> MODIFIERS = Arrays.asList(
+            //Modifier.STATIC,
+            //Modifier.FINAL,
+            Modifier.SYNCHRONIZED
+            //Modifier.PUBLIC,
+            //Modifier.PRIVATE,
+            //Modifier.PROTECTED
+    );
 
     public String getVarName() {
         if (varCharNum == 123) {
@@ -24,11 +33,9 @@ public class RandomSupplier {
         char c = (char) varCharNum;
         varCharNum++;
         String character = String.valueOf(c);
-        String name = character;
-        for (int i = 0; i < varRepeat; i++) {
-            name = name + character;
-        }
-        return name;
+        return IntStream.rangeClosed(0, varRepeat)
+                .mapToObj(__ -> character)
+                .collect(Collectors.joining());
     }
 
     public String getMethodName() {
@@ -39,11 +46,9 @@ public class RandomSupplier {
         char c = (char) methodCharNum;
         methodCharNum++;
         String character = String.valueOf(c);
-        String name = "method" + character.toUpperCase();
-        for (int i = 0; i < methodRepeat; i++) {
-            name = name + character;
-        }
-        return name;
+        return "method" + character.toUpperCase() + IntStream.range(0, methodRepeat)
+                .mapToObj(__ -> character)
+                .collect(Collectors.joining());
     }
 
     public static FieldVarType getFieldVarType() {
@@ -70,12 +75,15 @@ public class RandomSupplier {
     }
 
     public static String getRandomCastedValue(FieldVarType type) {
-        if (Arrays.asList(FieldVarType.values()).contains(type.getClazzType().getName())) {
-            //for Objects 25% chance to be initialized with null
-            if (RANDOM.nextInt(4) == 0) {
-                return "null";
-            }
+        switch (type) {
+            case STRING:
+            case DATE:
+                //for Objects 25% chance to be initialized with null
+                if (RANDOM.nextInt(4) == 0) {
+                    return "null";
+                }
         }
+
         return getRandomCastedValueNotNull(type);
     }
 
@@ -168,47 +176,65 @@ public class RandomSupplier {
         return sb.toString();
     }
 
-    public static int getModifiers() {
-        int numberOfModifiers = RANDOM.nextInt(4);
+    private static Optional<Integer> getRandomModifier(Set<Integer> exclusions) {
+        List<Integer> possibleModifiers = MODIFIERS.stream()
+                .filter(m -> !exclusions.contains(m))
+                .collect(Collectors.toList());
+
+        if (possibleModifiers.isEmpty())
+            return Optional.empty();
+
+        final int maxRange = possibleModifiers.size() - 1;
+
+        if (maxRange == 0)
+            return possibleModifiers.stream().findFirst();
+
+        return possibleModifiers.stream()
+                .skip(RANDOM.nextInt(maxRange))
+                .findFirst();
+    }
+
+    public static int getModifiers(int... exclusions) {
+        int numberOfModifiers = 4;//RANDOM.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
-        int r = RANDOM.nextInt(5);
-        int[] exclude_access = {2, 3, 4};
+
+        Set<Integer> excluding = new HashSet<>();
+        excluding.addAll(IntStream.of(exclusions).boxed().collect(Collectors.toSet()));
+
         for (int i = 1; i < numberOfModifiers; i++) {
+            int r = getRandomModifier(excluding).orElse(0);
+
+            modifiers[i] = r;
+
             switch (r) {
-                case 0:
-                    modifiers[i] = Modifier.STATIC;
-                    r = nextIntWithExcludes(5, 0);
-                    break;
-                case 1:
-                    modifiers[i] = Modifier.FINAL;
-                    r = nextIntWithExcludes(5, 1);
-                    break;
-                case 2:
-                    modifiers[i] = Modifier.PUBLIC;
-                    r = nextIntWithExcludes(5, exclude_access);
-                    break;
-                case 3:
-                    modifiers[i] = Modifier.PRIVATE;
-                    r = nextIntWithExcludes(5, exclude_access);
-                    break;
-                case 4:
-                    modifiers[i] = Modifier.PROTECTED;
-                    r = nextIntWithExcludes(5, exclude_access);
+                case Modifier.PUBLIC:
+                case Modifier.PRIVATE:
+                case Modifier.PROTECTED:
+                    excluding.addAll(Arrays.asList(Modifier.PUBLIC, Modifier.PROTECTED, Modifier.PRIVATE));
                     break;
             }
         }
         return mergeModifiers(modifiers);
     }
 
-    private static int nextIntWithExcludes(int range, int... excludes) {
-        int r = +RANDOM.nextInt(range);
-        for (int i = 0; i < excludes.length; i++) {
-            if (excludes[i] > r) {
-                return r;
-            }
-            r++;
-        }
-        return r;
+    /**
+     * Generates a random modifier value of modifiers that are applicable
+     * to methods (e.g. access modifiers, synchronized).
+     *
+     * @return a random integer describing field modifiers
+     */
+    public static int getMethodModifiers() {
+        return getModifiers();
+    }
+
+    /**
+     * Generates a random modifier value of modifiers that are applicable
+     * to fields (e.g. access modifiers, static, final).
+     *
+     * @return a random integer describing field modifiers
+     */
+    public static int getFieldModifiers() {
+        return getModifiers(Modifier.SYNCHRONIZED);
     }
 
     private static int mergeModifiers(int[] modifiers) {
