@@ -52,7 +52,7 @@ class ControlFlowGenerator extends Generator {
         if (openIfContexts.size() != 0 && deepness == openIfContexts.peek().deepness) {
             switch (RANDOM.nextInt(5)) {
                 case 0:
-                    if (openIfContexts.peek().hasElse == false) {
+                    if (!openIfContexts.peek().hasElse) {
                         openElseStatement();
                         this.generateBody(method, ControlType.elseType);
                     }
@@ -62,7 +62,7 @@ class ControlFlowGenerator extends Generator {
                     this.generateBody(method, ControlType.ifType);
                     break;
                 default:
-                    if (openIfContexts.peek().hasElse == false && openIfContexts.peek().numberOfElseIf < ifBranchingFactor) {
+                    if (!openIfContexts.peek().hasElse && openIfContexts.peek().numberOfElseIf < ifBranchingFactor) {
                         openElseIfStatement(method);
                         this.generateBody(method, ControlType.elseType);
                     }
@@ -74,7 +74,7 @@ class ControlFlowGenerator extends Generator {
     }
 
     private void openIfStatement(MethodLogger method) {
-        controlSrc.append("if(" + getIfCondition(method) + ") {");
+        controlSrc.append("if(").append(getIfCondition(method)).append(") {");
         deepness++;
         IfContext c = new IfContext(deepness);
         openIfContexts.add(c);
@@ -87,7 +87,7 @@ class ControlFlowGenerator extends Generator {
 
     private void openElseIfStatement(MethodLogger method) {
         openIfContexts.peek().numberOfElseIf++;
-        controlSrc.append("} else if(" + getIfCondition(method) + ") {");
+        controlSrc.append("} else if(").append(getIfCondition(method)).append(") {");
     }
 
     private void closeIFStatement() {
@@ -136,17 +136,16 @@ class ControlFlowGenerator extends Generator {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         deepness++;
         if (RANDOM.nextBoolean()) {
-            controlSrc.append("int " + varName + " = 0; do { " + varName + "++;");
+            controlSrc.append("int ").append(varName).append(" = 0; do { ").append(varName).append("++;");
             return varName + " < " + getNumberOfLoopIterations(maxLoopIterations);
         } else {
-            controlSrc.append("int " + varName + " = " +
-                    getNumberOfLoopIterations(maxLoopIterations) + "; do { " + varName + "--;");
+            controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; do { ").append(varName).append("--;");
             return varName + " > 0";
         }
     }
 
     private void closeDoWhileStatement(String condition) {
-        controlSrc.append("} while(" + condition + ");");
+        controlSrc.append("} while(").append(condition).append(");");
         deepness--;
     }
 
@@ -160,11 +159,9 @@ class ControlFlowGenerator extends Generator {
     private void openWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
         if (RANDOM.nextBoolean()) {
-            controlSrc.append("int " + varName + " = 0; while(" +
-                    varName + " < " + getNumberOfLoopIterations(maxLoopIterations) + ") { " + varName + "++; ");
+            controlSrc.append("int ").append(varName).append(" = 0; while(").append(varName).append(" < ").append(getNumberOfLoopIterations(maxLoopIterations)).append(") { ").append(varName).append("++; ");
         } else {
-            controlSrc.append("int " + varName + " = " + getNumberOfLoopIterations(maxLoopIterations) + "; while(" +
-                    varName + " > 0) { " + varName + "--; ");
+            controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; while(").append(varName).append(" > 0) { ").append(varName).append("--; ");
         }
         ++deepness;
     }
@@ -183,7 +180,7 @@ class ControlFlowGenerator extends Generator {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
         int it = getNumberOfLoopIterations(maxLoopIterations);
-        controlSrc.append("for(int " + varName + " = 0; " + varName + " < " + it + "; " + varName + "++) {");
+        controlSrc.append("for(int ").append(varName).append(" = 0; ").append(varName).append(" < ").append(it).append("; ").append(varName).append("++) {");
         deepness++;
     }
 
