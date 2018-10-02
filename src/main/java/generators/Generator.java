@@ -4,13 +4,12 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import javassist.bytecode.ClassFile;
 import logger.ClazzLogger;
 import logger.MethodLogger;
 import utils.ClazzFileContainer;
 import utils.RandomSupplier;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Random;
 
 abstract class Generator {
