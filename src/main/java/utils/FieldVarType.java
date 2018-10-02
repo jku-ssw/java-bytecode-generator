@@ -79,7 +79,7 @@ public enum FieldVarType {
     public static List<FieldVarType> getCompatibleTypes(FieldVarType type) {
         switch (type) {
             case BYTE:
-                return Arrays.asList(FieldVarType.BYTE);
+                return Collections.singletonList(FieldVarType.BYTE);
             case SHORT:
                 return COMP_WITH_SHORT;
             case INT:
@@ -87,19 +87,19 @@ public enum FieldVarType {
             case LONG:
                 return COMP_WITH_LONG;
             case FLOAT:
-                return Arrays.asList(FieldVarType.FLOAT);
+                return Collections.singletonList(FieldVarType.FLOAT);
             case DOUBLE:
                 return COMP_WITH_DOUBLE;
             case BOOLEAN:
-                return Arrays.asList(FieldVarType.BOOLEAN);
+                return Collections.singletonList(FieldVarType.BOOLEAN);
             case CHAR:
-                return Arrays.asList(FieldVarType.CHAR);
+                return Collections.singletonList(FieldVarType.CHAR);
             case STRING:
-                return Arrays.asList(FieldVarType.STRING);
+                return Collections.singletonList(FieldVarType.STRING);
             case DATE:
                 return Collections.singletonList(FieldVarType.DATE);
             default:
-                return Arrays.asList(type);
+                return Collections.singletonList(type);
         }
     }
 }
