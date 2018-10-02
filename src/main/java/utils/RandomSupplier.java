@@ -208,7 +208,7 @@ public class RandomSupplier {
      * @return a random integer describing modifiers
      */
     static int getModifiers(int... exclusions) {
-        int numberOfModifiers = 4;//RANDOM.nextInt(4);
+        int numberOfModifiers = RANDOM.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
 
         Set<Integer> excluding = IntStream.of(exclusions)
