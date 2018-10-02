@@ -4,8 +4,10 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ClazzLogger extends Logger {
@@ -16,8 +18,9 @@ public class ClazzLogger extends Logger {
 
     public ClazzLogger(MethodLogger main) {
         this.methods = new ArrayList<>();
-        this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
-        this.methods.add(new MethodLogger("toString", Modifier.PUBLIC, FieldVarType.STRING, true));
+        // only use these if result should be non-deterministic
+        // this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
+        // this.methods.add(new MethodLogger("toString", Modifier.PUBLIC, FieldVarType.STRING, true));
         this.variables = new HashMap<>();
         this.main = main;
     }

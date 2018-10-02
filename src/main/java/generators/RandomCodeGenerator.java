@@ -37,6 +37,7 @@ public class RandomCodeGenerator {
     private final FieldVarGenerator fieldVarGenerator;
     private final MethodGenerator methodGenerator;
     private final MathGenerator mathGenerator;
+    private final SnippetGenerator snippetGenerator;
     private final ControlFlowGenerator controlFlowGenerator;
     private final int maxOpProbability;
 
@@ -51,6 +52,7 @@ public class RandomCodeGenerator {
         this.fieldVarGenerator = new FieldVarGenerator(container);
         this.methodGenerator = new MethodGenerator(this);
         this.mathGenerator = new MathGenerator(container, controller.avoidOverflows(), controller.avoidDivByZero());
+        this.snippetGenerator = new SnippetGenerator(this);
         this.controlFlowGenerator = new ControlFlowGenerator(this, mathGenerator);
 
         MethodLogger run = this.methodGenerator.generateRunMethod();
@@ -339,6 +341,10 @@ public class RandomCodeGenerator {
                 if (src != null) {
                     controlFlowGenerator.addCodeToControlSrc(src);
                 }
+            }
+
+            if (r <= controller.getSnippetProbability()) {
+                snippetGenerator.generateHashCodeSubtraction(context.contextMethod);
             }
         }
     }

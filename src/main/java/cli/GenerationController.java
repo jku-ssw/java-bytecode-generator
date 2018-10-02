@@ -171,4 +171,8 @@ public class GenerationController {
     public int executeRunXTimes() {
         return controlValues.get(CLIOptions.XRUNS);
     }
+
+    public int getSnippetProbability() {
+        return controlValues.get(CLIOptions.SNIPPET);
+    }
 }

@@ -36,7 +36,8 @@ enum CLIOptions {
     DZ,
     FILENAME,
     DIRECTORY,
-    XRUNS;
+    XRUNS,
+    SNIPPET;
 
     @Override
     public String toString() {

@@ -14,9 +14,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-
 public class TestRandomCodeGenerator {
     private static String ARITHMETIC_EXCEPTIONS = "java.lang.ArithmeticException";
 
@@ -42,7 +39,8 @@ public class TestRandomCodeGenerator {
                 "-as", "" + RANDOM.nextInt(100), "-ls", "" + RANDOM.nextInt(100),
                 "-bs", "" + RANDOM.nextInt(100), "-als", "" + RANDOM.nextInt(100),
                 "-abs", "" + RANDOM.nextInt(100), "-lbs", "" + RANDOM.nextInt(100),
-                "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(10)));
+                "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(10),
+                "-snippet", "" + RANDOM.nextInt(100)));
 
         allowArithmeticExceptions = RANDOM.nextBoolean();
         if (allowArithmeticExceptions) {
