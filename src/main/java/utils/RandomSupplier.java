@@ -17,12 +17,12 @@ public class RandomSupplier {
     static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int MAX_STRING_LENGTH = 20;
     public static final List<Integer> MODIFIERS = Arrays.asList(
-            //Modifier.STATIC,
-            //Modifier.FINAL,
-            Modifier.SYNCHRONIZED
-            //Modifier.PUBLIC,
-            //Modifier.PRIVATE,
-            //Modifier.PROTECTED
+            Modifier.STATIC,
+            Modifier.FINAL,
+            Modifier.SYNCHRONIZED,
+            Modifier.PUBLIC,
+            Modifier.PRIVATE,
+            Modifier.PROTECTED
     );
 
     public String getVarName() {
@@ -176,6 +176,13 @@ public class RandomSupplier {
         return sb.toString();
     }
 
+    /**
+     * Returns a random modifier.
+     *
+     * @param exclusions Modifiers that should be excluded
+     * @return a random modifier or none, if no modifier is available
+     * (or all are excluded)
+     */
     private static Optional<Integer> getRandomModifier(Set<Integer> exclusions) {
         List<Integer> possibleModifiers = MODIFIERS.stream()
                 .filter(m -> !exclusions.contains(m))
@@ -194,12 +201,19 @@ public class RandomSupplier {
                 .findFirst();
     }
 
-    public static int getModifiers(int... exclusions) {
+    /**
+     * Generates a random modifier value.
+     *
+     * @param exclusions Excluded modifiers
+     * @return a random integer describing modifiers
+     */
+    static int getModifiers(int... exclusions) {
         int numberOfModifiers = 4;//RANDOM.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
 
-        Set<Integer> excluding = new HashSet<>();
-        excluding.addAll(IntStream.of(exclusions).boxed().collect(Collectors.toSet()));
+        Set<Integer> excluding = IntStream.of(exclusions)
+                .boxed()
+                .collect(Collectors.toSet());
 
         for (int i = 1; i < numberOfModifiers; i++) {
             int r = getRandomModifier(excluding).orElse(0);
