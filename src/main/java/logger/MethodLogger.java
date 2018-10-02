@@ -11,6 +11,7 @@ import java.util.Set;
 
 public class MethodLogger extends Logger {
 
+    private final boolean inherited;
     private String name;
     private int modifiers;
     private FieldVarType[] paramTypes;
@@ -20,13 +21,18 @@ public class MethodLogger extends Logger {
     private Set<MethodLogger> calledByThisMethod;
 
     public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType... paramTypes) {
-        this.name = name;
-        this.modifiers = modifiers;
-        this.returnType = returnType;
-        this.variables = new HashMap<>();
-        this.paramTypes = paramTypes;
-        this.methodsExcludedForCalling = new HashSet<>();
-        this.calledByThisMethod = new HashSet<>();
+        this(name, modifiers, returnType, false, paramTypes);
+    }
+
+    public MethodLogger(String name, int modifiers, FieldVarType returnType, boolean inherited, FieldVarType... paramTypes) {
+       this.name = name;
+       this.modifiers = modifiers;
+       this.returnType = returnType;
+       this.variables = new HashMap<>();
+       this.paramTypes = paramTypes;
+       this.methodsExcludedForCalling = new HashSet<>();
+       this.calledByThisMethod = new HashSet<>();
+       this.inherited = inherited;
     }
 
     public void addToExcludedForCalling(Set<MethodLogger> excludedForCalling) {
@@ -74,5 +80,9 @@ public class MethodLogger extends Logger {
     @Override
     public int hashCode() {
         return paramTypes == null ? name.hashCode() : name.hashCode() + paramTypes.hashCode();
+    }
+
+    public boolean isInherited() {
+        return inherited;
     }
 }

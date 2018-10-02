@@ -78,9 +78,10 @@ public class RandomCodeGenerator {
         generate(Context.PROGRAM_CONTEXT);
         //generate method-bodies
         if (this.getClazzLogger().hasMethods()) {
-            for (MethodLogger method : this.getClazzLogger().getMethods()) {
-                methodGenerator.generateMethodBody(method);
-            }
+            // do not attempt to modify inherited methods
+            getClazzLogger().getMethods().stream()
+                    .filter(m -> !m.isInherited())
+                    .forEach(methodGenerator::generateMethodBody);
         }
         //compute HashValue of all globals
         this.methodGenerator.generateHashMethod();

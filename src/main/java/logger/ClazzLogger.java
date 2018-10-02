@@ -4,10 +4,8 @@ import utils.FieldVarType;
 import utils.ParamWrapper;
 import utils.RandomSupplier;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClazzLogger extends Logger {
@@ -18,6 +16,8 @@ public class ClazzLogger extends Logger {
 
     public ClazzLogger(MethodLogger main) {
         this.methods = new ArrayList<>();
+        this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
+        this.methods.add(new MethodLogger("toString", Modifier.PUBLIC, FieldVarType.STRING, true));
         this.variables = new HashMap<>();
         this.main = main;
     }
@@ -27,9 +27,7 @@ public class ClazzLogger extends Logger {
     }
 
     public void setRun(MethodLogger run) {
-        if (this.run != null) {
-            return; //run method can't be changed
-        } else {
+        if (this.run == null) {
             this.run = run;
         }
     }
@@ -92,7 +90,7 @@ public class ClazzLogger extends Logger {
     }
 
     private List<MethodLogger> getStaticMethods() {
-        return methods.stream().filter(m -> m.isStatic()).collect(Collectors.toList());
+        return methods.stream().filter(MethodLogger::isStatic).collect(Collectors.toList());
     }
 
     public boolean hasMethods() {
@@ -102,7 +100,7 @@ public class ClazzLogger extends Logger {
     private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
         FieldVarLogger fvl = this.getInitializedFieldOfTypeUsableInMethod(method, type);
         if (fvl != null) {
-            values.add(new ParamWrapper(fvl));
+            values.add(new ParamWrapper<>(fvl));
             return true;
         } else {
             return false;
@@ -112,7 +110,7 @@ public class ClazzLogger extends Logger {
     private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
         FieldVarLogger fvl = this.getInitializedLocalVarOfType(method, type);
         if (fvl != null) {
-            values.add(new ParamWrapper(fvl));
+            values.add(new ParamWrapper<>(fvl));
             return true;
         } else {
             return false;
@@ -127,7 +125,7 @@ public class ClazzLogger extends Logger {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
                         //add RANDOM value if no variables available
-                        values.add(new ParamWrapper(RandomSupplier.getRandomCastedValue(t)));
+                        values.add(new ParamWrapper<>(RandomSupplier.getRandomCastedValue(t)));
                     }
                 }
             } else { //add local variable
@@ -135,7 +133,7 @@ public class ClazzLogger extends Logger {
                     //add global variable if no local variable available
                     if (!addFieldToParamValues(values, method, t)) {
                         //add RANDOM value if no variables available
-                        values.add(new ParamWrapper(RandomSupplier.getRandomCastedValue(t)));
+                        values.add(new ParamWrapper<>(RandomSupplier.getRandomCastedValue(t)));
                     }
                 }
             }
