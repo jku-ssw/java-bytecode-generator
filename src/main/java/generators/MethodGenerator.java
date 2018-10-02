@@ -23,7 +23,7 @@ class MethodGenerator extends MethodCaller {
     //============================================Method Generation=====================================================
 
     private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
-        MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
+        MethodLogger  ml        = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
@@ -73,7 +73,7 @@ class MethodGenerator extends MethodCaller {
             return null;
         }
         List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
-        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
+        FieldVarType[]     paramTypes        = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
@@ -83,12 +83,13 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void overrideReturnStatement(MethodLogger method) {
-        CtMethod ctMethod = this.getCtMethod(method);
-        FieldVarType returnType = method.getReturnType();
+        CtMethod       ctMethod   = this.getCtMethod(method);
+        FieldVarType   returnType = method.getReturnType();
         FieldVarLogger f;
         if (RANDOM.nextBoolean()) {
             f = this.getClazzLogger().getInitializedLocalVarOfType(method, returnType);
-            if (f != null) this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
+            if (f != null)
+                this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
         } else {
             f = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
             if (f != null) {
@@ -107,8 +108,8 @@ class MethodGenerator extends MethodCaller {
     //===============================================Method Calling=====================================================
 
     private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
-        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
+        FieldVarType[]    paramTypes         = calledMethod.getParamsTypes();
+        ParamWrapper[]    values             = getClazzLogger().getParamValues(paramTypes, method);
         Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
         calledMethod.addToExcludedForCalling(excludedForCalling);
@@ -196,17 +197,26 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void generateHashMethod() {
-        StringBuilder src = new StringBuilder("long hashValue = 0; ");
+        StringBuilder        src         = new StringBuilder("long hashValue = 0; ");
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(v -> v.isInitialized());
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
-                if (field.getType() == FieldVarType.STRING) {
-                    src.append("if(" + field.getName() + " != null) {");
-                    src.append("hashValue += " + field.getName() + ".hashCode();}");
-                } else if (field.getType() == FieldVarType.BOOLEAN) {
-                    src.append("hashValue += " + field.getName() + "? 1 : 0;");
-                } else {
-                    src.append("hashValue += (long)" + field.getName() + ";");
+                switch (field.getType()) {
+                    case BOOLEAN:
+                        src.append("hashValue += ").append(field.getName()).append("? 1 : 0;");
+                        break;
+                    case STRING:
+                        src.append("if(").append(field.getName()).append(" != null) {");
+                        src.append("hashValue += ").append(field.getName()).append(".hashCode();}");
+                        break;
+                    case DATE:
+                        src.append(String.format("if (%s != null) {", field.getName()));
+                        src.append(String.format("hashValue += %s.getTime();", field.getName()));
+                        src.append("}");
+                        break;
+                    default:
+                        src.append("hashValue += (long)").append(field.getName()).append(";");
+                        break;
                 }
             }
         }
@@ -221,8 +231,8 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void callRunAndHashMethods(int xRuns) {
-        String fileName = this.getClazzContainer().getFileName();
-        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+        String   fileName = this.getClazzContainer().getFileName();
+        CtMethod main     = this.getCtMethod(this.getClazzLogger().getMain());
         try {
             if (xRuns <= 1) {
                 main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();"
