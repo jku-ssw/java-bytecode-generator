@@ -12,6 +12,10 @@ import static utils.Operator.OpStatKind.*;
 
 class MathGenerator extends MethodCaller {
 
+    private static final Set<String> NON_DETERMINISTIC_MATH_METHODS = new HashSet<>(Arrays.asList(
+            "java.lang.Math.random()"
+    ));
+
     private static boolean noDivByZero;
     private static boolean noOverflow;
 
@@ -231,8 +235,10 @@ class MathGenerator extends MethodCaller {
     //================================================UTILITY===========================================================
 
     private static CtMethod getMathMethod() {
-        CtMethod[] methods = mathClazz.getDeclaredMethods();
-        methods = Arrays.stream(methods).filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1).toArray(CtMethod[]::new);
+        CtMethod[] methods = Arrays.stream(mathClazz.getDeclaredMethods())
+                .filter(m -> !NON_DETERMINISTIC_MATH_METHODS.contains(m.getLongName()))
+                .filter(m -> (m.getModifiers() & Modifier.PUBLIC) == 1)
+                .toArray(CtMethod[]::new);
         Random random = new Random();
         return methods[random.nextInt(methods.length)];
     }
