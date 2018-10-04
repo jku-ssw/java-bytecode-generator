@@ -2,7 +2,7 @@
 
 #Usage:
 The JB-Generator can randomly create a new java program by running the class JBGenerator.java. 
-see file [here](src/main/java/jb_generator/JBGenerator.java)
+see file [here](src/main/java/at.jku.ssw.java.bytecode.generator.jb_generator/JBGenerator.java)
 By running the program without options, default values for generation probabilities are used.
 
 #Options:

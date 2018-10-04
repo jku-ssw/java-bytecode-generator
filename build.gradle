@@ -11,7 +11,7 @@ wrapper {
     gradleVersion    = '4.8'
 }
 
-mainClassName = 'jb_generator.JBGenerator'
+mainClassName = 'at.jku.ssw.java.bytecode.generator.jb_generator.JBGenerator'
 
 jar.baseName = 'jbgenerator'
 jar.archiveName = "${jar.baseName}.${jar.extension}"
