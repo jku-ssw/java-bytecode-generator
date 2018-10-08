@@ -205,7 +205,6 @@ class ControlFlowGenerator extends Generator {
     private void insertControlSrcIntoMethod(MethodLogger method) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
-            System.out.println(controlSrc.toString());
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
         } catch (CannotCompileException e) {
