@@ -1,15 +1,17 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import javassist.*;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import javassist.*;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static at.jku.ssw.java.bytecode.generator.utils.Gen.*;
 
 class MethodGenerator extends MethodCaller {
 
@@ -23,7 +25,7 @@ class MethodGenerator extends MethodCaller {
     //============================================Method Generation=====================================================
 
     private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
-        MethodLogger  ml        = new MethodLogger(name, modifiers, returnType, paramTypes);
+        MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
@@ -74,7 +76,7 @@ class MethodGenerator extends MethodCaller {
         }
 
         List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
-        FieldVarType[]     paramTypes        = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
+        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
@@ -84,8 +86,8 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void overrideReturnStatement(MethodLogger method) {
-        CtMethod       ctMethod   = this.getCtMethod(method);
-        FieldVarType   returnType = method.getReturnType();
+        CtMethod ctMethod = this.getCtMethod(method);
+        FieldVarType returnType = method.getReturnType();
         FieldVarLogger f;
         if (RANDOM.nextBoolean()) {
             f = this.getClazzLogger().getInitializedLocalVarOfType(method, returnType);
@@ -109,8 +111,8 @@ class MethodGenerator extends MethodCaller {
     //===============================================Method Calling=====================================================
 
     private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
-        FieldVarType[]    paramTypes         = calledMethod.getParamsTypes();
-        ParamWrapper[]    values             = getClazzLogger().getParamValues(paramTypes, method);
+        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
         Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
         calledMethod.addToExcludedForCalling(excludedForCalling);
@@ -198,7 +200,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void generateHashMethod() {
-        StringBuilder        src         = new StringBuilder("long hashValue = 0; ");
+        StringBuilder src = new StringBuilder("long hashValue = 0; ");
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
@@ -223,8 +225,20 @@ class MethodGenerator extends MethodCaller {
         }
         try {
             CtMethod computeHash = CtNewMethod.make("private void computeHash() {}", this.getClazzFile());
-            computeHash.insertAfter(src.toString() +
-                    " System.out.println(\"#############   GLOBAL HASH: \" + hashValue + \"  #############\");");
+            computeHash.insertAfter(
+                    spaced(
+                            src.toString(),
+                            Statement(
+                                    SystemOutPrintln(
+                                            concat(
+                                                    asStr("#############   GLOBAL HASH: "),
+                                                    "hashValue",
+                                                    asStr("  #############")
+                                            )
+                                    )
+                            )
+                    )
+            );
             this.getClazzFile().addMethod(computeHash);
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
@@ -232,8 +246,8 @@ class MethodGenerator extends MethodCaller {
     }
 
     public void callRunAndHashMethods(int xRuns) {
-        String   fileName = this.getClazzContainer().getFileName();
-        CtMethod main     = this.getCtMethod(this.getClazzLogger().getMain());
+        String fileName = this.getClazzContainer().getFileName();
+        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
         try {
             if (xRuns <= 1) {
                 main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();"

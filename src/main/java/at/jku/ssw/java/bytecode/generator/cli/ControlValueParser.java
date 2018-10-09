@@ -4,10 +4,13 @@ import org.apache.commons.cli.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static at.jku.ssw.java.bytecode.generator.cli.CLIOptions.OF;
 
 public class ControlValueParser {
+
+    private static final Logger logger = Logger.getLogger(ControlValueParser.class.getName());
 
     private final String[] args;
     private final Options options = initOptions();
@@ -152,44 +155,44 @@ public class ControlValueParser {
                     switch (optionKind) {
                         case FILENAME:
                             generationController.setFileName(cmd.getOptionValue(signature));
-                            System.out.println("FILENAME: " + cmd.getOptionValue(signature));
+                            logger.fine("FILENAME: " + cmd.getOptionValue(signature));
                             break;
                         case DIRECTORY:
                             generationController.setLocation(cmd.getOptionValue(signature));
-                            System.out.println("Writing file to directory: " + cmd.getOptionValue(signature));
+                            logger.fine("Writing file to directory: " + cmd.getOptionValue(signature));
                             break;
                         case OF:
                             generationController.setAvoidOverflows(false);
-                            System.out.println("Not avoiding Overflows");
+                            logger.fine("Not avoiding Overflows");
                             break;
                         case DZ:
                             generationController.setAvoidDivByZero(false);
-                            System.out.println("Not avoiding Divisions by zero");
+                            logger.fine("Not avoiding Divisions by zero");
                             break;
                         default:
                             int value = Integer.parseInt(cmd.getOptionValue(signature));
                             generationController.addControlValue(optionKind, value);
-                            System.out.println("Using argument " + options.getOption(signature).getLongOpt() + " = " +
+                            logger.fine("Using argument " + options.getOption(signature).getLongOpt() + " = " +
                                     cmd.getOptionValue(signature));
                     }
                 } else {
                     switch (optionKind) {
                         case FILENAME:
                             generationController.setFileName(DEFAULT_FILENAME);
-                            System.out.println("\nDefault filename: " + DEFAULT_FILENAME);
+                            logger.fine("\nDefault filename: " + DEFAULT_FILENAME);
                             break;
                         case DIRECTORY:
-                            System.out.println("\nDefault directory: " + DEFAULT_DIRECTORY);
+                            logger.fine("\nDefault directory: " + DEFAULT_DIRECTORY);
                             break;
                         case OF:
-                            System.out.println("\nAvoiding Overflows (use -of to disable)");
+                            logger.fine("\nAvoiding Overflows (use -of to disable)");
                             break;
                         case DZ:
-                            System.out.println("\nAvoiding Divisions by zero (use -dz to disable)");
+                            logger.fine("\nAvoiding Divisions by zero (use -dz to disable)");
                             break;
                         default:
                             generationController.addControlValue(optionKind, defaultValues.get(signature));
-                            System.out.println("Using default value " + defaultValues.get(signature) + " for " +
+                            logger.fine("Using default value " + defaultValues.get(signature) + " for " +
                                     options.getOption(signature).getLongOpt());
                     }
                 }
