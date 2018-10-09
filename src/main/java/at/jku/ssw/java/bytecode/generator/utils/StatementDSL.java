@@ -7,6 +7,10 @@ public class StatementDSL {
     public static class Statements {
         public static final String Break = "break;";
         public static final String Return = "return;";
+
+        public static String Return(String value) {
+            return String.format(RETURN, value);
+        }
     }
 
     public static class Patterns {
@@ -56,7 +60,4 @@ public class StatementDSL {
         return String.format(IN_PAR, str);
     }
 
-    public static String Return(String value) {
-        return String.format(RETURN, value);
-    }
 }

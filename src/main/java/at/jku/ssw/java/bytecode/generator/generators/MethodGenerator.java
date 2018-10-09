@@ -2,10 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
-import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
-import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
-import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
+import at.jku.ssw.java.bytecode.generator.utils.*;
 import javassist.*;
 
 import java.util.List;
@@ -13,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Return;
 
 class MethodGenerator extends MethodCaller {
 
@@ -89,9 +87,18 @@ class MethodGenerator extends MethodCaller {
     public void insertReturn(MethodLogger method) {
         CtMethod ctMethod = getCtMethod(method);
         FieldVarType returnType = method.getReturnType();
+
+        if (returnType == FieldVarType.VOID) {
+            try {
+                ctMethod.insertAfter(Return);
+            } catch (CannotCompileException e) {
+                e.printStackTrace();
+            }
+        }
+
         Randomizer.shuffledUntilNotNull(
-                () -> this.getClazzLogger().getInitializedLocalVarOfType(method, returnType),
-                () -> this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
+                () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
+                () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
         ).ifPresent(
                 f -> {
                     try {
