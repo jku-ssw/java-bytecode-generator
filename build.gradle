@@ -8,7 +8,7 @@ sourceCompatibility = 8
 targetCompatibility = 8
 
 wrapper {
-    gradleVersion    = '4.8'
+    gradleVersion = '4.8'
 }
 
 mainClassName = 'at.jku.ssw.java.bytecode.generator.jb_generator.JBGenerator'
@@ -23,7 +23,9 @@ jar {
                 'Main-Class': mainClassName
     }
     archiveName = "${jar.baseName}.${jar.extension}"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 
@@ -33,10 +35,10 @@ repositories {
 
 dependencies {
     compile group: 'org.javassist', name: 'javassist', version: '3.22.0-GA'
-    // https://mvnrepository.com/artifact/commons-cli/commons-cli
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.1.0'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.1.0'
+
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.1'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
+
 }
