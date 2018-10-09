@@ -3,12 +3,15 @@ package at.jku.ssw.java.bytecode.generator.utils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
  * Provides functions to randomize code generation.
  */
 public class Randomizer {
+
+    private static final Random rand = new Random();
 
     /**
      * Executes the given number of suppliers in any order until a non-null
@@ -28,6 +31,26 @@ public class Randomizer {
     }
 
     /**
+     * Returns one of the given values.
+     * If the picked values is null, a {@link NullPointerException} is
+     * thrown.
+     *
+     * @param values The values
+     * @param <T>    The type of the values
+     * @return one of the given values, or {@link Optional#EMPTY} if
+     * no values are given
+     */
+    @SafeVarargs
+    public static <T> Optional<T> oneOf(T... values) {
+        if (values.length == 0)
+            return Optional.empty();
+
+        return Arrays.stream(values)
+                .skip(rand.nextInt(values.length))
+                .findAny();
+    }
+
+    /**
      * Executes one of the given procedures and returns the result.
      *
      * @param suppliers The functions that are executed
@@ -36,7 +59,11 @@ public class Randomizer {
      */
     @SafeVarargs
     public static <T> Optional<T> oneOf(Supplier<T>... suppliers) {
-        return stream(suppliers)
+        if (suppliers.length == 0)
+            return Optional.empty();
+
+        return Arrays.stream(suppliers)
+                .skip(rand.nextInt(suppliers.length))
                 .map(Supplier::get)
                 .map(Optional::ofNullable)
                 .findAny()
@@ -46,14 +73,49 @@ public class Randomizer {
     /**
      * Executes one of the given procedures.
      *
-     * @param suppliers The functions that are executed
+     * @param runnables The functions that are executed
      */
-    public static void oneOf(Runnable... suppliers) {
-        stream(suppliers)
-                .findAny()
-                .ifPresent(Runnable::run);
+    public static void oneOf(Runnable... runnables) {
+        if (runnables.length > 0) {
+            Arrays.stream(runnables)
+                    .skip(rand.nextInt(runnables.length))
+                    .findAny()
+                    .ifPresent(Runnable::run);
+        }
     }
 
+    /**
+     * Executes on of the given procedures but uses the given number of
+     * potential options to calculate the probability.
+     * If the defined number of options exceeds the actually passed arguments,
+     * the last argument is repeated to increase its chances.
+     * If the defined number of options is lower than the passed arguments,
+     * only the given number of functions are considered.
+     *
+     * @param options   The number of potential options
+     * @param runnables The functions that are executed
+     */
+    public static void oneOfOptions(int options, Runnable... runnables) {
+        if (runnables.length > 0 && options > 0) {
+            Runnable repeated = runnables[runnables.length - 1];
+
+            IntStream.range(0, options - runnables.length)
+                    .mapToObj(__ -> Stream.of(repeated))
+                    .reduce(Arrays.stream(runnables), Stream::concat)
+                    .limit(options)
+                    .skip(rand.nextInt(options))
+                    .findAny()
+                    .ifPresent(Runnable::run);
+        }
+    }
+
+    /**
+     * Returns a random stream of the given values.
+     *
+     * @param args The values to stream
+     * @param <T>  The type of the elements
+     * @return a random stream containing the given values
+     */
     @SafeVarargs
     public static <T> Stream<T> stream(T... args) {
         List<T> l = Arrays.asList(args);
