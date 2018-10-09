@@ -253,7 +253,7 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (r <= controller.getControlFlowProbability() && controlFlowGenerator.getDeepness() < controller.getControlFlowDeepness()) {
+            if (r <= controller.getControlFlowProbability() && (controlFlowGenerator.getLoopDepth() + controlFlowGenerator.getIfDepth()) < controller.getControlFlowDeepness()) {
                 int controlKind = RANDOM.nextInt(4);
                 boolean noStatementGenerated = true;
                 int ctrlTypeProb = 1 + RANDOM.nextInt(100);
@@ -343,8 +343,14 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (r <= controller.getSnippetProbability()) {
+            if (r <= controller.getSnippetProbability())
                 snippetGenerator.generateHashCodeSubtraction(context.contextMethod);
+
+            if (r <= controller.getBreakProbability())
+                controlFlowGenerator.insertBreak();
+
+            if (r <= controller.getPreemptiveReturnProbability()) {
+                methodGenerator.insertReturn(context.contextMethod);
             }
         }
     }

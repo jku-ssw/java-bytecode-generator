@@ -5,13 +5,14 @@ import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static at.jku.ssw.java.bytecode.generator.utils.Gen.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 
 class MethodGenerator extends MethodCaller {
 
@@ -60,7 +61,7 @@ class MethodGenerator extends MethodCaller {
     public void generateMethodBody(MethodLogger method) {
         RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
-        this.overrideReturnStatement(method);
+        this.insertReturn(method);
     }
 
     public MethodLogger generateMethod(int maximumParameters) {
@@ -85,27 +86,21 @@ class MethodGenerator extends MethodCaller {
                 RandomSupplier.getReturnType(), paramTypes, RandomSupplier.getMethodModifiers());
     }
 
-    public void overrideReturnStatement(MethodLogger method) {
-        CtMethod ctMethod = this.getCtMethod(method);
+    public void insertReturn(MethodLogger method) {
+        CtMethod ctMethod = getCtMethod(method);
         FieldVarType returnType = method.getReturnType();
-        FieldVarLogger f;
-        if (RANDOM.nextBoolean()) {
-            f = this.getClazzLogger().getInitializedLocalVarOfType(method, returnType);
-            if (f != null)
-                this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
-        } else {
-            f = this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType);
-            if (f != null) {
-                this.getClazzLogger().getInitializedLocalVarOfType(method, returnType);
-            }
-        }
-        try {
-            if (f != null) {
-                ctMethod.insertAfter("return " + f.getName() + ";");
-            }
-        } catch (CannotCompileException e) {
-            throw new AssertionError(e);
-        }
+        Randomizer.shuffledUntilNotNull(
+                () -> this.getClazzLogger().getInitializedLocalVarOfType(method, returnType),
+                () -> this.getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
+        ).ifPresent(
+                f -> {
+                    try {
+                        ctMethod.insertAfter(Return(f.getName()));
+                    } catch (CannotCompileException e) {
+                        throw new AssertionError(e);
+                    }
+                }
+        );
     }
 
     //===============================================Method Calling=====================================================

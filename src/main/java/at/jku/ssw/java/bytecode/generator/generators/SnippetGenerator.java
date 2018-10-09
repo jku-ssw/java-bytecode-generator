@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 
-import static at.jku.ssw.java.bytecode.generator.utils.Gen.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 
 public class SnippetGenerator extends Generator {
 

@@ -1,23 +1,24 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import javassist.CannotCompileException;
-import javassist.CtMethod;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import javassist.CannotCompileException;
+import javassist.CtMethod;
 
 import java.util.Stack;
 
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Break;
 
 class ControlFlowGenerator extends Generator {
     private class IfContext {
         int numberOfElseIf;
         boolean hasElse;
-        int deepness;
+        int depth;
 
-        public IfContext(int deepness) {
-            this.deepness = deepness;
+        public IfContext(int depth) {
+            this.depth = depth;
             hasElse = false;
             numberOfElseIf = 0;
         }
@@ -32,7 +33,8 @@ class ControlFlowGenerator extends Generator {
 
     private final Stack<IfContext> openIfContexts = new Stack<>();
     private final StringBuilder controlSrc = new StringBuilder();
-    private int deepness = 0;
+    private int loopDepth = 0;
+    private int ifDepth = 0;
     private final int ifBranchingFactor;
     private final int maxLoopIterations;
     private final RandomCodeGenerator randomCodeGenerator;
@@ -49,7 +51,7 @@ class ControlFlowGenerator extends Generator {
     //==========================================IF ELSEIF ELSE==========================================================
 
     public void generateIfElseStatement(MethodLogger method) {
-        if (openIfContexts.size() != 0 && deepness == openIfContexts.peek().deepness) {
+        if (openIfContexts.size() != 0 && ifDepth == openIfContexts.peek().depth) {
             switch (RANDOM.nextInt(5)) {
                 case 0:
                     if (!openIfContexts.peek().hasElse) {
@@ -75,8 +77,8 @@ class ControlFlowGenerator extends Generator {
 
     private void openIfStatement(MethodLogger method) {
         controlSrc.append("if(").append(getIfCondition(method)).append(") {");
-        deepness++;
-        IfContext c = new IfContext(deepness);
+        ifDepth++;
+        IfContext c = new IfContext(ifDepth);
         openIfContexts.add(c);
     }
 
@@ -93,7 +95,7 @@ class ControlFlowGenerator extends Generator {
     private void closeIFStatement() {
         controlSrc.append("}");
         openIfContexts.pop();
-        deepness--;
+        ifDepth--;
     }
 
     private String getIfCondition(MethodLogger method) {
@@ -134,7 +136,7 @@ class ControlFlowGenerator extends Generator {
 
     private String openDoWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
-        deepness++;
+        loopDepth++;
         if (RANDOM.nextBoolean()) {
             controlSrc.append("int ").append(varName).append(" = 0; do { ").append(varName).append("++;");
             return varName + " < " + getNumberOfLoopIterations(maxLoopIterations);
@@ -146,7 +148,7 @@ class ControlFlowGenerator extends Generator {
 
     private void closeDoWhileStatement(String condition) {
         controlSrc.append("} while(").append(condition).append(");");
-        deepness--;
+        loopDepth--;
     }
 
     //==================================================FOR/WHILE=======================================================
@@ -163,12 +165,12 @@ class ControlFlowGenerator extends Generator {
         } else {
             controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; while(").append(varName).append(" > 0) { ").append(varName).append("--; ");
         }
-        ++deepness;
+        ++loopDepth;
     }
 
     private void closeForWhileStatement() {
         controlSrc.append("}");
-        deepness--;
+        loopDepth--;
     }
 
     public void generateForStatement(MethodLogger method) {
@@ -181,11 +183,16 @@ class ControlFlowGenerator extends Generator {
         String varName = supplier.getVarName();
         int it = getNumberOfLoopIterations(maxLoopIterations);
         controlSrc.append("for(int ").append(varName).append(" = 0; ").append(varName).append(" < ").append(it).append("; ").append(varName).append("++) {");
-        deepness++;
+        loopDepth++;
+    }
+
+    public void insertBreak() {
+        // only generate break statements when inside some loop
+        if (loopDepth > 0)
+            controlSrc.append(Break);
     }
 
     //==================================================COMMON==========================================================
-
 
     private void generateBody(MethodLogger method, ControlType controlType, String... condition) {
         RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(method);
@@ -197,7 +204,7 @@ class ControlFlowGenerator extends Generator {
         } else if (controlType == ControlType.doWhileType) {
             this.closeDoWhileStatement(condition[0]);
         }
-        if (this.getDeepness() == 0) {
+        if (loopDepth == 0 && ifDepth == 0) {
             this.insertControlSrcIntoMethod(method);
         }
     }
@@ -213,15 +220,19 @@ class ControlFlowGenerator extends Generator {
     }
 
     public void addCodeToControlSrc(String code) {
-        if (deepness > 0) {
+        if (loopDepth > 0 || ifDepth > 0) {
             controlSrc.append(code);
         } else {
             System.err.println("Cannot insert code, no open control-flow-block");
         }
     }
 
-    public int getDeepness() {
-        return deepness;
+    public int getLoopDepth() {
+        return loopDepth;
+    }
+
+    public int getIfDepth() {
+        return ifDepth;
     }
 
     private int getNumberOfLoopIterations(int maxLoopIterations) {

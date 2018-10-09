@@ -24,7 +24,7 @@ By running the program without options, default values for generation probabilit
 | -jlm      | The probability to call methods of java.lang.Math                                       |
 | -cf       | the Probability to generate control flow statements                                     |
 | -cl       | The maximum number of iterations for control-block generation                           |
-| -cd       | The maximum deepness, to which control-flow-statements can be nested                    |
+| -cd       | The maximum depth, to which control-flow-statements can be nested                    |
 | -mli      | The maximum number of iterations for while-, doWhile- or for-loops                      |
 | -while    | The probability to generate while-loops                                                 |
 | -for      | The probability to generate for-loops                                                   |

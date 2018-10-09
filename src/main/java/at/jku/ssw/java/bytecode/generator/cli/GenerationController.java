@@ -175,4 +175,12 @@ public class GenerationController {
     public int getSnippetProbability() {
         return controlValues.get(CLIOptions.SNIPPET);
     }
+
+    public int getBreakProbability() {
+        return controlValues.get(CLIOptions.BREAK);
+    }
+
+    public int getPreemptiveReturnProbability() {
+        return controlValues.get(CLIOptions.RETURN);
+    }
 }
