@@ -253,7 +253,7 @@ public class RandomCodeGenerator {
                 }
             }
 
-            if (r <= controller.getControlFlowProbability() && (controlFlowGenerator.getLoopDepth() + controlFlowGenerator.getIfDepth()) < controller.getControlFlowDeepness()) {
+            if (r <= controller.getControlFlowProbability() && controlFlowGenerator.getDepth() < controller.getControlFlowDeepness()) {
                 int controlKind = RANDOM.nextInt(4);
                 boolean noStatementGenerated = true;
                 int ctrlTypeProb = 1 + RANDOM.nextInt(100);

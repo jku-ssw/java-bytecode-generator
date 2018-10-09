@@ -7,35 +7,38 @@ import javassist.CannotCompileException;
 import javassist.CtMethod;
 
 import java.util.Stack;
+import java.util.logging.Logger;
 
-import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Break;
 
 class ControlFlowGenerator extends Generator {
-    private class IfContext {
-        int numberOfElseIf;
-        boolean hasElse;
-        int depth;
 
-        public IfContext(int depth) {
-            this.depth = depth;
-            hasElse = false;
-            numberOfElseIf = 0;
+    public static final Logger logger = Logger.getLogger(ControlFlowGenerator.class.getName());
+
+    private static class Context {
+        int branches = 0;
+        boolean hasElse = false;
+        final boolean isLoop;
+
+        private Context(boolean isLoop) {
+            this.isLoop = isLoop;
+        }
+
+        private static Context Loop() {
+            return new Context(true);
+        }
+
+        private static Context If() {
+            return new Context(false);
         }
     }
 
-    private enum ControlType {
-        ifType,
-        elseType,
-        forWhileType,
-        doWhileType
-    }
-
-    private final Stack<IfContext> openIfContexts = new Stack<>();
+    private final Stack<Context> contexts = new Stack<>();
     private final StringBuilder controlSrc = new StringBuilder();
-    private int loopDepth = 0;
-    private int ifDepth = 0;
     private final int ifBranchingFactor;
     private final int maxLoopIterations;
     private final RandomCodeGenerator randomCodeGenerator;
@@ -49,168 +52,159 @@ class ControlFlowGenerator extends Generator {
         this.mathGenerator = mathGenerator;
     }
 
+    private void generateIfClause(MethodLogger method) {
+        controlSrc.append(If(getIfCondition(method)));
+        contexts.add(Context.If());
+        generateBody(method);
+        controlSrc.append(BlockEnd);
+        contexts.pop();
+        if (contexts.empty())
+            insertControlSrcIntoMethod(method);
+    }
+
+    private void generateElseClause(MethodLogger method) {
+        if (!contexts.peek().isLoop && !contexts.peek().hasElse) {
+            controlSrc.append(Else);
+            generateBody(method);
+            controlSrc.append(BlockEnd);
+            if (contexts.empty())
+                insertControlSrcIntoMethod(method);
+        }
+    }
+
+    private void generateElseIfClause(MethodLogger method) {
+        Context context = contexts.peek();
+
+        if (!context.isLoop && !context.hasElse && context.branches < ifBranchingFactor) {
+            context.branches++;
+            controlSrc.append(ElseIf(getIfCondition(method)));
+            generateBody(method);
+            controlSrc.append(BlockEnd);
+            if (contexts.empty())
+                insertControlSrcIntoMethod(method);
+        }
+    }
+
     //==========================================IF ELSEIF ELSE==========================================================
 
     public void generateIfElseStatement(MethodLogger method) {
-        if (openIfContexts.size() != 0 && ifDepth == openIfContexts.peek().depth) {
-            switch (RANDOM.nextInt(5)) {
-                case 0:
-                    if (!openIfContexts.peek().hasElse) {
-                        openElseStatement();
-                        this.generateBody(method, ControlType.elseType);
-                    }
-                    break;
-                case 1:
-                    openIfStatement(method);
-                    this.generateBody(method, ControlType.ifType);
-                    break;
-                default:
-                    if (!openIfContexts.peek().hasElse && openIfContexts.peek().numberOfElseIf < ifBranchingFactor) {
-                        openElseIfStatement(method);
-                        this.generateBody(method, ControlType.elseType);
-                    }
-            }
+        if (contexts.empty()) {
+            generateIfClause(method);
         } else {
-            this.openIfStatement(method);
-            this.generateBody(method, ControlType.ifType);
+            Randomizer.oneOfOptions(5,
+                    () -> generateElseClause(method),
+                    () -> generateIfClause(method),
+                    () -> generateElseIfClause(method)
+            );
         }
-    }
-
-    private void openIfStatement(MethodLogger method) {
-        controlSrc.append("if(").append(getIfCondition(method)).append(") {");
-        ifDepth++;
-        IfContext c = new IfContext(ifDepth);
-        openIfContexts.add(c);
-    }
-
-    private void openElseStatement() {
-        controlSrc.append("} else {");
-        openIfContexts.peek().hasElse = true;
-    }
-
-    private void openElseIfStatement(MethodLogger method) {
-        openIfContexts.peek().numberOfElseIf++;
-        controlSrc.append("} else if(").append(getIfCondition(method)).append(") {");
-    }
-
-    private void closeIFStatement() {
-        controlSrc.append("}");
-        openIfContexts.pop();
-        ifDepth--;
     }
 
     private String getIfCondition(MethodLogger method) {
-        OpStatKind condKind = null;
-        switch (RANDOM.nextInt(4)) {
-            case 0:
-                condKind = LOGICAL;
-                break;
-            case 1:
-                condKind = ARITHMETIC_LOGICAL;
-                break;
-            case 2:
-                condKind = BITWISE_LOGICAL;
-                break;
-            case 3:
-                condKind = ARITHMETIC_LOGICAL_BITWISE;
-                break;
-        }
-        String src;
-        if (condKind == ARITHMETIC_LOGICAL || condKind == ARITHMETIC_LOGICAL_BITWISE) {
-            src = mathGenerator.srcGenerateOperatorStatement(
-                    method, randomCodeGenerator.getController().getMaxOperators(), condKind, true);
-        } else {
-            src = mathGenerator.srcGenerateOperatorStatement(
-                    method, randomCodeGenerator.getController().getMaxOperators(), condKind, false);
-        }
-        StringBuilder condition = new StringBuilder(src);
-        condition.deleteCharAt(condition.length() - 1);
-        return condition.toString();
+        return Randomizer.oneOf(
+                LOGICAL,
+                ARITHMETIC_LOGICAL,
+                BITWISE_LOGICAL,
+                ARITHMETIC_LOGICAL_BITWISE
+        ).map(kind -> {
+            boolean useNoVars = kind == ARITHMETIC_LOGICAL || kind == ARITHMETIC_LOGICAL_BITWISE;
+            return mathGenerator.srcGenerateOperatorStatement(
+                    method,
+                    randomCodeGenerator.getController().getMaxOperators(),
+                    kind,
+                    useNoVars
+            );
+        }).map(src -> src.substring(0, src.length() - 1)).orElse("");
     }
 
     //=================================================DO WHILE=========================================================
 
     public void generateDoWhileStatement(MethodLogger method) {
-        String condition = this.openDoWhileStatement();
-        this.generateBody(method, ControlType.doWhileType, condition);
-    }
+        String varName = getClazzContainer().getRandomSupplier().getVarName();
 
-    private String openDoWhileStatement() {
-        String varName = this.getClazzContainer().getRandomSupplier().getVarName();
-        loopDepth++;
-        if (RANDOM.nextBoolean()) {
-            controlSrc.append("int ").append(varName).append(" = 0; do { ").append(varName).append("++;");
-            return varName + " < " + getNumberOfLoopIterations(maxLoopIterations);
-        } else {
-            controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; do { ").append(varName).append("--;");
-            return varName + " > 0";
-        }
-    }
-
-    private void closeDoWhileStatement(String condition) {
-        controlSrc.append("} while(").append(condition).append(");");
-        loopDepth--;
+        Randomizer.oneOf(
+                () -> {
+                    controlSrc
+                            .append(Statement(assign(0).toLocalVar(int.class, varName)))
+                            .append(Do)
+                            .append(Statement(incr(varName)));
+                    return lt(varName, randomLoopIterations());
+                },
+                () -> {
+                    controlSrc
+                            .append(Statement(assign(randomLoopIterations()).toLocalVar(int.class, varName)))
+                            .append(Do)
+                            .append(Statement(decr(varName)));
+                    return gt(varName, 0);
+                }
+        ).ifPresent(condition -> {
+            contexts.push(Context.Loop());
+            generateBody(method);
+            controlSrc.append(DoWhile(condition));
+            contexts.pop();
+            if (contexts.empty())
+                insertControlSrcIntoMethod(method);
+        });
     }
 
     //==================================================FOR/WHILE=======================================================
 
     public void generateWhileStatement(MethodLogger method) {
-        this.openWhileStatement();
-        this.generateBody(method, ControlType.forWhileType);
-    }
-
-    private void openWhileStatement() {
-        String varName = this.getClazzContainer().getRandomSupplier().getVarName();
+        String varName = getClazzContainer().getRandomSupplier().getVarName();
         Randomizer.oneOf(
-                () -> controlSrc.append("int ").append(varName).append(" = 0; while(").append(varName).append(" < ").append(getNumberOfLoopIterations(maxLoopIterations)).append(") { ").append(varName).append("++; "),
-                () -> controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; while(").append(varName).append(" > 0) { ").append(varName).append("--; ")
+                () -> controlSrc
+                        .append(Statement(assign(0).toLocalVar(int.class, varName)))
+                        .append(While(lt(varName, randomLoopIterations())))
+                        .append(Statement(incr(varName))),
+                () -> controlSrc
+                        .append(Statement(assign(randomLoopIterations()).toLocalVar(int.class, varName)))
+                        .append(While(gt(varName, 0)))
+                        .append(Statement(decr(varName)))
         );
-        ++loopDepth;
-    }
-
-    private void closeForWhileStatement() {
-        controlSrc.append("}");
-        loopDepth--;
+        contexts.push(Context.Loop());
+        generateBody(method);
+        controlSrc.append(BlockEnd);
+        contexts.pop();
+        if (contexts.empty())
+            insertControlSrcIntoMethod(method);
     }
 
     public void generateForStatement(MethodLogger method) {
-        this.openForStatement();
-        this.generateBody(method, ControlType.forWhileType);
-    }
-
-    private void openForStatement() {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
-        int it = getNumberOfLoopIterations(maxLoopIterations);
-        controlSrc.append("for(int ").append(varName).append(" = 0; ").append(varName).append(" < ").append(it).append("; ").append(varName).append("++) {");
-        loopDepth++;
+        int it = randomLoopIterations();
+
+        controlSrc.append(
+                For(
+                        assign(0).toLocalVar(int.class, varName),
+                        lt(varName, it),
+                        incr(varName)
+                )
+        );
+
+        contexts.push(Context.Loop());
+        generateBody(method);
+        controlSrc.append(BlockEnd);
+        contexts.pop();
+        if (contexts.empty())
+            insertControlSrcIntoMethod(method);
     }
 
     public void insertBreak() {
         // only generate break statements when inside some loop
-        if (loopDepth > 0)
+        if (contexts.stream().anyMatch(c -> c.isLoop))
             controlSrc.append(Break);
     }
 
     //==================================================COMMON==========================================================
 
-    private void generateBody(MethodLogger method, ControlType controlType, String... condition) {
+    private void generateBody(MethodLogger method) {
         RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.CONTROL_CONTEXT);
-        if (controlType == ControlType.ifType) {
-            this.closeIFStatement();
-        } else if (controlType == ControlType.forWhileType) {
-            this.closeForWhileStatement();
-        } else if (controlType == ControlType.doWhileType) {
-            this.closeDoWhileStatement(condition[0]);
-        }
-        if (loopDepth == 0 && ifDepth == 0) {
-            this.insertControlSrcIntoMethod(method);
-        }
     }
 
     private void insertControlSrcIntoMethod(MethodLogger method) {
-        CtMethod ctMethod = this.getCtMethod(method);
+        CtMethod ctMethod = getCtMethod(method);
+        System.out.println("INSERTING " + controlSrc.toString());
         try {
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
@@ -220,25 +214,17 @@ class ControlFlowGenerator extends Generator {
     }
 
     public void addCodeToControlSrc(String code) {
-        if (loopDepth > 0 || ifDepth > 0) {
+        if (contexts.empty())
+            logger.severe("Cannot insert code, no open control-flow-block");
+        else
             controlSrc.append(code);
-        } else {
-            System.err.println("Cannot insert code, no open control-flow-block");
-        }
     }
 
-    public int getLoopDepth() {
-        return loopDepth;
-    }
-
-    public int getIfDepth() {
-        return ifDepth;
-    }
-
-    private int getNumberOfLoopIterations(int maxLoopIterations) {
+    private int randomLoopIterations() {
         return maxLoopIterations == 0 ? 0 : RANDOM.nextInt(maxLoopIterations);
     }
+
+    public int getDepth() {
+        return contexts.size();
+    }
 }
-
-
-
