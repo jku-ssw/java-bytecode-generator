@@ -96,7 +96,7 @@ class MethodGenerator extends MethodCaller {
             }
         }
 
-        Randomizer.shuffledUntilNotNull(
+        Randomizer.oneNotNullOf(
                 () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
                 () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
         ).ifPresent(

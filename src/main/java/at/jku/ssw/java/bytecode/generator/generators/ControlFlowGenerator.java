@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
 
@@ -160,11 +161,10 @@ class ControlFlowGenerator extends Generator {
 
     private void openWhileStatement() {
         String varName = this.getClazzContainer().getRandomSupplier().getVarName();
-        if (RANDOM.nextBoolean()) {
-            controlSrc.append("int ").append(varName).append(" = 0; while(").append(varName).append(" < ").append(getNumberOfLoopIterations(maxLoopIterations)).append(") { ").append(varName).append("++; ");
-        } else {
-            controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; while(").append(varName).append(" > 0) { ").append(varName).append("--; ");
-        }
+        Randomizer.oneOf(
+                () -> controlSrc.append("int ").append(varName).append(" = 0; while(").append(varName).append(" < ").append(getNumberOfLoopIterations(maxLoopIterations)).append(") { ").append(varName).append("++; "),
+                () -> controlSrc.append("int ").append(varName).append(" = ").append(getNumberOfLoopIterations(maxLoopIterations)).append("; while(").append(varName).append(" > 0) { ").append(varName).append("--; ")
+        );
         ++loopDepth;
     }
 
