@@ -19,7 +19,7 @@ public class RandomizerTest {
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForNullSequences() {
-        assertThat(oneNotNullOf(() -> null), is(empty()));
+        assertThat(oneNotNullOf(ret(null)), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
@@ -69,7 +69,7 @@ public class RandomizerTest {
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNullValue() {
-        assertThat(oneOf(() -> null), is(empty()));
+        assertThat(oneOf(ret(null)), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
@@ -89,7 +89,7 @@ public class RandomizerTest {
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNullResults() {
-        assertThat(oneOf(() -> null), is(empty()));
+        assertThat(oneOf(ret(null)), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)

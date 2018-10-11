@@ -42,11 +42,7 @@ public class Randomizer {
      */
     @SafeVarargs
     public static <T> Optional<T> oneOf(T... values) {
-        if (values.length == 0)
-            return Optional.empty();
-
-        return Arrays.stream(values)
-                .skip(rand.nextInt(values.length))
+        return skipRandom(values)
                 .findAny();
     }
 
@@ -59,11 +55,7 @@ public class Randomizer {
      */
     @SafeVarargs
     public static <T> Optional<T> oneOf(Supplier<T>... suppliers) {
-        if (suppliers.length == 0)
-            return Optional.empty();
-
-        return Arrays.stream(suppliers)
-                .skip(rand.nextInt(suppliers.length))
+        return skipRandom(suppliers)
                 .map(Supplier::get)
                 .map(Optional::ofNullable)
                 .findAny()
@@ -76,12 +68,9 @@ public class Randomizer {
      * @param runnables The functions that are executed
      */
     public static void oneOf(Runnable... runnables) {
-        if (runnables.length > 0) {
-            Arrays.stream(runnables)
-                    .skip(rand.nextInt(runnables.length))
-                    .findAny()
-                    .ifPresent(Runnable::run);
-        }
+        skipRandom(runnables)
+                .findAny()
+                .ifPresent(Runnable::run);
     }
 
     /**
@@ -125,4 +114,17 @@ public class Randomizer {
         return l.stream();
     }
 
+    /**
+     * Skips a random number of the given values and returns a stream
+     *
+     * @param args The values to stream
+     * @param <T>  The type of the elements
+     * @return a random stream that skips a random amount of the given elements
+     */
+    @SafeVarargs
+    public static <T> Stream<T> skipRandom(T... args) {
+        return args.length == 0
+                ? Stream.empty()
+                : Arrays.stream(args).skip(rand.nextInt(args.length));
+    }
 }
