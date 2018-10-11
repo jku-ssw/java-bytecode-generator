@@ -52,8 +52,8 @@ public class RandomSupplier {
     }
 
     public static FieldVarType getFieldVarType() {
-        int r = RANDOM.nextInt(FieldVarType.values().length - 1); //exclude void
-        return FieldVarType.values()[r];
+        int r = RANDOM.nextInt(FieldVarType.values.length - 1); //exclude void
+        return FieldVarType.values[r];
     }
 
     public static FieldVarType[] getParameterTypes(int maxParameters) {
@@ -70,15 +70,14 @@ public class RandomSupplier {
     }
 
     public static FieldVarType getReturnType() {
-        int r = RANDOM.nextInt(FieldVarType.values().length);
-        return FieldVarType.values()[r];
+        int r = RANDOM.nextInt(FieldVarType.values.length);
+        return FieldVarType.values[r];
     }
 
     public static String getRandomCastedValue(FieldVarType type) {
-        switch (type) {
-            case STRING:
-            case DATE:
-                //for Objects 25% chance to be initialized with null
+        switch (type.kind) {
+            case INSTANCE:
+                // 25% chance for objects to be initialized with null
                 if (RANDOM.nextInt(4) == 0) {
                     return "null";
                 }
@@ -88,7 +87,7 @@ public class RandomSupplier {
     }
 
     public static String getRandomCastedValueNotNull(FieldVarType type) {
-        switch (type) {
+        switch (type.kind) {
             case BYTE:
                 return "(byte)" + (byte) RANDOM.nextInt();
             case SHORT:
@@ -105,17 +104,19 @@ public class RandomSupplier {
                 return "" + RANDOM.nextBoolean();
             case CHAR:
                 return "\'" + STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())) + "\'";
-            case STRING:
-                return "\"" + getString() + "\"";
-            case DATE:
-                return "new java.util.Date(" + RANDOM.nextLong() + "L)";
+            case INSTANCE:
+                if (type.clazz.equals(String.class)) {
+                    return "\"" + getString() + "\"";
+                } else if (type.clazz.equals(Date.class)) {
+                    return "new java.util.Date(" + RANDOM.nextLong() + "L)";
+                }
             default:
                 throw new java.lang.AssertionError();
         }
     }
 
     public static String getRandomNumericValue(FieldVarType type, boolean notZero) {
-        switch (type) {
+        switch (type.kind) {
             case BYTE:
             case SHORT:
             case INT:

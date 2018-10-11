@@ -9,13 +9,14 @@ import java.util.function.Supplier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneNotNullOf;
 import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneOf;
+import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneOfOptions;
 import static java.util.Optional.empty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class RandomizerTest {
 
-    private static final int REPETITIONS = 10;
+    private static final int REPETITIONS = 5;
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForNullSequences() {
@@ -122,31 +123,48 @@ public class RandomizerTest {
     }
 
     @RepeatedTest(value = REPETITIONS)
-    public void testOneOfZeroOptions() {
+    public void testDoOneOfZeroOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        Randomizer.oneOfOptions(0, getStatefulRunnables(modifications));
+        Randomizer.doOneOfOptions(0, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(0));
     }
 
     @RepeatedTest(value = REPETITIONS)
-    public void testOneOfTooManyOptions() {
+    public void testDoOneOfTooManyOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        Randomizer.oneOfOptions(10, getStatefulRunnables(modifications));
+        Randomizer.doOneOfOptions(10, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(1));
     }
 
     @RepeatedTest(value = REPETITIONS)
-    public void testOneOfTooFewOptions() {
+    public void testDoOneOfTooFewOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        Randomizer.oneOfOptions(2, getStatefulRunnables(modifications));
+        Randomizer.doOneOfOptions(2, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(1));
         assertThat(modifications, either(contains(0)).or(contains(1)));
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void testOneOfZeroOptions() {
+        assertThat(oneOfOptions(0, 1, 2, 3), is(empty()));
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneOfTooManyOptions() {
+        assertThat(oneOfOptions(10, 1, 2, 3), isOneOf(opt(1), opt(2), opt(3)));
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneOfTooFewOptions() {
+        assertThat(oneOfOptions(2, 1, 2, 3), isOneOf(opt(1), opt(2)));
     }
 
     @SuppressWarnings("unchecked")

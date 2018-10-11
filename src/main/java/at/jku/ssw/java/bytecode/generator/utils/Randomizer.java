@@ -74,7 +74,7 @@ public class Randomizer {
     }
 
     /**
-     * Executes on of the given procedures but uses the given number of
+     * Executes one of the given procedures but uses the given number of
      * potential options to calculate the probability.
      * If the defined number of options exceeds the actually passed arguments,
      * the last argument is repeated to increase its chances.
@@ -84,18 +84,36 @@ public class Randomizer {
      * @param options   The number of potential options
      * @param runnables The functions that are executed
      */
-    public static void oneOfOptions(int options, Runnable... runnables) {
-        if (runnables.length > 0 && options > 0) {
-            Runnable repeated = runnables[runnables.length - 1];
+    public static void doOneOfOptions(int options, Runnable... runnables) {
+        oneOfOptions(options, runnables).ifPresent(Runnable::run);
+    }
 
-            IntStream.range(0, options - runnables.length)
-                    .mapToObj(__ -> Stream.of(repeated))
-                    .reduce(Arrays.stream(runnables), Stream::concat)
-                    .limit(options)
-                    .skip(rand.nextInt(options))
-                    .findAny()
-                    .ifPresent(Runnable::run);
-        }
+    /**
+     * Returns one of the given values but uses the given number of potential
+     * options to calculate the probability.
+     * If the defined number of options exceeds the actually passed arguments,
+     * the last argument is repeated to increase its chances.
+     * If the defined number of options is lower than the passed arguments,
+     * only the given number of functions are considered.
+     *
+     * @param options The number of potential options
+     * @param values  The selection of values
+     * @param <T>     The type of the values
+     * @return one of the values or none, if none are given
+     */
+    @SafeVarargs
+    public static <T> Optional<T> oneOfOptions(int options, T... values) {
+        if (values.length <= 0 || options <= 0)
+            return Optional.empty();
+
+        T last = values[values.length - 1];
+
+        return IntStream.range(0, options - values.length)
+                .mapToObj(__ -> Stream.of(last))
+                .reduce(Arrays.stream(values), Stream::concat)
+                .limit(options)
+                .skip(rand.nextInt(options))
+                .findAny();
     }
 
     /**

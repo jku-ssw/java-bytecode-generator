@@ -2,9 +2,13 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.*;
+import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
+import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,7 +42,7 @@ class MethodGenerator extends MethodCaller {
             }
         }
         String returnStatement;
-        if (returnType == FieldVarType.VOID) {
+        if (returnType.kind == FieldVarType.Kind.VOID) {
             returnStatement = "";
         } else {
             returnStatement = "return " + RandomSupplier.getRandomCastedValue(returnType) + ";";
@@ -46,9 +50,10 @@ class MethodGenerator extends MethodCaller {
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
         try {
-            newMethod = CtNewMethod.make(modifiersToString(modifiers) +
+            String methodStr = modifiersToString(modifiers) +
                     returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
-                    "} ", this.getClazzFile());
+                    "} ";
+            newMethod = CtNewMethod.make(methodStr, this.getClazzFile());
             this.getClazzFile().addMethod(newMethod);
             return ml;
         } catch (CannotCompileException e) {
@@ -206,18 +211,19 @@ class MethodGenerator extends MethodCaller {
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
         if (this.getClazzLogger().hasVariables()) {
             for (FieldVarLogger field : initGlobals) {
-                switch (field.getType()) {
+                switch (field.getType().kind) {
                     case BOOLEAN:
                         src.append("hashValue += ").append(field.getName()).append("? 1 : 0;");
                         break;
-                    case STRING:
-                        src.append("if(").append(field.getName()).append(" != null) {");
-                        src.append("hashValue += ").append(field.getName()).append(".hashCode();}");
-                        break;
-                    case DATE:
-                        src.append(String.format("if (%s != null) {", field.getName()));
-                        src.append(String.format("hashValue += %s.getTime();", field.getName()));
-                        src.append("}");
+                    case INSTANCE:
+                        if (field.getType().clazz.equals(String.class)) {
+                            src.append("if(").append(field.getName()).append(" != null) {");
+                            src.append("hashValue += ").append(field.getName()).append(".hashCode();}");
+                        } else if (field.getType().clazz.equals(Date.class)) {
+                            src.append(String.format("if (%s != null) {", field.getName()));
+                            src.append(String.format("hashValue += %s.getTime();", field.getName()));
+                            src.append("}");
+                        }
                         break;
                     default:
                         src.append("hashValue += (long)").append(field.getName()).append(";");

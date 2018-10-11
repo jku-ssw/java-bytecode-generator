@@ -88,7 +88,7 @@ class ControlFlowGenerator extends Generator {
         if (contexts.empty()) {
             generateIfClause(method);
         } else {
-            Randomizer.oneOfOptions(5,
+            Randomizer.doOneOfOptions(5,
                     () -> generateElseClause(method),
                     () -> generateIfClause(method),
                     () -> generateElseIfClause(method)
