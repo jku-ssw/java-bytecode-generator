@@ -63,11 +63,12 @@ class ControlFlowGenerator extends Generator {
     }
 
     private void generateElseClause(MethodLogger method) {
-        if (!contexts.peek().isLoop && !contexts.peek().hasElse) {
+        Context context = contexts.peek();
+
+        if (!context.isLoop && !context.hasElse) {
+            context.hasElse = true;
             controlSrc.append(Else);
             generateBody(method);
-            if (contexts.empty())
-                insertControlSrcIntoMethod(method);
         }
     }
 
@@ -78,8 +79,6 @@ class ControlFlowGenerator extends Generator {
             context.branches++;
             controlSrc.append(ElseIf(getIfCondition(method)));
             generateBody(method);
-            if (contexts.empty())
-                insertControlSrcIntoMethod(method);
         }
     }
 
@@ -202,7 +201,6 @@ class ControlFlowGenerator extends Generator {
 
     private void insertControlSrcIntoMethod(MethodLogger method) {
         CtMethod ctMethod = getCtMethod(method);
-        System.out.println("INSERTING " + controlSrc.toString());
         try {
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
