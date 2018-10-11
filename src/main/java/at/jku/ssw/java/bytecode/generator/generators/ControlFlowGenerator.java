@@ -66,7 +66,6 @@ class ControlFlowGenerator extends Generator {
         if (!contexts.peek().isLoop && !contexts.peek().hasElse) {
             controlSrc.append(Else);
             generateBody(method);
-            controlSrc.append(BlockEnd);
             if (contexts.empty())
                 insertControlSrcIntoMethod(method);
         }
@@ -79,7 +78,6 @@ class ControlFlowGenerator extends Generator {
             context.branches++;
             controlSrc.append(ElseIf(getIfCondition(method)));
             generateBody(method);
-            controlSrc.append(BlockEnd);
             if (contexts.empty())
                 insertControlSrcIntoMethod(method);
         }
