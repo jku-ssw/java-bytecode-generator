@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratedClassLoaderTest implements GeneratorTest {
 
+    private static final int REPETITIONS = 10;
     private static final String DIR = "src/test/resources/generated";
     private static final PathMatcher CLASS_FILE_MATCHER = FileSystems.getDefault().getPathMatcher("glob:*.class");
 
@@ -43,7 +44,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         generatedClassLoader = null;
     }
 
-    @Test
+    @RepeatedTest(value = REPETITIONS)
     public void testLoadValidClass() throws Exception {
         String className = generateClass("AValidClass");
 
@@ -52,7 +53,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         assertEquals(className, clazz.getCanonicalName());
     }
 
-    @Test
+    @RepeatedTest(value = REPETITIONS)
     public void testInstantiation() throws Exception {
         String className = generateClass("AnInstantiableClass");
 
@@ -64,7 +65,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         Object __ = clazz.newInstance();
     }
 
-    @Test
+    @RepeatedTest(value = REPETITIONS)
     public void testLoadInValidClass() {
         final String className = "InvalidClass";
 
@@ -74,7 +75,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         );
     }
 
-    @Test
+    @RepeatedTest(value = REPETITIONS)
     public void testInvokeMainMethod() throws Exception {
         String className = generateClass("AClassWithMainMethod");
 
@@ -92,7 +93,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         assertNull(main.invoke(null, (Object) new String[]{}));
     }
 
-    @Test
+    @RepeatedTest(value = REPETITIONS)
     public void testInvokeRunMethod() throws Exception {
         String className = generateClass("AClassWithRunMethod");
 
