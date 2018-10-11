@@ -27,6 +27,17 @@ jar {
     }
 }
 
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+run {
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 
 repositories {
     mavenCentral()
