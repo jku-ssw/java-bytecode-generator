@@ -13,8 +13,6 @@ wrapper {
 
 mainClassName = 'at.jku.ssw.java.bytecode.generator.jb_generator.JBGenerator'
 
-jar.baseName = 'jbgenerator'
-jar.archiveName = "${jar.baseName}.${jar.extension}"
 
 jar {
     manifest {
@@ -22,6 +20,7 @@ jar {
                 'Implementation-Version': version,
                 'Main-Class': mainClassName
     }
+    baseName = 'jbgenerator'
     archiveName = "${jar.baseName}.${jar.extension}"
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
