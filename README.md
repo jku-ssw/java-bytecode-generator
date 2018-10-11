@@ -1,5 +1,7 @@
 # Java-Bytecode-Generator
 
+[![Build Status](https://travis-ci.org/jku-ssw/java-bytecode-generator.svg?branch=master)](https://travis-ci.org/jku-ssw/java-bytecode-generator)
+
 The *Java Bytecode Generator* can create random Java class files refined with different 
 options in order to test compilers or other tools that work with Java bytecode.
 
