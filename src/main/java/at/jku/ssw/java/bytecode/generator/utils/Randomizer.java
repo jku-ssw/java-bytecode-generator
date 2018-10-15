@@ -3,6 +3,7 @@ package at.jku.ssw.java.bytecode.generator.utils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -28,6 +29,24 @@ public class Randomizer {
                 .map(Supplier::get)
                 .filter(Objects::nonNull)
                 .findAny();
+    }
+
+    /**
+     * @see #oneOf(Object[])
+     */
+    public static <T> Optional<T> oneOf(Collection<T> values) {
+        return values.isEmpty()
+                ? Optional.empty()
+                : values.stream()
+                .skip(rand.nextInt(values.size()))
+                .findAny();
+    }
+
+    /**
+     * @see #oneOf(Object[])
+     */
+    public static <T> Optional<T> oneOf(Stream<T> stream) {
+        return oneOf(stream.collect(Collectors.toList()));
     }
 
     /**
@@ -144,5 +163,32 @@ public class Randomizer {
         return args.length == 0
                 ? Stream.empty()
                 : Arrays.stream(args).skip(rand.nextInt(args.length));
+    }
+
+    /**
+     * Executes one of the given functions where the probability for each
+     * is given by the caller.
+     *
+     * @param p         The probabilities to execute a function
+     * @param suppliers The functions to execute
+     * @param <T>       The type of the returned value
+     * @return the result of one of the functions or nothing, if no
+     * functions are given
+     */
+    @SafeVarargs
+    public static <T> Optional<T> withProbabilities(int[] p, Supplier<T>... suppliers) {
+        assert Arrays.stream(p).allMatch(i -> i > 0) : "Probabilities must be greater than zero";
+
+        if (p.length == 0)
+            return Optional.empty();
+
+        int i = 0;
+
+        for (int r = rand.nextInt(IntStream.of(p).sum()); r >= 0; i++)
+            r -= p[i];
+
+        return i <= suppliers.length
+                ? Optional.ofNullable(suppliers[i - 1].get())
+                : Optional.empty();
     }
 }

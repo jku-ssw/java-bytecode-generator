@@ -12,7 +12,7 @@ abstract class Logger {
     Map<String, FieldVarLogger> variables;
     static Random RANDOM = new Random();
 
-    public void logVariable(String name, FieldVarType type, int modifiers, boolean initialized) {
+    public void logVariable(String name, FieldVarType<?> type, int modifiers, boolean initialized) {
         FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
         variables.put(name, f);
     }

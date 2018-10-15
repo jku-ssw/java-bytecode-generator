@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 
 
 public class RandomCodeGeneratorTest {
-    private static final int REPETITIONS = 100;
+    private static final int REPETITIONS = 20;
 
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = true;
 
@@ -44,7 +44,9 @@ public class RandomCodeGeneratorTest {
                 "-abs", "" + RANDOM.nextInt(100), "-lbs", "" + RANDOM.nextInt(100),
                 "-albs", "" + RANDOM.nextInt(100), "-mops", "" + RANDOM.nextInt(10),
                 "-snippet", "" + RANDOM.nextInt(20),
-                "-break", "" + RANDOM.nextInt(10), "-return", "" + RANDOM.nextInt(10)));
+                "-break", "" + RANDOM.nextInt(10), "-return", "" + RANDOM.nextInt(10),
+                "-max_dim", "" + RANDOM.nextInt(10) + 1, "-max_dim_size", "" + RANDOM.nextInt(1_000)
+        ));
 
         // optionally allow exceptions
         if (ALLOW_ARITHMETIC_EXCEPTIONS && RANDOM.nextBoolean()) {
@@ -62,8 +64,8 @@ public class RandomCodeGeneratorTest {
         System.out.println("Generating class '" + className + "'");
         System.out.println("Options: ");
 
-        final String valueOptionFormat = "\t%10s %-4s\n";
-        final String noValueOptionFormat = "\t%10s\n";
+        final String valueOptionFormat = "\t%15s %-4d\n";
+        final String noValueOptionFormat = "\t%15s\n";
 
         // print options
         IntStream.range(0, options.size() / 2).forEach(i -> {
@@ -77,9 +79,9 @@ public class RandomCodeGeneratorTest {
                 String val = optVal.get();
                 if (val.startsWith("-")) {
                     System.out.format(noValueOptionFormat, opt);
-                    System.out.format(noValueOptionFormat, val);
+                    System.out.format(noValueOptionFormat, Integer.parseInt(val));
                 } else {
-                    System.out.format(valueOptionFormat, opt, val);
+                    System.out.format(valueOptionFormat, opt, Integer.parseInt(val));
                 }
             } else
                 System.out.format(noValueOptionFormat, opt);

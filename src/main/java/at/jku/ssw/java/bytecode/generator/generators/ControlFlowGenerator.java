@@ -205,6 +205,7 @@ class ControlFlowGenerator extends Generator {
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
         } catch (CannotCompileException e) {
+            logger.severe(controlSrc.toString());
             throw new AssertionError(e);
         }
     }

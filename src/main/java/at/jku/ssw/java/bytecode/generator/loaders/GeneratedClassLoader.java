@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator;
+package at.jku.ssw.java.bytecode.generator.loaders;
 
 import java.io.IOException;
 import java.nio.file.Files;

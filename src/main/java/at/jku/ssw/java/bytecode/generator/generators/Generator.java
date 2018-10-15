@@ -15,8 +15,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
+import java.util.logging.Logger;
 
 abstract class Generator {
+
+    private static final Logger logger = Logger.getLogger(Generator.class.getName());
 
     final ClazzFileContainer clazzContainer;
     static final Random RANDOM = new Random();
@@ -80,6 +83,7 @@ abstract class Generator {
             CtMethod ctMethod = this.getCtMethod(method);
             ctMethod.insertAfter(src);
         } catch (CannotCompileException e) {
+            logger.severe(src);
             throw new AssertionError(e);
         }
     }

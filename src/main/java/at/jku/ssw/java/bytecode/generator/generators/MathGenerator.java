@@ -102,7 +102,7 @@ class MathGenerator extends MethodCaller {
     public String srcSetFieldToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
+        FieldVarType<?> returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleFieldUsableInMethod(method, returnType);
             if (fieldVar == null) {
@@ -122,8 +122,9 @@ class MathGenerator extends MethodCaller {
             if (noOverFlowIf == null) return null;
             return noOverFlowIf + fieldVar.getName() + " = " + "Math." +
                     generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
-        } else return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + "Math." +
-                generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
+        } else
+            return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + "Math." +
+                    generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
     public void setLocalVarToMathReturnValue(MethodLogger method) {
@@ -134,7 +135,7 @@ class MathGenerator extends MethodCaller {
     public String srcSetLocalVarToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType returnType = getType(signature.charAt(signature.length() - 1));
+        FieldVarType<?> returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleLocalVar(method, returnType);
             if (fieldVar == null) {
@@ -284,7 +285,7 @@ class MathGenerator extends MethodCaller {
         return null;
     }
 
-    private static FieldVarType getType(char t) {
+    private static FieldVarType<?> getType(char t) {
         switch (t) {
             case 'D':
                 return FieldVarType.DOUBLE;
@@ -310,16 +311,16 @@ class MathGenerator extends MethodCaller {
 
 
     private FieldVarLogger fetchLocalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType type = fetchAssignVarTypeForOperandStatement(opStatKind);
+        FieldVarType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalLocalVarOfType(method, type);
     }
 
     private FieldVarLogger fetchGlobalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType type = fetchAssignVarTypeForOperandStatement(opStatKind);
+        FieldVarType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, type);
     }
 
-    private FieldVarType fetchAssignVarTypeForOperandStatement(OpStatKind opStatKind) {
+    private FieldVarType<?> fetchAssignVarTypeForOperandStatement(OpStatKind opStatKind) {
         List<FieldVarType> types = new ArrayList<>();
         switch (opStatKind) {
             case LOGICAL:
@@ -344,7 +345,7 @@ class MathGenerator extends MethodCaller {
         while (numberOfOperands > 0) {
             int operandsInPartition = 1 + ((maxPartitionSize > 1) ? RANDOM.nextInt(maxPartitionSize - 1) : 0);
             StringBuilder statement;
-            FieldVarType type;
+            FieldVarType<?> type;
             if (RANDOM.nextBoolean()) {
                 statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, ARITHMETIC, useNoVars);
                 operator = getNonDivNonUnaryArithmeticOperator();
@@ -419,11 +420,11 @@ class MathGenerator extends MethodCaller {
                 f = fetchOperand(method, opStatKind);
             }
             String operand;
-            FieldVarType type;
+            FieldVarType<?> type;
             if (f == null || (operator == DIV || operator == MOD) && incDecrementOperands.contains(f)) {
                 type = getOperandType(opStatKind);
                 if (type == FieldVarType.BOOLEAN) {
-                    operand = RandomSupplier.getRandomCastedValue(type);
+                    operand = getRandomSupplier().castedValue(type);
                 } else if (operator == DIV || operator == MOD) {
                     operand = RandomSupplier.getRandomNumericValue(type, true);
                 } else {
@@ -500,7 +501,7 @@ class MathGenerator extends MethodCaller {
         return operators.get(RANDOM.nextInt(operators.size()));
     }
 
-    private FieldVarType getOperandType(OpStatKind opStatKind) {
+    private FieldVarType<?> getOperandType(OpStatKind opStatKind) {
         List<FieldVarType> types = new ArrayList<>();
         switch (opStatKind) {
             case LOGICAL:
@@ -520,7 +521,7 @@ class MathGenerator extends MethodCaller {
     }
 
     private FieldVarLogger fetchOperand(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType type = getOperandType(opStatKind);
+        FieldVarType<?> type = getOperandType(opStatKind);
         return this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
     }
 

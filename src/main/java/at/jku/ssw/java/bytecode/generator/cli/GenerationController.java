@@ -183,4 +183,28 @@ public class GenerationController {
     public int getPreemptiveReturnProbability() {
         return controlValues.get(CLIOptions.RETURN);
     }
+
+    public int getPrimitiveTypesProbability() {
+        return controlValues.get(CLIOptions.PRIMITIVES);
+    }
+
+    public int getObjectProbability() {
+        return controlValues.get(CLIOptions.OBJECTS);
+    }
+
+    public int getArrayProbability() {
+        return controlValues.get(CLIOptions.ARRAYS);
+    }
+
+    public int getVoidProbability() {
+        return controlValues.get(CLIOptions.VOID);
+    }
+
+    public int getMaxArrayDimensions() {
+        return controlValues.get(CLIOptions.MAXDIM);
+    }
+
+    public int getMaxArrayDimensionSize() {
+        return controlValues.get(CLIOptions.MAXDIMSIZE);
+    }
 }

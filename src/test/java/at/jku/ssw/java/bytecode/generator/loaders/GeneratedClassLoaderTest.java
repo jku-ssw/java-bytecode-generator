@@ -1,14 +1,14 @@
-package at.jku.ssw.java.bytecode.generator;
+package at.jku.ssw.java.bytecode.generator.loaders;
 
+import at.jku.ssw.java.bytecode.generator.GeneratorTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.*;
-import java.util.stream.Stream;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,22 +21,8 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     private GeneratedClassLoader generatedClassLoader;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         generatedClassLoader = new GeneratedClassLoader(DIR);
-
-        try (Stream<Path> pathStream = Files.walk(Paths.get(DIR))) {
-            // delete any remaining class file
-            pathStream
-                    .filter(p -> CLASS_FILE_MATCHER.matches(p.getFileName()))
-                    .filter(Files::isRegularFile)
-                    .forEach(p -> {
-                        try {
-                            Files.delete(p);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-        }
     }
 
     @AfterEach

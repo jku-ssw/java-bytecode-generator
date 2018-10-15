@@ -24,7 +24,7 @@ abstract class MethodCaller extends Generator {
         return statement.toString();
     }
 
-    static String paramToCorrectStringFormat(FieldVarType paramType, ParamWrapper param) {
+    static String paramToCorrectStringFormat(FieldVarType<?> paramType, ParamWrapper param) {
         if (param.isVariable()) {
             FieldVarLogger fvl = (FieldVarLogger) param.getParamValue();
             if (paramType == fvl.getType()) {

@@ -1,5 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
+import java.util.List;
+
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.*;
 
 public class StatementDSL {
@@ -11,24 +13,44 @@ public class StatementDSL {
         public static String Return(String value) {
             return String.format(RETURN, value);
         }
-
     }
 
     public static class Assignments<T> {
-        public static final String LOCAL_VAR = "%s %s = %s";
+        public static final String LOCAL_VAR = "%s %s %s %s";
+        public static final String ANY = "%s %s %s";
+        public static final String ASSIGN = "=";
+        public static final String PASSIGN = "+=";
 
         private final T value;
+        private final String type;
 
-        private Assignments(T value) {
+        private Assignments(T value, String type) {
             this.value = value;
+            this.type = type;
         }
 
         public static <T> Assignments<T> assign(T value) {
-            return new Assignments<>(value);
+            return new Assignments<>(value, ASSIGN);
+        }
+
+        public static <T> Assignments<T> pAssign(T value) {
+            return new Assignments<>(value, PASSIGN);
         }
 
         public String toLocalVar(Class<?> type, String name) {
-            return String.format(LOCAL_VAR, type.getSimpleName(), name, value);
+            return String.format(LOCAL_VAR, type.getSimpleName(), name, this.type, value);
+        }
+
+        public String to(String name) {
+            return String.format(ANY, name, type, value);
+        }
+    }
+
+    public static class Conditions {
+        public static final String NOT_NULL = "%s != null";
+
+        public static String notNull(String str) {
+            return String.format(NOT_NULL, str);
         }
     }
 
@@ -44,6 +66,10 @@ public class StatementDSL {
         public static final String DECR = "%s--";
         public static final String GT = "%s > %s";
         public static final String LT = "%s < %s";
+        public static final String NEW = "new %s()";
+        public static final String NEW_ARRAY = "new %s";
+        public static final String ARRAY_DIM = "[%s]";
+        public static final String TERNARY = "%s ? %s : %s";
     }
 
     public static class Blocks {
@@ -124,5 +150,26 @@ public class StatementDSL {
 
     public static String lt(Object a, Object b) {
         return String.format(LT, a, b);
+    }
+
+    public static String New(Class<?> clazz) {
+        return String.format(NEW, clazz.getCanonicalName());
+    }
+
+    public static String NewArray(Class<?> clazz, List<Object> dim) {
+        String className = clazz.getCanonicalName();
+        String descriptor =
+                dim.stream()
+                        .reduce(
+                                className.substring(0, className.indexOf('[')),
+                                (n, d) -> n + String.format(ARRAY_DIM, d),
+                                String::concat
+                        );
+
+        return String.format(NEW_ARRAY, descriptor);
+    }
+
+    public static <T> String ternary(String cond, T t, T e) {
+        return String.format(cond, t, e);
     }
 }

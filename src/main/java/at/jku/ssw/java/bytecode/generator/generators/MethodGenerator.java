@@ -11,12 +11,19 @@ import javassist.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Return;
 
 class MethodGenerator extends MethodCaller {
+
+    private static final Logger logger = Logger.getLogger(MethodGenerator.class.getName());
 
     private final RandomCodeGenerator randomCodeGenerator;
 
@@ -25,9 +32,22 @@ class MethodGenerator extends MethodCaller {
         this.randomCodeGenerator = randomCodeGenerator;
     }
 
+    public FieldVarType[] getParameterTypes(int maxParameters) {
+        int n = maxParameters == 0 ? 0 : RANDOM.nextInt(maxParameters);
+        return getNParameterTypes(n);
+    }
+
+    public FieldVarType[] getNParameterTypes(int n) {
+        FieldVarType[] types = new FieldVarType[n];
+        for (int i = 0; i < n; i++) {
+            types[i] = getRandomSupplier().type();
+        }
+        return types;
+    }
+
     //============================================Method Generation=====================================================
 
-    private MethodLogger generateMethod(String name, FieldVarType returnType, FieldVarType[] paramTypes, int modifiers) {
+    private MethodLogger generateMethod(String name, FieldVarType<?> returnType, FieldVarType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
@@ -45,18 +65,19 @@ class MethodGenerator extends MethodCaller {
         if (returnType.kind == FieldVarType.Kind.VOID) {
             returnStatement = "";
         } else {
-            returnStatement = "return " + RandomSupplier.getRandomCastedValue(returnType) + ";";
+            returnStatement = "return " + getRandomSupplier().castedValue(returnType) + ";";
         }
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
+        String methodStr = modifiersToString(modifiers) +
+                returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
+                "} ";
         try {
-            String methodStr = modifiersToString(modifiers) +
-                    returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
-                    "} ";
             newMethod = CtNewMethod.make(methodStr, this.getClazzFile());
             this.getClazzFile().addMethod(newMethod);
             return ml;
         } catch (CannotCompileException e) {
+            logger.severe(methodStr);
             throw new AssertionError(e);
         }
     }
@@ -69,8 +90,8 @@ class MethodGenerator extends MethodCaller {
 
     public MethodLogger generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
-        return this.generateMethod(methodName, RandomSupplier.getReturnType(),
-                RandomSupplier.getParameterTypes(maximumParameters), RandomSupplier.getMethodModifiers());
+        return this.generateMethod(methodName, getRandomSupplier().returnType(),
+                getParameterTypes(maximumParameters), RandomSupplier.getMethodModifiers());
     }
 
     public MethodLogger overloadMethod(int maximumParameters) {
@@ -86,12 +107,12 @@ class MethodGenerator extends MethodCaller {
         }
 
         return this.generateMethod(methodToOverload.getName(),
-                RandomSupplier.getReturnType(), paramTypes, RandomSupplier.getMethodModifiers());
+                getRandomSupplier().returnType(), paramTypes, RandomSupplier.getMethodModifiers());
     }
 
     public void insertReturn(MethodLogger method) {
         CtMethod ctMethod = getCtMethod(method);
-        FieldVarType returnType = method.getReturnType();
+        FieldVarType<?> returnType = method.getReturnType();
 
         if (returnType == FieldVarType.VOID) {
             try {
@@ -152,7 +173,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
-        List<FieldVarType> compatibleTypes = FieldVarType.getCompatibleTypes(fieldVar.getType());
+        List<FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(RANDOM.nextInt(compatibleTypes.size())));
         if (calledMethod == null) {
@@ -206,49 +227,58 @@ class MethodGenerator extends MethodCaller {
         return runLogger;
     }
 
+    public String getHashComputation(FieldVarType<?> type, String name) {
+        switch (type.kind) {
+            case BOOLEAN:
+                return Statement(pAssign(ternary(name, 1, 0)).to("hashValue"));
+            case INSTANCE:
+                // TODO maybe relocate to FieldVarType
+                if (type.clazz.equals(String.class)) {
+                    return If(notNull(name)) +
+                            Statement(pAssign(name + ".hashCode()").to("hashValue")) +
+                            BlockEnd;
+                } else if (type.clazz.equals(Date.class)) {
+                    return If(notNull(name)) +
+                            Statement(pAssign(name + ".getTime()").to("hashValue")) +
+                            BlockEnd;
+                }
+            case ARRAY:
+                return Statement(pAssign(name + ".length").to("hashValue"));
+            default:
+                return Statement(pAssign("(long) " + name).to("hashValue"));
+        }
+    }
+
     public void generateHashMethod() {
         StringBuilder src = new StringBuilder("long hashValue = 0; ");
         List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
         if (this.getClazzLogger().hasVariables()) {
-            for (FieldVarLogger field : initGlobals) {
-                switch (field.getType().kind) {
-                    case BOOLEAN:
-                        src.append("hashValue += ").append(field.getName()).append("? 1 : 0;");
-                        break;
-                    case INSTANCE:
-                        if (field.getType().clazz.equals(String.class)) {
-                            src.append("if(").append(field.getName()).append(" != null) {");
-                            src.append("hashValue += ").append(field.getName()).append(".hashCode();}");
-                        } else if (field.getType().clazz.equals(Date.class)) {
-                            src.append(String.format("if (%s != null) {", field.getName()));
-                            src.append(String.format("hashValue += %s.getTime();", field.getName()));
-                            src.append("}");
-                        }
-                        break;
-                    default:
-                        src.append("hashValue += (long)").append(field.getName()).append(";");
-                        break;
-                }
-            }
+            src.append(
+                    initGlobals.stream()
+                            .map(f -> getHashComputation(f.getType(), f.getName()))
+                            .collect(Collectors.joining())
+            );
         }
+        String computeHashStr =
+                spaced(
+                        src.toString(),
+                        Statement(
+                                SystemOutPrintln(
+                                        concat(
+                                                asStr("#############   GLOBAL HASH: "),
+                                                "hashValue",
+                                                asStr("  #############")
+                                        )
+                                )
+                        )
+                );
+
         try {
             CtMethod computeHash = CtNewMethod.make("private void computeHash() {}", this.getClazzFile());
-            computeHash.insertAfter(
-                    spaced(
-                            src.toString(),
-                            Statement(
-                                    SystemOutPrintln(
-                                            concat(
-                                                    asStr("#############   GLOBAL HASH: "),
-                                                    "hashValue",
-                                                    asStr("  #############")
-                                            )
-                                    )
-                            )
-                    )
-            );
+            computeHash.insertAfter(computeHashStr);
             this.getClazzFile().addMethod(computeHash);
         } catch (CannotCompileException e) {
+            logger.severe(computeHashStr);
             throw new AssertionError(e);
         }
     }
@@ -276,7 +306,7 @@ class MethodGenerator extends MethodCaller {
 
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {
-            FieldVarType[] parameterTypes = RandomSupplier.getParameterTypes(maximumNumberOfParams);
+            FieldVarType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
             List<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
                     m -> m.getParamsTypes().length == parameterTypes.length).collect(Collectors.toList());
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {

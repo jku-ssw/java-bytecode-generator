@@ -15,14 +15,16 @@ public class ClazzLogger extends Logger {
     private final List<MethodLogger> methods;
     private final MethodLogger main;
     private MethodLogger run;
+    private RandomSupplier randomSupplier;
 
-    public ClazzLogger(MethodLogger main) {
+    public ClazzLogger(MethodLogger main, RandomSupplier randomSupplier) {
         this.methods = new ArrayList<>();
         // only use these if result should be non-deterministic
         // this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
         // this.methods.add(new MethodLogger("toString", Modifier.PUBLIC, FieldVarType.STRING, true));
         this.variables = new HashMap<>();
         this.main = main;
+        this.randomSupplier = randomSupplier;
     }
 
     public MethodLogger getMain() {
@@ -76,7 +78,7 @@ public class ClazzLogger extends Logger {
         return callableMethods;
     }
 
-    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType fieldVarType) {
+    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType<?> fieldVarType) {
         List<MethodLogger> callableMethods = getCallableMethods(
                 callingMethod).stream().filter(m -> m.getReturnType() == fieldVarType).collect(Collectors.toList());
         return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
@@ -100,7 +102,7 @@ public class ClazzLogger extends Logger {
         return !methods.isEmpty();
     }
 
-    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType<?> type) {
         FieldVarLogger fvl = this.getInitializedFieldOfTypeUsableInMethod(method, type);
         if (fvl != null) {
             values.add(new ParamWrapper<>(fvl));
@@ -110,7 +112,7 @@ public class ClazzLogger extends Logger {
         }
     }
 
-    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType type) {
+    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType<?> type) {
         FieldVarLogger fvl = this.getInitializedLocalVarOfType(method, type);
         if (fvl != null) {
             values.add(new ParamWrapper<>(fvl));
@@ -128,7 +130,7 @@ public class ClazzLogger extends Logger {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
                         //add RANDOM value if no variables available
-                        values.add(new ParamWrapper<>(RandomSupplier.getRandomCastedValue(t)));
+                        values.add(new ParamWrapper<>(randomSupplier.castedValue(t)));
                     }
                 }
             } else { //add local variable
@@ -136,7 +138,7 @@ public class ClazzLogger extends Logger {
                     //add global variable if no local variable available
                     if (!addFieldToParamValues(values, method, t)) {
                         //add RANDOM value if no variables available
-                        values.add(new ParamWrapper<>(RandomSupplier.getRandomCastedValue(t)));
+                        values.add(new ParamWrapper<>(randomSupplier.castedValue(t)));
                     }
                 }
             }
@@ -153,42 +155,42 @@ public class ClazzLogger extends Logger {
         }
     }
 
-    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType<?> type) {
         if (method.isStatic()) {
-            return this.getVariableWithPredicate(v -> v.isStatic() && !
-                    v.isFinal() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+            return getVariableWithPredicate(v -> v.isStatic() &&
+                    !v.isFinal() && type.isAssignableFrom(v.getType()));
         } else {
-            return this.getVariableWithPredicate(v -> !v.isFinal() &&
-                    FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+            return getVariableWithPredicate(v -> !v.isFinal() &&
+                    type.isAssignableFrom(v.getType()));
         }
     }
 
-    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType<?> type) {
         if (method.isStatic()) {
             return this.getVariableWithPredicate(v -> v.isStatic() && v.isInitialized() &&
-                    !v.isFinal() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+                    !v.isFinal() && type.isAssignableFrom(v.getType()));
         } else {
             return this.getVariableWithPredicate(v -> !v.isFinal() &&
-                    v.isInitialized() && FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+                    v.isInitialized() && type.isAssignableFrom(v.getType()));
         }
     }
 
-    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, FieldVarType<?> type) {
         return method.getVariableWithPredicate(v -> v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, FieldVarType<?> type) {
         return method.getVariableWithPredicate(v -> v.isInitialized() &&
-                FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+                type.isAssignableFrom(v.getType()));
     }
 
     public FieldVarLogger getNonFinalLocalVar(MethodLogger method) {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, FieldVarType<?> type) {
         return method.getVariableWithPredicate(v -> !v.isFinal() &&
-                FieldVarType.getCompatibleTypes(type).contains(v.getType()));
+                type.isAssignableFrom(v.getType()));
     }
 
     public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {

@@ -1,8 +1,9 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
-import javassist.*;
+import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import javassist.*;
 
 public class ClazzFileContainer {
 
@@ -11,9 +12,17 @@ public class ClazzFileContainer {
     private final RandomSupplier randomSupplier;
     private final String fileName;
 
-    public ClazzFileContainer(String fileName) {
+    public ClazzFileContainer(GenerationController controller, String fileName) {
         this.clazz = ClassPool.getDefault().makeClass(fileName);
-        this.randomSupplier = new RandomSupplier();
+        this.randomSupplier = new RandomSupplier(
+                controller.getMaxArrayDimensions(),
+                controller.getMaxArrayDimensionSize(),
+                controller.getPrimitiveTypesProbability(),
+                controller.getObjectProbability(),
+                controller.getArrayProbability(),
+                controller.getVoidProbability()
+        );
+
         this.fileName = fileName;
         try {
             CtMethod m = CtNewMethod.make(
@@ -24,7 +33,7 @@ public class ClazzFileContainer {
             throw new AssertionError(e);
         }
         MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.VOID);
-        this.clazzLogger = new ClazzLogger(main);
+        this.clazzLogger = new ClazzLogger(main, randomSupplier);
     }
 
     public CtClass getClazzFile() {

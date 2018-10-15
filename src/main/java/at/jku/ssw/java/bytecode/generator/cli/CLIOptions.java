@@ -39,7 +39,13 @@ enum CLIOptions {
     XRUNS,
     SNIPPET,
     BREAK,
-    RETURN;
+    RETURN,
+    PRIMITIVES,
+    OBJECTS,
+    ARRAYS,
+    VOID,
+    MAXDIM,
+    MAXDIMSIZE;
 
     @Override
     public String toString() {

@@ -43,13 +43,14 @@ public class RandomCodeGenerator {
 
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         this.controller = controller;
-        ClazzFileContainer container = new ClazzFileContainer(fileName);
+        ClazzFileContainer container = new ClazzFileContainer(controller, fileName);
         maxOpProbability = Collections.max(Arrays.asList(controller.getBitwiseProbability(),
                 controller.getArithmeticBitwiseProbability(),
                 controller.getArithmeticLogicalBitwiseProbability(),
                 controller.getArithmeticLogicalProbability(),
                 controller.getArithmeticProbability()));
         this.fieldVarGenerator = new FieldVarGenerator(container);
+
         this.methodGenerator = new MethodGenerator(this);
         this.mathGenerator = new MathGenerator(container, controller.avoidOverflows(), controller.avoidDivByZero());
         this.snippetGenerator = new SnippetGenerator(this);

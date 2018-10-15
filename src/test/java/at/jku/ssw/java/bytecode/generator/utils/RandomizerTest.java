@@ -7,16 +7,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneNotNullOf;
-import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneOf;
-import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.oneOfOptions;
+import static at.jku.ssw.java.bytecode.generator.utils.Randomizer.*;
 import static java.util.Optional.empty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class RandomizerTest {
 
-    private static final int REPETITIONS = 5;
+    private static final int REPETITIONS = 20;
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForNullSequences() {
@@ -165,6 +163,30 @@ public class RandomizerTest {
     @SuppressWarnings("unchecked")
     public void testOneOfTooFewOptions() {
         assertThat(oneOfOptions(2, 1, 2, 3), isOneOf(opt(1), opt(2)));
+    }
+
+    @SuppressWarnings("unchecked")
+    @RepeatedTest(value = REPETITIONS)
+    public void testWithProbabilities() {
+        assertThat(
+                withProbabilities(new int[]{1, 2}, ret(1), ret(2)),
+                isOneOf(opt(1), opt(2))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testWithProbabilitiesAndTooFewValues() {
+        assertThat(withProbabilities(new int[]{1, 2}, ret(1)), isOneOf(opt(1), empty()));
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testWithProbabilitiesAndTooManyValues() {
+        assertThat(
+                withProbabilities(new int[]{1, 2, 3}, ret(1), ret(2), ret(3), ret(4)),
+                isOneOf(opt(1), opt(2), opt(3))
+        );
     }
 
     @SuppressWarnings("unchecked")

@@ -1,13 +1,13 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import javassist.CannotCompileException;
-import javassist.CtField;
-import javassist.CtMethod;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
+import javassist.CannotCompileException;
+import javassist.CtField;
+import javassist.CtMethod;
 
 class FieldVarGenerator extends Generator {
 
@@ -17,7 +17,7 @@ class FieldVarGenerator extends Generator {
 
     //===========================================FIELD GENERATION=======================================================
 
-    private void generateField(String name, FieldVarType type, int modifiers, String value) {
+    private void generateField(String name, FieldVarType<?> type, int modifiers, String value) {
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
@@ -33,29 +33,29 @@ class FieldVarGenerator extends Generator {
     }
 
     public void generateField() {
-        FieldVarType ft = RandomSupplier.getFieldVarType();
+        FieldVarType<?> ft = getRandomSupplier().type();
         String value = null;
         if (RANDOM.nextBoolean()) { //50% chance to be initialized
-            value = RandomSupplier.getRandomCastedValue(ft);
+            value = getRandomSupplier().castedValue(ft);
         }
         this.generateField(getRandomSupplier().getVarName(), ft, RandomSupplier.getFieldModifiers(), value);
     }
 
     //==========================================LOCAL VARIABLE GENERATION===============================================
 
-    private void generateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    private void generateLocalVariable(String name, FieldVarType<?> type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (value != null) insertIntoMethodBody(method, src);
     }
 
     public void generateLocalVariable(MethodLogger method) {
-        FieldVarType ft = RandomSupplier.getFieldVarType();
-        String value = RandomSupplier.getRandomCastedValue(ft);
+        FieldVarType<?> ft = getRandomSupplier().type();
+        String value = getRandomSupplier().castedValue(ft);
         String name = getRandomSupplier().getVarName();
         this.generateLocalVariable(name, ft, method, value);
     }
 
-    private String srcGenerateLocalVariable(String name, FieldVarType type, MethodLogger method, String value) {
+    private String srcGenerateLocalVariable(String name, FieldVarType<?> type, MethodLogger method, String value) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
@@ -120,7 +120,7 @@ class FieldVarGenerator extends Generator {
         if (getClazzLogger().hasVariables()) {
             FieldVarLogger f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
             if (f != null) {
-                setVarValue(f, method, RandomSupplier.getRandomCastedValue(f.getType()));
+                setVarValue(f, method, getRandomSupplier().castedValue(f.getType()));
             }
         }
     }
@@ -133,7 +133,7 @@ class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return this.srcSetVarValue(f, RandomSupplier.getRandomCastedValue(f.getType()));
+            return this.srcSetVarValue(f, getRandomSupplier().castedValue(f.getType()));
         }
     }
 
@@ -143,7 +143,7 @@ class FieldVarGenerator extends Generator {
         }
         FieldVarLogger f = this.getClazzLogger().getNonFinalLocalVar(method);
         if (f != null) {
-            setVarValue(f, method, RandomSupplier.getRandomCastedValue(f.getType()));
+            setVarValue(f, method, getRandomSupplier().castedValue(f.getType()));
         }
     }
 
@@ -155,7 +155,7 @@ class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return srcSetVarValue(f, RandomSupplier.getRandomCastedValue(f.getType()));
+            return srcSetVarValue(f, getRandomSupplier().castedValue(f.getType()));
         }
     }
 

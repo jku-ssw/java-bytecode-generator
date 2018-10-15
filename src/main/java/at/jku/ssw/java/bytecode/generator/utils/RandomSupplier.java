@@ -5,18 +5,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.BYTE;
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.SHORT;
+import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.NewArray;
 
 public class RandomSupplier {
+
+    public final int maxArrayDim;
+    public final int maxArrayDimSize;
+    public final int pPrimitives;
+    public final int pObjects;
+    public final int pArray;
+    public final int pVoid;
+
     private int methodCharNum = 97;
     private int varCharNum = 97;
     private int varRepeat = 0;
     private int methodRepeat = 0;
+
     static private final Random RANDOM = new Random();
     static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int MAX_STRING_LENGTH = 20;
-    public static final List<Integer> MODIFIERS = Arrays.asList(
+
+    private static final List<Integer> MODIFIERS = Arrays.asList(
             Modifier.STATIC,
             Modifier.FINAL,
             Modifier.SYNCHRONIZED,
@@ -24,6 +34,15 @@ public class RandomSupplier {
             Modifier.PRIVATE,
             Modifier.PROTECTED
     );
+
+    public RandomSupplier(int maxArrayDim, int maxArrayDimSize, int pPrimitives, int pObjects, int pArray, int pVoid) {
+        this.maxArrayDim = maxArrayDim;
+        this.maxArrayDimSize = maxArrayDimSize;
+        this.pPrimitives = pPrimitives;
+        this.pObjects = pObjects;
+        this.pArray = pArray;
+        this.pVoid = pVoid;
+    }
 
     public String getVarName() {
         if (varCharNum == 123) {
@@ -51,30 +70,54 @@ public class RandomSupplier {
                 .collect(Collectors.joining());
     }
 
-    public static FieldVarType getFieldVarType() {
-        int r = RANDOM.nextInt(FieldVarType.values.length - 1); //exclude void
-        return FieldVarType.values[r];
+    public FieldVarType<?> primitiveType() {
+        return Randomizer.oneOf(FieldVarType.primitiveTypes()).orElse(null);
     }
 
-    public static FieldVarType[] getParameterTypes(int maxParameters) {
-        int n = maxParameters == 0 ? 0 : RANDOM.nextInt(maxParameters);
-        return getNParameterTypes(n);
+    public FieldVarType<?> classType() {
+        return Randomizer.oneOf(FieldVarType.classTypes()).orElse(null);
     }
 
-    public static FieldVarType[] getNParameterTypes(int n) {
-        FieldVarType[] types = new FieldVarType[n];
-        for (int i = 0; i < n; i++) {
-            types[i] = getFieldVarType();
-        }
-        return types;
+    public FieldVarType<?> arrayType(int dim) {
+        return Randomizer
+                .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
+                .map(t -> FieldVarType.arrayTypeOf(t, dim))
+                .orElse(null);
     }
 
-    public static FieldVarType getReturnType() {
-        int r = RANDOM.nextInt(FieldVarType.values.length);
-        return FieldVarType.values[r];
+    /**
+     * Returns a random type.
+     * This can either be a primitive type, one of the registered instance
+     * types or any creatable array type.
+     * Void is not included.
+     *
+     * @return a random type
+     */
+    public FieldVarType<?> type() {
+        return Randomizer.withProbabilities(
+                new int[]{pPrimitives, pObjects, pArray},
+                this::primitiveType,
+                this::classType,
+                () -> arrayType(RANDOM.nextInt(maxArrayDim) + 1)
+        ).orElse(null);
     }
 
-    public static String getRandomCastedValue(FieldVarType type) {
+    /**
+     * Returns a random return type.
+     * This can be any primitive type, as well as one of the registered
+     * class types, any creatable array type or void.
+     *
+     * @return a random return type
+     */
+    public FieldVarType<?> returnType() {
+        return Randomizer.withProbabilities(
+                new int[]{pVoid, 100 - pVoid},
+                () -> VOID,
+                this::type
+        ).orElse(null);
+    }
+
+    public String castedValue(FieldVarType<?> type) {
         switch (type.kind) {
             case INSTANCE:
                 // 25% chance for objects to be initialized with null
@@ -83,10 +126,10 @@ public class RandomSupplier {
                 }
         }
 
-        return getRandomCastedValueNotNull(type);
+        return castedValueNotNull(type);
     }
 
-    public static String getRandomCastedValueNotNull(FieldVarType type) {
+    public String castedValueNotNull(FieldVarType<?> type) {
         switch (type.kind) {
             case BYTE:
                 return "(byte)" + (byte) RANDOM.nextInt();
@@ -110,12 +153,20 @@ public class RandomSupplier {
                 } else if (type.clazz.equals(Date.class)) {
                     return "new java.util.Date(" + RANDOM.nextLong() + "L)";
                 }
+            case ARRAY:
+                return NewArray(
+                        type.clazz,
+                        RANDOM.ints(0, maxArrayDimSize + 1)
+                                .limit(type.dim)
+                                .boxed()
+                                .collect(Collectors.toList())
+                );
             default:
                 throw new java.lang.AssertionError();
         }
     }
 
-    public static String getRandomNumericValue(FieldVarType type, boolean notZero) {
+    public static String getRandomNumericValue(FieldVarType<?> type, boolean notZero) {
         switch (type.kind) {
             case BYTE:
             case SHORT:

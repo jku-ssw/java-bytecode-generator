@@ -15,24 +15,24 @@ public class MethodLogger extends Logger {
     private String name;
     private int modifiers;
     private FieldVarType[] paramTypes;
-    private FieldVarType returnType;
+    private FieldVarType<?> returnType;
 
     private Set<MethodLogger> methodsExcludedForCalling;
     private Set<MethodLogger> calledByThisMethod;
 
-    public MethodLogger(String name, int modifiers, FieldVarType returnType, FieldVarType... paramTypes) {
+    public MethodLogger(String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
         this(name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(String name, int modifiers, FieldVarType returnType, boolean inherited, FieldVarType... paramTypes) {
-       this.name = name;
-       this.modifiers = modifiers;
-       this.returnType = returnType;
-       this.variables = new HashMap<>();
-       this.paramTypes = paramTypes;
-       this.methodsExcludedForCalling = new HashSet<>();
-       this.calledByThisMethod = new HashSet<>();
-       this.inherited = inherited;
+    public MethodLogger(String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
+        this.name = name;
+        this.modifiers = modifiers;
+        this.returnType = returnType;
+        this.variables = new HashMap<>();
+        this.paramTypes = paramTypes;
+        this.methodsExcludedForCalling = new HashSet<>();
+        this.calledByThisMethod = new HashSet<>();
+        this.inherited = inherited;
     }
 
     public void addToExcludedForCalling(Set<MethodLogger> excludedForCalling) {
@@ -69,7 +69,7 @@ public class MethodLogger extends Logger {
         return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
     }
 
-    public FieldVarType getReturnType() {
+    public FieldVarType<?> getReturnType() {
         return returnType;
     }
 
