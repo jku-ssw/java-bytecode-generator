@@ -7,6 +7,7 @@ import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ClazzLogger extends Logger {
 
@@ -199,7 +200,7 @@ public class ClazzLogger extends Logger {
                 !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isInitialized() && v.isStatic() && v.getType() == type);
@@ -208,14 +209,24 @@ public class ClazzLogger extends Logger {
                     v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
         return randomizer.oneNotNullOf(
                 () -> getInitializedLocalVarOfType(method, type),
                 () -> getInitializedFieldOfTypeUsableInMethod(method, type)
         ).orElse(null);
     }
 
-    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
+    public Stream<FieldVarLogger> getNonFinalVarsUsableInMethod(MethodLogger method) {
+        return randomizer.shuffle(
+                Stream.concat(
+                        method.streamVariables(),
+                        streamVariables()
+                                .filter(f -> f.isStatic() == method.isStatic())
+                ).filter(v -> !v.isFinal())
+        );
+    }
+
+    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() && v.getType() == type);
@@ -224,7 +235,7 @@ public class ClazzLogger extends Logger {
                     !v.isFinal() && v.getType() == type);
     }
 
-    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType type) {
+    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType<?> type) {
         return method.getVariableWithPredicate(v ->
                 !v.isFinal() && v.getType() == type);
     }
