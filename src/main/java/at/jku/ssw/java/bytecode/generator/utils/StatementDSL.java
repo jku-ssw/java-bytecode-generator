@@ -69,7 +69,7 @@ public class StatementDSL {
         public static final String NEW = "new %s()";
         public static final String NEW_ARRAY = "new %s";
         public static final String ARRAY_DIM = "[%s]";
-        public static final String TERNARY = "%s ? %s : %s";
+        public static final String TERNARY = "(%s ? %s : %s)";
     }
 
     public static class Blocks {
