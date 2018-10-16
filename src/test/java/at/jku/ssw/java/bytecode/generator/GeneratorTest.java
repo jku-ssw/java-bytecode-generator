@@ -103,7 +103,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         }
     }
 
-    default boolean validateExceptions(Result result, Class<? extends Throwable>... allowedExceptions) {
+    default boolean validateExceptions(Result result, Class... allowedExceptions) {
         List<String> diff = Stream.of(result.err.split("\n"))
                 .map(String::trim)
                 .filter(l -> !l.isEmpty())
