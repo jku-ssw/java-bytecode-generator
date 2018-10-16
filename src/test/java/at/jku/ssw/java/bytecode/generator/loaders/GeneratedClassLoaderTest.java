@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratedClassLoaderTest implements GeneratorTest {
 
-    private static final int REPETITIONS = 10;
+    private static final int REPETITIONS = 50;
     private static final int MAX_LENGTH = 20;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = false;
 
@@ -82,12 +82,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         assertTrue(Modifier.isPublic(main.getModifiers()));
         assertEquals(Void.TYPE, main.getReturnType());
 
-        try {
-            assertNull(main.invoke(null, (Object) new String[0]));
-        } catch (NullPointerException ex) {
-            ex.printStackTrace();
-            fail();
-        }
+        assertNull(main.invoke(null, (Object) new String[0]));
     }
 
     @ParameterizedTest

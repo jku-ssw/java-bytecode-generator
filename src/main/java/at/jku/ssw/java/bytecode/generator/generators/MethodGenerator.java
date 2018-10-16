@@ -243,7 +243,9 @@ class MethodGenerator extends MethodCaller {
                             BlockEnd;
                 }
             case ARRAY:
-                return Statement(pAssign(name + ".length").to("hashValue"));
+                return If(notNull(name)) +
+                        Statement(pAssign("(long) " + name + ".length").to("hashValue")) +
+                        BlockEnd;
             default:
                 return Statement(pAssign("(long) " + name).to("hashValue"));
         }
