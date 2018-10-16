@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
+import at.jku.ssw.java.bytecode.generator.CLIArgumentsProvider;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
 import at.jku.ssw.java.bytecode.generator.Result;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,14 +14,16 @@ import static org.hamcrest.Matchers.is;
 
 
 public class RandomCodeGeneratorTest implements GeneratorTest {
-    private static final int REPETITIONS = 20;
+    private static final int REPETITIONS = 50;
+    private static final int MINOR_REPETITIONS = 10;
+
     private static final int MAX_LENGTH = 20;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = true;
 
     private static final String DIR = "src/test/resources/generated";
 
     @ParameterizedTest
-    @ArgumentsSource(RandomCodeGeneratorTest.class)
+    @ArgumentsSource(MinorRepetitionProvider.class)
     @SuppressWarnings("unchecked")
     void testSeedGenerate(List<String> args) throws Exception {
         int seed = new Random().nextInt();
@@ -36,6 +39,24 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
         final Result act = run(classB);
 
         compareResults(exp, act);
+    }
+
+    static class MinorRepetitionProvider implements CLIArgumentsProvider {
+
+        @Override
+        public int repetitions() {
+            return MINOR_REPETITIONS;
+        }
+
+        @Override
+        public boolean allowArithmeticExceptions() {
+            return ALLOW_ARITHMETIC_EXCEPTIONS;
+        }
+
+        @Override
+        public int maxLength() {
+            return MAX_LENGTH;
+        }
     }
 
     @ParameterizedTest
