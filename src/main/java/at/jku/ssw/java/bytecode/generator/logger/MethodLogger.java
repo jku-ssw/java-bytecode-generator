@@ -1,13 +1,10 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import javassist.CtClass;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class MethodLogger extends Logger {
 
@@ -66,7 +63,7 @@ public class MethodLogger extends Logger {
 
     public CtClass[] getCtParamTypes() {
         if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(x -> x.getClazzType()).toArray(CtClass[]::new);
+        return Arrays.stream(paramTypes).map(FieldVarType::getClazzType).toArray(CtClass[]::new);
     }
 
     public FieldVarType<?> getReturnType() {
@@ -78,8 +75,19 @@ public class MethodLogger extends Logger {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MethodLogger that = (MethodLogger) o;
+        return Objects.equals(name, that.name) &&
+                Arrays.equals(paramTypes, that.paramTypes);
+    }
+
+    @Override
     public int hashCode() {
-        return paramTypes == null ? name.hashCode() : name.hashCode() + paramTypes.hashCode();
+        int result = Objects.hash(name);
+        result = 31 * result + Arrays.hashCode(paramTypes);
+        return result;
     }
 
     public boolean isInherited() {
