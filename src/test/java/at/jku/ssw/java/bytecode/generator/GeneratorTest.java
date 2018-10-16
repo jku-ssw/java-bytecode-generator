@@ -46,8 +46,8 @@ public interface GeneratorTest extends CLIArgumentsProvider {
     }
 
     default void compareResults(Result expected, Result actual) {
-        assertEquals(expected.out, actual.out);
-        assertEquals(expected.err, actual.err);
+        assertEquals(expected.out, actual.out.replaceAll(actual.className, expected.className));
+        assertEquals(expected.err, actual.err.replaceAll(actual.className, expected.className));
     }
 
     default String generateClass(String name, String... options) {
