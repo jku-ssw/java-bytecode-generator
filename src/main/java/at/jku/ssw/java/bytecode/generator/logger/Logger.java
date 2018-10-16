@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 abstract class Logger {
 
@@ -41,5 +42,9 @@ abstract class Logger {
     public List<FieldVarLogger> getVariablesWithPredicate(Predicate<FieldVarLogger> predicate) {
         return variables.values().stream().filter(
                 predicate).collect(Collectors.toList());
+    }
+
+    public Stream<FieldVarLogger> streamVariables() {
+        return variables.values().stream();
     }
 }
