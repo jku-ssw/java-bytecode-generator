@@ -150,7 +150,7 @@ public final class Randomizer {
     public final <T> Stream<T> stream(T... args) {
         List<T> l = Arrays.asList(args);
 
-        Collections.shuffle(l);
+        Collections.shuffle(l, rand);
 
         return l.stream();
     }
