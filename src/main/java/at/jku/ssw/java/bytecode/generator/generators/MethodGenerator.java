@@ -154,7 +154,9 @@ class MethodGenerator extends MethodCaller {
         Set<MethodLogger> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
         calledByThisMethod.add(calledMethod);
         method.addMethodToCalledByThisMethod(calledByThisMethod);
-        return generateMethodCallString(calledMethod.getName(), paramTypes, values);
+        String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
+
+        return caller + "." + generateMethodCallString(calledMethod.getName(), paramTypes, values);
     }
 
     public void generateMethodCall(MethodLogger method) {
