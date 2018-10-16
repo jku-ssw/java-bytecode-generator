@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -59,19 +61,22 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
         Process p = Runtime.getRuntime().exec("java " + fileName, null, new File(DIR));
 
-        try (BufferedReader out = new BufferedReader(new InputStreamReader(p.getInputStream()));
-             BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
-            String line;
-            while ((line = out.readLine()) != null) {
-                System.out.println(line);
-            }
-            while ((line = err.readLine()) != null) {
-                if (!line.startsWith(" ")) continue;
-                if (!checkIfExceptionAllowed(line, allowedExceptions)) {
-                    fail("Execution of " + fileName + " failed.\n" +
-                            "Not allowed exception: " + line);
-                }
-            }
+        try (BufferedReader outStr = new BufferedReader(new InputStreamReader(p.getInputStream()));
+             BufferedReader errStr = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
+
+            String out = outStr.lines().collect(Collectors.joining());
+            System.out.println(out);
+
+            String err = errStr.lines().collect(Collectors.joining());
+
+            Stream.of(err.split("\n"))
+                    .map(String::trim)
+                    .filter(l -> !l.isEmpty())
+                    .filter(l -> checkIfExceptionAllowed(l, allowedExceptions))
+                    .forEach(l -> {
+                        System.out.println(err);
+                        fail("Execution of " + fileName + " failed - unexpected exception: " + l);
+                    });
             if (!p.waitFor(1, TimeUnit.MINUTES) && allowedExceptions.length == 0) {
                 p.destroyForcibly();
                 fail("Execution of " + fileName + " failed ");
