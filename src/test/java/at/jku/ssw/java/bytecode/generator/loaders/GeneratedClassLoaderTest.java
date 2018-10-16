@@ -3,20 +3,23 @@ package at.jku.ssw.java.bytecode.generator.loaders;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.FileSystems;
-import java.nio.file.PathMatcher;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratedClassLoaderTest implements GeneratorTest {
 
     private static final int REPETITIONS = 10;
+    private static final int MAX_LENGTH = 20;
+    private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = false;
+
     private static final String DIR = "src/test/resources/generated";
-    private static final PathMatcher CLASS_FILE_MATCHER = FileSystems.getDefault().getPathMatcher("glob:*.class");
 
     private GeneratedClassLoader generatedClassLoader;
 
@@ -30,18 +33,20 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         generatedClassLoader = null;
     }
 
-    @RepeatedTest(value = REPETITIONS)
-    public void testLoadValidClass() throws Exception {
-        String className = generateClass("AValidClass");
+    @ParameterizedTest
+    @ArgumentsSource(GeneratedClassLoaderTest.class)
+    public void testLoadValidClass(List<String> args, int index) throws Exception {
+        String className = generateClass("AValidClass" + index, args.toArray(new String[0]));
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
         assertEquals(className, clazz.getCanonicalName());
     }
 
-    @RepeatedTest(value = REPETITIONS)
-    public void testInstantiation() throws Exception {
-        String className = generateClass("AnInstantiableClass");
+    @ParameterizedTest
+    @ArgumentsSource(GeneratedClassLoaderTest.class)
+    public void testInstantiation(List<String> args, int index) throws Exception {
+        String className = generateClass("AnInstantiableClass" + index, args.toArray(new String[0]));
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -51,7 +56,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         Object __ = clazz.newInstance();
     }
 
-    @RepeatedTest(value = REPETITIONS)
+    @Test
     public void testLoadInValidClass() {
         final String className = "InvalidClass";
 
@@ -61,9 +66,10 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         );
     }
 
-    @RepeatedTest(value = REPETITIONS)
-    public void testInvokeMainMethod() throws Exception {
-        String className = generateClass("AClassWithMainMethod");
+    @ParameterizedTest
+    @ArgumentsSource(GeneratedClassLoaderTest.class)
+    public void testInvokeMainMethod(List<String> args, int index) throws Exception {
+        String className = generateClass("AClassWithMainMethod" + index, args.toArray(new String[0]));
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -76,12 +82,18 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         assertTrue(Modifier.isPublic(main.getModifiers()));
         assertEquals(Void.TYPE, main.getReturnType());
 
-        assertNull(main.invoke(null, (Object) new String[]{}));
+        try {
+            assertNull(main.invoke(null, (Object) new String[0]));
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            fail();
+        }
     }
 
-    @RepeatedTest(value = REPETITIONS)
-    public void testInvokeRunMethod() throws Exception {
-        String className = generateClass("AClassWithRunMethod");
+    @ParameterizedTest
+    @ArgumentsSource(GeneratedClassLoaderTest.class)
+    public void testInvokeRunMethod(List<String> args, int index) throws Exception {
+        String className = generateClass("AClassWithRunMethod" + index, args.toArray(new String[0]));
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -104,5 +116,20 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @Override
     public String outputDirectory() {
         return DIR;
+    }
+
+    @Override
+    public int repetitions() {
+        return REPETITIONS;
+    }
+
+    @Override
+    public boolean allowArithmeticExceptions() {
+        return ALLOW_ARITHMETIC_EXCEPTIONS;
+    }
+
+    @Override
+    public int maxLength() {
+        return MAX_LENGTH;
     }
 }

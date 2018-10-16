@@ -4,9 +4,12 @@ import at.jku.ssw.java.bytecode.generator.cli.ControlValueParser;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public interface GeneratorTest {
+public interface GeneratorTest extends CLIArgumentsProvider {
 
     String outputDirectory();
 
@@ -34,5 +37,30 @@ public interface GeneratorTest {
 
     default String generateClass(String name, String... options) {
         return generateClass(name, 1, options);
+    }
+
+    default void printArgs(List<String> args) {
+        final String valueOptionFormat = "\t%15s %-4d\n";
+        final String noValueOptionFormat = "\t%15s\n";
+
+        // print options
+        IntStream.range(0, args.size() / 2).forEach(i -> {
+            String opt = args.get(2 * i);
+
+            Optional<String> optVal = 2 * i + 1 > args.size()
+                    ? Optional.empty()
+                    : Optional.of(args.get(2 * i + 1));
+
+            if (optVal.isPresent()) {
+                String val = optVal.get();
+                if (val.startsWith("-")) {
+                    System.out.format(noValueOptionFormat, opt);
+                    System.out.format(noValueOptionFormat, val);
+                } else {
+                    System.out.format(valueOptionFormat, opt, Integer.parseInt(val));
+                }
+            } else
+                System.out.format(noValueOptionFormat, opt);
+        });
     }
 }
