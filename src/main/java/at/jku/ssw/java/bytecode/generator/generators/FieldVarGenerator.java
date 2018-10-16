@@ -4,15 +4,16 @@ import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
-import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
 
+import java.util.Random;
+
 class FieldVarGenerator extends Generator {
 
-    public FieldVarGenerator(ClazzFileContainer clazzContainer) {
-        super(clazzContainer);
+    public FieldVarGenerator(Random rand, ClazzFileContainer clazzContainer) {
+        super(rand, clazzContainer);
     }
 
     //===========================================FIELD GENERATION=======================================================
@@ -35,10 +36,10 @@ class FieldVarGenerator extends Generator {
     public void generateField() {
         FieldVarType<?> ft = getRandomSupplier().type();
         String value = null;
-        if (RANDOM.nextBoolean()) { //50% chance to be initialized
+        if (rand.nextBoolean()) { //50% chance to be initialized
             value = getRandomSupplier().castedValue(ft);
         }
-        this.generateField(getRandomSupplier().getVarName(), ft, RandomSupplier.getFieldModifiers(), value);
+        this.generateField(getRandomSupplier().getVarName(), ft, getRandomSupplier().getFieldModifiers(), value);
     }
 
     //==========================================LOCAL VARIABLE GENERATION===============================================
@@ -79,7 +80,7 @@ class FieldVarGenerator extends Generator {
     }
 
     public String srcGeneratePrintStatement(MethodLogger method) {
-        if (RANDOM.nextBoolean()) { //print local Variable
+        if (rand.nextBoolean()) { //print local Variable
             FieldVarLogger fvl = method.getVariableWithPredicate(FieldVarLogger::isInitialized);
             if (fvl == null) {
                 return null;

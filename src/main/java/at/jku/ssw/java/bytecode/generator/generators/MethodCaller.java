@@ -5,10 +5,12 @@ import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 
+import java.util.Random;
+
 abstract class MethodCaller extends Generator {
 
-    public MethodCaller(ClazzFileContainer clazzContainer) {
-        super(clazzContainer);
+    public MethodCaller(Random rand, ClazzFileContainer clazzContainer) {
+        super(rand, clazzContainer);
     }
 
     static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper[] paramValues) {

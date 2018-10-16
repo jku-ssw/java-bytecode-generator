@@ -2,12 +2,14 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 
+import java.util.Random;
+
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 
 public class SnippetGenerator extends Generator {
 
-    public SnippetGenerator(RandomCodeGenerator codeGenerator) {
-        super(codeGenerator.getClazzFileContainer());
+    public SnippetGenerator(Random rand, RandomCodeGenerator codeGenerator) {
+        super(rand, codeGenerator.getClazzFileContainer());
     }
 
     public void generateHashCodeSubtraction(MethodLogger method) {

@@ -36,7 +36,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testLoadValidClass(List<String> args, int index) throws Exception {
-        String className = generateClass("AValidClass" + index, args.toArray(new String[0]));
+        String className = generateClass("AValidClass" + index, args);
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -46,7 +46,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInstantiation(List<String> args, int index) throws Exception {
-        String className = generateClass("AnInstantiableClass" + index, args.toArray(new String[0]));
+        String className = generateClass("AnInstantiableClass" + index, args);
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -69,7 +69,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInvokeMainMethod(List<String> args, int index) throws Exception {
-        String className = generateClass("AClassWithMainMethod" + index, args.toArray(new String[0]));
+        String className = generateClass("AClassWithMainMethod" + index, args);
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 
@@ -88,7 +88,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInvokeRunMethod(List<String> args, int index) throws Exception {
-        String className = generateClass("AClassWithRunMethod" + index, args.toArray(new String[0]));
+        String className = generateClass("AClassWithRunMethod" + index, args);
 
         Class<?> clazz = generatedClassLoader.findClass(className);
 

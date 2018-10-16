@@ -207,4 +207,8 @@ public class GenerationController {
     public int getMaxArrayDimensionSize() {
         return controlValues.get(CLIOptions.MAXDIMSIZE);
     }
+
+    public int getSeedValue() {
+        return controlValues.get(CLIOptions.SEED);
+    }
 }

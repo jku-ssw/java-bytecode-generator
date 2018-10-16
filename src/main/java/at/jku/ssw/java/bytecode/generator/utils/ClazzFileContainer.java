@@ -5,6 +5,8 @@ import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import javassist.*;
 
+import java.util.Random;
+
 public class ClazzFileContainer {
 
     private final CtClass clazz;
@@ -12,9 +14,10 @@ public class ClazzFileContainer {
     private final RandomSupplier randomSupplier;
     private final String fileName;
 
-    public ClazzFileContainer(GenerationController controller, String fileName) {
+    public ClazzFileContainer(Random rand, GenerationController controller, String fileName) {
         this.clazz = ClassPool.getDefault().makeClass(fileName);
         this.randomSupplier = new RandomSupplier(
+                rand,
                 controller.getMaxArrayDimensions(),
                 controller.getMaxArrayDimensionSize(),
                 controller.getPrimitiveTypesProbability(),
@@ -32,8 +35,8 @@ public class ClazzFileContainer {
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
-        MethodLogger main = new MethodLogger("main", Modifier.STATIC, FieldVarType.VOID);
-        this.clazzLogger = new ClazzLogger(main, randomSupplier);
+        MethodLogger main = new MethodLogger(rand, "main", Modifier.STATIC, FieldVarType.VOID);
+        this.clazzLogger = new ClazzLogger(rand, main, randomSupplier);
     }
 
     public CtClass getClazzFile() {

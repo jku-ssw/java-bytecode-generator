@@ -4,10 +4,7 @@ import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ClazzLogger extends Logger {
@@ -17,7 +14,8 @@ public class ClazzLogger extends Logger {
     private MethodLogger run;
     private RandomSupplier randomSupplier;
 
-    public ClazzLogger(MethodLogger main, RandomSupplier randomSupplier) {
+    public ClazzLogger(Random rand, MethodLogger main, RandomSupplier randomSupplier) {
+        super(rand);
         this.methods = new ArrayList<>();
         // only use these if result should be non-deterministic
         // this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
@@ -55,7 +53,7 @@ public class ClazzLogger extends Logger {
 
     public MethodLogger getRandomMethod() {
         if (hasMethods()) {
-            return methods.get(RANDOM.nextInt(methods.size()));
+            return methods.get(rand.nextInt(methods.size()));
         } else {
             return null;
         }
@@ -63,7 +61,7 @@ public class ClazzLogger extends Logger {
 
     public MethodLogger getRandomCallableMethod(MethodLogger callingMethod) {
         List<MethodLogger> callableMethods = getCallableMethods(callingMethod);
-        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
+        return callableMethods.isEmpty() ? null : callableMethods.get(rand.nextInt(callableMethods.size()));
     }
 
     private List<MethodLogger> getCallableMethods(MethodLogger callingMethod) {
@@ -81,7 +79,7 @@ public class ClazzLogger extends Logger {
     public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType<?> fieldVarType) {
         List<MethodLogger> callableMethods = getCallableMethods(
                 callingMethod).stream().filter(m -> m.getReturnType() == fieldVarType).collect(Collectors.toList());
-        return callableMethods.isEmpty() ? null : callableMethods.get(RANDOM.nextInt(callableMethods.size()));
+        return callableMethods.isEmpty() ? null : callableMethods.get(rand.nextInt(callableMethods.size()));
     }
 
     private void removeAllExcludedForCalling(List<MethodLogger> callableMethods, Set<MethodLogger> excludedForCalling) {
@@ -125,7 +123,7 @@ public class ClazzLogger extends Logger {
     public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
         List<ParamWrapper> values = new ArrayList<>();
         for (FieldVarType t : paramTypes) {
-            if (RANDOM.nextBoolean()) { //add global variable
+            if (rand.nextBoolean()) { //add global variable
                 if (!addFieldToParamValues(values, method, t)) {
                     //add local variable if no global variable available
                     if (!addLocalVariableToParamValues(values, method, t)) {
@@ -203,7 +201,7 @@ public class ClazzLogger extends Logger {
 
     public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType type) {
         FieldVarLogger l;
-        if (RANDOM.nextBoolean()) {
+        if (rand.nextBoolean()) {
             l = getInitializedLocalVarOfType(method, type);
             if (l == null) {
                 l = getInitializedFieldOfTypeUsableInMethod(method, type);

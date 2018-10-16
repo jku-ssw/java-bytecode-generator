@@ -6,6 +6,7 @@ import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
 
+import java.util.Random;
 import java.util.Stack;
 import java.util.logging.Logger;
 
@@ -43,13 +44,15 @@ class ControlFlowGenerator extends Generator {
     private final int maxLoopIterations;
     private final RandomCodeGenerator randomCodeGenerator;
     private final MathGenerator mathGenerator;
+    private final Randomizer randomizer;
 
-    public ControlFlowGenerator(RandomCodeGenerator randomCodeGenerator, MathGenerator mathGenerator) {
-        super(randomCodeGenerator.getClazzFileContainer());
+    public ControlFlowGenerator(Random rand, RandomCodeGenerator randomCodeGenerator, MathGenerator mathGenerator) {
+        super(rand, randomCodeGenerator.getClazzFileContainer());
         this.randomCodeGenerator = randomCodeGenerator;
         this.ifBranchingFactor = randomCodeGenerator.getController().getIfBranchingFactor();
         this.maxLoopIterations = randomCodeGenerator.getController().getMaxLoopIterations();
         this.mathGenerator = mathGenerator;
+        this.randomizer = new Randomizer(rand);
     }
 
     private void generateIfClause(MethodLogger method) {
@@ -88,7 +91,7 @@ class ControlFlowGenerator extends Generator {
         if (contexts.empty()) {
             generateIfClause(method);
         } else {
-            Randomizer.doOneOfOptions(5,
+            randomizer.doOneOfOptions(5,
                     () -> generateElseClause(method),
                     () -> generateIfClause(method),
                     () -> generateElseIfClause(method)
@@ -97,7 +100,7 @@ class ControlFlowGenerator extends Generator {
     }
 
     private String getIfCondition(MethodLogger method) {
-        return Randomizer.oneOf(
+        return randomizer.oneOf(
                 LOGICAL,
                 ARITHMETIC_LOGICAL,
                 BITWISE_LOGICAL,
@@ -118,7 +121,7 @@ class ControlFlowGenerator extends Generator {
     public void generateDoWhileStatement(MethodLogger method) {
         String varName = getClazzContainer().getRandomSupplier().getVarName();
 
-        Randomizer.oneOf(
+        randomizer.oneOf(
                 () -> {
                     controlSrc
                             .append(Statement(assign(0).toLocalVar(int.class, varName)))
@@ -147,7 +150,7 @@ class ControlFlowGenerator extends Generator {
 
     public void generateWhileStatement(MethodLogger method) {
         String varName = getClazzContainer().getRandomSupplier().getVarName();
-        Randomizer.oneOf(
+        randomizer.oneOf(
                 () -> controlSrc
                         .append(Statement(assign(0).toLocalVar(int.class, varName)))
                         .append(While(lt(varName, randomLoopIterations())))
@@ -218,7 +221,7 @@ class ControlFlowGenerator extends Generator {
     }
 
     private int randomLoopIterations() {
-        return maxLoopIterations == 0 ? 0 : RANDOM.nextInt(maxLoopIterations);
+        return maxLoopIterations == 0 ? 0 : rand.nextInt(maxLoopIterations);
     }
 
     public int getDepth() {

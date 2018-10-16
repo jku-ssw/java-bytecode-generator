@@ -20,9 +20,10 @@ abstract class Generator {
     private static final Logger logger = Logger.getLogger(Generator.class.getName());
 
     final ClazzFileContainer clazzContainer;
-    static final Random RANDOM = new Random();
+    protected final Random rand;
 
-    public Generator(ClazzFileContainer clazzContainer) {
+    public Generator(Random rand, ClazzFileContainer clazzContainer) {
+        this.rand = rand;
         this.clazzContainer = clazzContainer;
     }
 

@@ -8,6 +8,7 @@ import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import static at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator.Context.CONTROL_CONTEXT;
 import static at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator.Context.METHOD_CONTEXT;
@@ -16,6 +17,9 @@ import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
 
 
 public class RandomCodeGenerator {
+
+    private static final Logger logger = Logger.getLogger(RandomCodeGenerator.class.getName());
+
     enum Context {
         PROGRAM_CONTEXT,
         METHOD_CONTEXT,
@@ -29,8 +33,6 @@ public class RandomCodeGenerator {
         }
     }
 
-    private static final Random RANDOM = new Random();
-
     private final GenerationController controller;
 
     //Generators
@@ -41,20 +43,32 @@ public class RandomCodeGenerator {
     private final ControlFlowGenerator controlFlowGenerator;
     private final int maxOpProbability;
 
+    /**
+     * The central random instance that is used throughout the generation
+     * process.
+     */
+    private final Random rand;
+
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         this.controller = controller;
-        ClazzFileContainer container = new ClazzFileContainer(controller, fileName);
+
+        int seed = controller.getSeedValue();
+        System.out.printf("Using seed %d\n", seed);
+
+        this.rand = new Random(seed);
+
+        ClazzFileContainer container = new ClazzFileContainer(rand, controller, fileName);
         maxOpProbability = Collections.max(Arrays.asList(controller.getBitwiseProbability(),
                 controller.getArithmeticBitwiseProbability(),
                 controller.getArithmeticLogicalBitwiseProbability(),
                 controller.getArithmeticLogicalProbability(),
                 controller.getArithmeticProbability()));
-        this.fieldVarGenerator = new FieldVarGenerator(container);
+        this.fieldVarGenerator = new FieldVarGenerator(rand, container);
 
-        this.methodGenerator = new MethodGenerator(this);
-        this.mathGenerator = new MathGenerator(container, controller.avoidOverflows(), controller.avoidDivByZero());
-        this.snippetGenerator = new SnippetGenerator(this);
-        this.controlFlowGenerator = new ControlFlowGenerator(this, mathGenerator);
+        this.methodGenerator = new MethodGenerator(rand, this);
+        this.mathGenerator = new MathGenerator(rand, container, controller.avoidOverflows(), controller.avoidDivByZero());
+        this.snippetGenerator = new SnippetGenerator(rand, this);
+        this.controlFlowGenerator = new ControlFlowGenerator(rand, this, mathGenerator);
 
         MethodLogger run = this.methodGenerator.generateRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
@@ -94,12 +108,12 @@ public class RandomCodeGenerator {
     void generate(Context context) {
         int l;
         if (context == CONTROL_CONTEXT || context == METHOD_CONTEXT) {
-            l = RANDOM.nextInt(context.lengthWeighting + 1);
+            l = rand.nextInt(context.lengthWeighting + 1);
         } else {
             l = context.lengthWeighting;
         }
         for (int i = 0; i < l; i++) {
-            int r = 1 + RANDOM.nextInt(100);
+            int r = 1 + rand.nextInt(100);
 
             if (context == Context.PROGRAM_CONTEXT && r <= controller.getFieldProbability()) {
                 fieldVarGenerator.generateField();
@@ -111,7 +125,7 @@ public class RandomCodeGenerator {
 
             if (r <= controller.getGlobalAssignProbability()) {
                 String src = null;
-                int assignKind = RANDOM.nextInt(4);
+                int assignKind = rand.nextInt(4);
                 switch (assignKind) {
                     case 0: //set field to RANDOM value
                         if (context == CONTROL_CONTEXT) {
@@ -143,7 +157,7 @@ public class RandomCodeGenerator {
             }
 
             if (r <= controller.getLocalAssignProbability() && context != CONTROL_CONTEXT) {
-                int assignKind = RANDOM.nextInt(3);
+                int assignKind = rand.nextInt(3);
                 String src = null;
                 switch (assignKind) {
                     case 0: //set local variable to RANDOM value
@@ -182,7 +196,7 @@ public class RandomCodeGenerator {
             }
 
             if (r <= controller.getMethodCallProbability()) {
-                int callKind = RANDOM.nextInt(3);
+                int callKind = rand.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
@@ -212,7 +226,7 @@ public class RandomCodeGenerator {
                 }
             }
             if (r <= controller.getJavaLangMathProbability()) {
-                int callKind = RANDOM.nextInt(3);
+                int callKind = rand.nextInt(3);
                 String src = null;
                 switch (callKind) {
                     case 0: //call method
@@ -255,9 +269,9 @@ public class RandomCodeGenerator {
             }
 
             if (r <= controller.getControlFlowProbability() && controlFlowGenerator.getDepth() < controller.getControlFlowDeepness()) {
-                int controlKind = RANDOM.nextInt(4);
+                int controlKind = rand.nextInt(4);
                 boolean noStatementGenerated = true;
-                int ctrlTypeProb = 1 + RANDOM.nextInt(100);
+                int ctrlTypeProb = 1 + rand.nextInt(100);
                 for (int j = 0; j < 4 && noStatementGenerated; j++) {
                     switch (controlKind) {
                         case 0:
@@ -300,7 +314,7 @@ public class RandomCodeGenerator {
             if (r <= controller.getOperatorStatementProbability()) {
                 int globalOrLocalOrNotAssign;
                 if (r <= controller.getLocalAssignProbability() && r <= controller.getGlobalAssignProbability()) {
-                    globalOrLocalOrNotAssign = RANDOM.nextInt(3);
+                    globalOrLocalOrNotAssign = rand.nextInt(3);
                 } else if (r <= controller.getGlobalAssignProbability()) {
                     globalOrLocalOrNotAssign = 0;
                 } else if (r <= controller.getLocalAssignProbability()) {
@@ -357,8 +371,8 @@ public class RandomCodeGenerator {
     }
 
     private OpStatKind getOpStatKind() {
-        int opProb = 1 + RANDOM.nextInt(maxOpProbability);
-        OpStatKind selectedKind = OpStatKind.values()[RANDOM.nextInt(OpStatKind.values().length - 1)];
+        int opProb = 1 + rand.nextInt(maxOpProbability);
+        OpStatKind selectedKind = OpStatKind.values()[rand.nextInt(OpStatKind.values().length - 1)];
         for (int i = 0; i < OpStatKind.values().length; i++) {
             switch (selectedKind) {
                 case ARITHMETIC:

@@ -4,12 +4,12 @@ import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
-import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -27,13 +27,13 @@ class MethodGenerator extends MethodCaller {
 
     private final RandomCodeGenerator randomCodeGenerator;
 
-    public MethodGenerator(RandomCodeGenerator randomCodeGenerator) {
-        super(randomCodeGenerator.getClazzFileContainer());
+    public MethodGenerator(Random rand, RandomCodeGenerator randomCodeGenerator) {
+        super(rand, randomCodeGenerator.getClazzFileContainer());
         this.randomCodeGenerator = randomCodeGenerator;
     }
 
     public FieldVarType[] getParameterTypes(int maxParameters) {
-        int n = maxParameters == 0 ? 0 : RANDOM.nextInt(maxParameters);
+        int n = maxParameters == 0 ? 0 : rand.nextInt(maxParameters);
         return getNParameterTypes(n);
     }
 
@@ -48,7 +48,7 @@ class MethodGenerator extends MethodCaller {
     //============================================Method Generation=====================================================
 
     private MethodLogger generateMethod(String name, FieldVarType<?> returnType, FieldVarType[] paramTypes, int modifiers) {
-        MethodLogger ml = new MethodLogger(name, modifiers, returnType, paramTypes);
+        MethodLogger ml = new MethodLogger(rand, name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
@@ -91,7 +91,7 @@ class MethodGenerator extends MethodCaller {
     public MethodLogger generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
         return this.generateMethod(methodName, getRandomSupplier().returnType(),
-                getParameterTypes(maximumParameters), RandomSupplier.getMethodModifiers());
+                getParameterTypes(maximumParameters), getRandomSupplier().getMethodModifiers());
     }
 
     public MethodLogger overloadMethod(int maximumParameters) {
@@ -107,7 +107,7 @@ class MethodGenerator extends MethodCaller {
         }
 
         return this.generateMethod(methodToOverload.getName(),
-                getRandomSupplier().returnType(), paramTypes, RandomSupplier.getMethodModifiers());
+                getRandomSupplier().returnType(), paramTypes, getRandomSupplier().getMethodModifiers());
     }
 
     public void insertReturn(MethodLogger method) {
@@ -122,7 +122,7 @@ class MethodGenerator extends MethodCaller {
             }
         }
 
-        Randomizer.oneNotNullOf(
+        new Randomizer(rand).oneNotNullOf(
                 () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
                 () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
         ).ifPresent(
@@ -177,7 +177,7 @@ class MethodGenerator extends MethodCaller {
     private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
         List<FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
-                method, compatibleTypes.get(RANDOM.nextInt(compatibleTypes.size())));
+                method, compatibleTypes.get(rand.nextInt(compatibleTypes.size())));
         if (calledMethod == null) {
             return null;
         }
@@ -224,7 +224,7 @@ class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new AssertionError(e);
         }
-        MethodLogger runLogger = new MethodLogger("run", Modifier.PRIVATE, FieldVarType.VOID);
+        MethodLogger runLogger = new MethodLogger(rand, "run", Modifier.PRIVATE, FieldVarType.VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
     }

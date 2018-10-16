@@ -45,7 +45,8 @@ enum CLIOptions {
     ARRAYS,
     VOID,
     MAXDIM,
-    MAXDIMSIZE;
+    MAXDIMSIZE,
+    SEED;
 
     @Override
     public String toString() {

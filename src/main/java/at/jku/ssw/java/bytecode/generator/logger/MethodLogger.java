@@ -17,11 +17,12 @@ public class MethodLogger extends Logger {
     private Set<MethodLogger> methodsExcludedForCalling;
     private Set<MethodLogger> calledByThisMethod;
 
-    public MethodLogger(String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
-        this(name, modifiers, returnType, false, paramTypes);
+    public MethodLogger(Random rand, String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
+        this(rand, name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
+    public MethodLogger(Random rand, String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
+        super(rand);
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;

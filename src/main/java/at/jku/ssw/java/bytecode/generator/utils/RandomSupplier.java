@@ -22,7 +22,9 @@ public class RandomSupplier {
     private int varRepeat = 0;
     private int methodRepeat = 0;
 
-    static private final Random RANDOM = new Random();
+    private final Random rand;
+    private final Randomizer randomizer;
+
     static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int MAX_STRING_LENGTH = 20;
 
@@ -35,7 +37,10 @@ public class RandomSupplier {
             Modifier.PROTECTED
     );
 
-    public RandomSupplier(int maxArrayDim, int maxArrayDimSize, int pPrimitives, int pObjects, int pArray, int pVoid) {
+    public RandomSupplier(Random rand, int maxArrayDim, int maxArrayDimSize, int pPrimitives, int pObjects, int pArray, int pVoid) {
+        this.rand = rand;
+        this.randomizer = new Randomizer(rand);
+
         this.maxArrayDim = maxArrayDim;
         this.maxArrayDimSize = maxArrayDimSize;
         this.pPrimitives = pPrimitives;
@@ -71,15 +76,15 @@ public class RandomSupplier {
     }
 
     public FieldVarType<?> primitiveType() {
-        return Randomizer.oneOf(FieldVarType.primitiveTypes()).orElse(null);
+        return randomizer.oneOf(FieldVarType.primitiveTypes()).orElse(null);
     }
 
     public FieldVarType<?> classType() {
-        return Randomizer.oneOf(FieldVarType.classTypes()).orElse(null);
+        return randomizer.oneOf(FieldVarType.classTypes()).orElse(null);
     }
 
     public FieldVarType<?> arrayType(int dim) {
-        return Randomizer
+        return randomizer
                 .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
                 .map(t -> FieldVarType.arrayTypeOf(t, dim))
                 .orElse(null);
@@ -94,11 +99,11 @@ public class RandomSupplier {
      * @return a random type
      */
     public FieldVarType<?> type() {
-        return Randomizer.withProbabilities(
+        return randomizer.withProbabilities(
                 new int[]{pPrimitives, pObjects, pArray},
                 this::primitiveType,
                 this::classType,
-                () -> arrayType(RANDOM.nextInt(maxArrayDim) + 1)
+                () -> arrayType(rand.nextInt(maxArrayDim) + 1)
         ).orElse(null);
     }
 
@@ -110,7 +115,7 @@ public class RandomSupplier {
      * @return a random return type
      */
     public FieldVarType<?> returnType() {
-        return Randomizer.withProbabilities(
+        return randomizer.withProbabilities(
                 new int[]{pVoid, 100 - pVoid},
                 () -> VOID,
                 this::type
@@ -122,7 +127,7 @@ public class RandomSupplier {
             case INSTANCE:
             case ARRAY:
                 // 25% chance for objects to be initialized with null
-                if (RANDOM.nextInt(4) == 0) {
+                if (rand.nextInt(4) == 0) {
                     return "null";
                 }
         }
@@ -133,31 +138,31 @@ public class RandomSupplier {
     public String castedValueNotNull(FieldVarType<?> type) {
         switch (type.kind) {
             case BYTE:
-                return "(byte)" + (byte) RANDOM.nextInt();
+                return "(byte)" + (byte) rand.nextInt();
             case SHORT:
-                return "(short)" + (short) RANDOM.nextInt();
+                return "(short)" + (short) rand.nextInt();
             case INT:
-                return "" + RANDOM.nextInt();
+                return "" + rand.nextInt();
             case LONG:
-                return RANDOM.nextLong() + "L";
+                return rand.nextLong() + "L";
             case FLOAT:
-                return RANDOM.nextFloat() + "f";
+                return rand.nextFloat() + "f";
             case DOUBLE:
-                return RANDOM.nextDouble() + "d";
+                return rand.nextDouble() + "d";
             case BOOLEAN:
-                return "" + RANDOM.nextBoolean();
+                return "" + rand.nextBoolean();
             case CHAR:
-                return "\'" + STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())) + "\'";
+                return "\'" + STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())) + "\'";
             case INSTANCE:
                 if (type.clazz.equals(String.class)) {
                     return "\"" + getString() + "\"";
                 } else if (type.clazz.equals(Date.class)) {
-                    return "new java.util.Date(" + RANDOM.nextLong() + "L)";
+                    return "new java.util.Date(" + rand.nextLong() + "L)";
                 }
             case ARRAY:
                 return NewArray(
                         type.clazz,
-                        RANDOM.ints(0, maxArrayDimSize + 1)
+                        rand.ints(0, maxArrayDimSize + 1)
                                 .limit(type.dim)
                                 .boxed()
                                 .collect(Collectors.toList())
@@ -167,12 +172,12 @@ public class RandomSupplier {
         }
     }
 
-    public static String getRandomNumericValue(FieldVarType<?> type, boolean notZero) {
+    public String getRandomNumericValue(FieldVarType<?> type, boolean notZero) {
         switch (type.kind) {
             case BYTE:
             case SHORT:
             case INT:
-                int i = RANDOM.nextInt();
+                int i = rand.nextInt();
                 if (type == BYTE) {
                     i = (byte) i;
                 } else if (type == SHORT) {
@@ -184,28 +189,28 @@ public class RandomSupplier {
                     return "" + i;
                 }
             case LONG:
-                long l = RANDOM.nextLong();
+                long l = rand.nextLong();
                 if (notZero) {
                     return "" + (l != 0L ? l : ++l) + "L";
                 } else {
                     return "" + l + "L";
                 }
             case FLOAT:
-                float f = RANDOM.nextFloat();
+                float f = rand.nextFloat();
                 if (notZero) {
                     return "" + (f != 0f ? f : ++f) + "f";
                 } else {
                     return "" + f + "f";
                 }
             case DOUBLE:
-                double d = RANDOM.nextDouble();
+                double d = rand.nextDouble();
                 if (notZero) {
                     return "" + (d != 0d ? d : ++d) + "d";
                 } else {
                     return "" + d + "d";
                 }
             case CHAR:
-                char c = STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length()));
+                char c = STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length()));
                 if (notZero) {
                     return "\'" + (c != 0 ? c : ++c) + "\'";
                 } else {
@@ -216,15 +221,15 @@ public class RandomSupplier {
         }
     }
 
-    public static String getString() {
-        int length = RANDOM.nextInt(MAX_STRING_LENGTH + 1);
+    public String getString() {
+        int length = rand.nextInt(MAX_STRING_LENGTH + 1);
         return getStringOfLength(length);
     }
 
-    public static String getStringOfLength(int length) {
+    public String getStringOfLength(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(STRING_CANDIDATES.charAt(RANDOM.nextInt(STRING_CANDIDATES.length())));
+            sb.append(STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())));
         }
         return sb.toString();
     }
@@ -236,7 +241,7 @@ public class RandomSupplier {
      * @return a random modifier or none, if no modifier is available
      * (or all are excluded)
      */
-    private static Optional<Integer> getRandomModifier(Set<Integer> exclusions) {
+    private Optional<Integer> getRandomModifier(Set<Integer> exclusions) {
         List<Integer> possibleModifiers = MODIFIERS.stream()
                 .filter(m -> !exclusions.contains(m))
                 .collect(Collectors.toList());
@@ -250,7 +255,7 @@ public class RandomSupplier {
             return possibleModifiers.stream().findFirst();
 
         return possibleModifiers.stream()
-                .skip(RANDOM.nextInt(maxRange))
+                .skip(rand.nextInt(maxRange))
                 .findFirst();
     }
 
@@ -260,8 +265,8 @@ public class RandomSupplier {
      * @param exclusions Excluded modifiers
      * @return a random integer describing modifiers
      */
-    static int getModifiers(int... exclusions) {
-        int numberOfModifiers = RANDOM.nextInt(4);
+    int getModifiers(int... exclusions) {
+        int numberOfModifiers = rand.nextInt(4);
         int[] modifiers = new int[numberOfModifiers];
 
         Set<Integer> excluding = IntStream.of(exclusions)
@@ -290,7 +295,7 @@ public class RandomSupplier {
      *
      * @return a random integer describing field modifiers
      */
-    public static int getMethodModifiers() {
+    public int getMethodModifiers() {
         return getModifiers();
     }
 
@@ -300,7 +305,7 @@ public class RandomSupplier {
      *
      * @return a random integer describing field modifiers
      */
-    public static int getFieldModifiers() {
+    public int getFieldModifiers() {
         return getModifiers(Modifier.SYNCHRONIZED);
     }
 

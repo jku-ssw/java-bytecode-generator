@@ -9,8 +9,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 abstract class Logger {
+
+    protected final Random rand;
+
+    protected Logger(Random rand) {
+        this.rand = rand;
+    }
+
     Map<String, FieldVarLogger> variables;
-    static Random RANDOM = new Random();
 
     public void logVariable(String name, FieldVarType<?> type, int modifiers, boolean initialized) {
         FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
@@ -29,7 +35,7 @@ abstract class Logger {
         if (predicateVars.isEmpty()) {
             return null;
         }
-        return predicateVars.get(RANDOM.nextInt(predicateVars.size()));
+        return predicateVars.get(rand.nextInt(predicateVars.size()));
     }
 
     public List<FieldVarLogger> getVariablesWithPredicate(Predicate<FieldVarLogger> predicate) {
