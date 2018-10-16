@@ -72,7 +72,7 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
             Stream.of(err.split("\n"))
                     .map(String::trim)
                     .filter(l -> !l.isEmpty())
-                    .filter(l -> checkIfExceptionAllowed(l, allowedExceptions))
+                    .filter(l -> !checkIfExceptionAllowed(l, allowedExceptions))
                     .forEach(l -> {
                         System.out.println(err);
                         fail("Execution of " + fileName + " failed - unexpected exception: " + l);
