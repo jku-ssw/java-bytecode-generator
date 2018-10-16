@@ -147,7 +147,7 @@ public class ControlValueParser {
         defaultValues.put(CLIOptions.ALBS.toString(), 100);
         defaultValues.put(CLIOptions.MOPS.toString(), 7);
         defaultValues.put(CLIOptions.XRUNS.toString(), 1);
-        defaultValues.put(CLIOptions.SNIPPET.toString(), 10);
+        defaultValues.put(CLIOptions.SNIPPET.toString(), 5);
         defaultValues.put(CLIOptions.BREAK.toString(), 5);
         defaultValues.put(CLIOptions.RETURN.toString(), 5);
         defaultValues.put(CLIOptions.PRIMITIVES.toString(), 60);
