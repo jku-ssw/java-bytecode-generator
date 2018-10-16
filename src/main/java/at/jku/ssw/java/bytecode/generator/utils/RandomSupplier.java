@@ -120,6 +120,7 @@ public class RandomSupplier {
     public String castedValue(FieldVarType<?> type) {
         switch (type.kind) {
             case INSTANCE:
+            case ARRAY:
                 // 25% chance for objects to be initialized with null
                 if (RANDOM.nextInt(4) == 0) {
                     return "null";
