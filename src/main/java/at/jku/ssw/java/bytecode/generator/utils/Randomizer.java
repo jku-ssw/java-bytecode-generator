@@ -148,9 +148,22 @@ public final class Randomizer {
      */
     @SafeVarargs
     public final <T> Stream<T> stream(T... args) {
-        List<T> l = Arrays.asList(args);
+        return shuffle(Arrays.stream(args));
+    }
 
-        Collections.shuffle(l, rand);
+    /**
+     * Shuffles the elements of the given stream and returns a new one.
+     * Warning: This method inevitable has to force the whole stream
+     * and may therefore perform poorly on large streams.
+     *
+     * @param stream The stream to shuffle
+     * @param <T>    The types of elements in the stream
+     * @return a new stream containing the previous streams' elements
+     * in a random order
+     */
+    public final <T> Stream<T> shuffle(Stream<T> stream) {
+        List<T> l = stream.collect(Collectors.toList());
+        Collections.shuffle(l);
 
         return l.stream();
     }
