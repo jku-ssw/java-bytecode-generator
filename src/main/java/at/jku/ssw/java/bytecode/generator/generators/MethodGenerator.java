@@ -7,7 +7,6 @@ import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
-import javassist.bytecode.BadBytecode;
 
 import java.util.Date;
 import java.util.List;
@@ -135,12 +134,6 @@ class MethodGenerator extends MethodCaller {
                     }
                 }
         );
-
-        try {
-            ctMethod.getMethodInfo().rebuildStackMap(ClassPool.getDefault());
-        } catch (BadBytecode badBytecode) {
-            badBytecode.printStackTrace();
-        }
     }
 
     //===============================================Method Calling=====================================================

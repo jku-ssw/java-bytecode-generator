@@ -4,10 +4,8 @@ import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
+import javassist.bytecode.BadBytecode;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -37,14 +35,19 @@ abstract class Generator {
     }
 
     public void writeFile() {
-        try {
-            this.getClazzFile().writeFile();
-        } catch (NotFoundException | IOException | CannotCompileException e) {
-            throw new AssertionError(e);
-        }
+        writeFile(".");
     }
 
     public void writeFile(String pathname) {
+        getClazzFile().getClassFile().getMethods()
+                .forEach(m -> {
+                    try {
+                        m.rebuildStackMap(ClassPool.getDefault());
+                    } catch (BadBytecode badBytecode) {
+                        badBytecode.printStackTrace();
+                    }
+                });
+
         final Path path = Paths.get(pathname).resolve(getClazzFile().getName() + ".class");
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(path.toFile()))) {
             this.getClazzFile()
