@@ -158,7 +158,7 @@ public class ControlValueParser {
         defaultValues.put(CLIOptions.OBJECTS.toString(), 20);
         defaultValues.put(CLIOptions.ARRAYS.toString(), 20);
         defaultValues.put(CLIOptions.VOID.toString(), 20);
-        defaultValues.put(CLIOptions.MAXDIM.toString(), 10);
+        defaultValues.put(CLIOptions.MAXDIM.toString(), 3);
         defaultValues.put(CLIOptions.MAXDIMSIZE.toString(), 1_000);
         defaultValues.put(CLIOptions.SEED.toString(), new Random().nextInt());
         return defaultValues;
