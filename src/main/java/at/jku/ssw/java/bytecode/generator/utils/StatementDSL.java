@@ -46,6 +46,24 @@ public class StatementDSL {
         }
     }
 
+    public static class Casts {
+        public static final String CAST = "(%s) %s";
+
+        private final String value;
+
+        public Casts(String value) {
+            this.value = value;
+        }
+
+        public static Casts cast(String value) {
+            return new Casts(value);
+        }
+
+        public String to(Class<?> type) {
+            return String.format(CAST, type.getSimpleName(), value);
+        }
+    }
+
     public static class Conditions {
         public static final String NOT_NULL = "%s != null";
 
