@@ -116,6 +116,7 @@ public class RandomCodeGenerator {
             logger.fatal("Could not finish generation of class {} due to compilation errors", getClazzFileContainer().getFileName());
             logger.fatal("The seed that was used to initialize the random generator was {}", seed);
             e.printStackTrace();
+            throw e;
         }
     }
 
