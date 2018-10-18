@@ -20,10 +20,10 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private static final int REPETITIONS = 50;
+    private static final int REPETITIONS = 100;
     private static final int MINOR_REPETITIONS = 10;
 
-    private static final int MAX_LENGTH = 20;
+    private static final int MAX_LENGTH = 30;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = true;
 
     private static final String DIR = "src/test/resources/generated";
@@ -31,14 +31,14 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(MinorRepetitionProvider.class)
     @SuppressWarnings("unchecked")
-    void testSeedGenerate(List<String> args) throws Exception {
+    void testSeedGenerate(List<String> args, int index) throws Exception {
         int seed = new Random().nextInt();
         args.add("-seed");
         args.add(String.valueOf(seed));
 
-        final GeneratedClass classA = generateClass("ASeededClass", args);
+        final GeneratedClass classA = generateClass("ASeededClass" + index, args);
 
-        final GeneratedClass classB = generateClass("AClassWithTheSameSeed", args);
+        final GeneratedClass classB = generateClass("AClassWithTheSameSeed" + index, args);
 
         logger.info("Running class {}", classA);
         final Result exp = run(classA);
