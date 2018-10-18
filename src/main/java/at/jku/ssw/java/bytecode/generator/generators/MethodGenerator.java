@@ -11,8 +11,13 @@ import javassist.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
@@ -69,7 +74,7 @@ class MethodGenerator extends MethodCaller {
         }
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
-        String methodStr = modifiersToString(modifiers) +
+        String methodStr = java.lang.reflect.Modifier.toString(modifiers) + " " +
                 returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
                 "} ";
         try {
@@ -177,6 +182,7 @@ class MethodGenerator extends MethodCaller {
 
     private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
         List<FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
+
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(rand.nextInt(compatibleTypes.size())));
         if (calledMethod == null) {
@@ -205,16 +211,14 @@ class MethodGenerator extends MethodCaller {
     }
 
     public String srcSetLocalVarToReturnValue(MethodLogger method) {
+
         if (method.hasVariables()) {
             FieldVarLogger fieldVar = method.getVariableWithPredicate(v -> !v.isFinal());
-            if (fieldVar == null) {
-                return null;
-            } else {
+            if (fieldVar != null)
                 return setVariableToReturnValue(fieldVar, method);
-            }
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     MethodLogger generateRunMethod() {
@@ -312,8 +316,8 @@ class MethodGenerator extends MethodCaller {
     private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {
             FieldVarType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
-            List<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
-                    m -> m.getParamsTypes().length == parameterTypes.length).collect(Collectors.toList());
+            Stream<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
+                    m -> m.getParamsTypes().length == parameterTypes.length);
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 return parameterTypes;
             }
@@ -321,49 +325,14 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    private boolean equalOverloadedParamTypesExists(List<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
-        for (MethodLogger ml : equalNumberOfParamMethods) {
-            if (equalParameterTypes(parameterTypes, ml.getParamsTypes())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static String modifiersToString(int modifiers) {
-        StringBuilder b = new StringBuilder();
-        if (Modifier.isStatic(modifiers)) {
-            b.append("static ");
-        }
-        if (Modifier.isFinal(modifiers)) {
-            b.append("final ");
-        }
-        if (Modifier.isPrivate(modifiers)) {
-            b.append("private ");
-        }
-        if (Modifier.isProtected(modifiers)) {
-            b.append("protected ");
-        }
-        if (Modifier.isPublic(modifiers)) {
-            b.append("public ");
-        }
-        if (Modifier.isSynchronized(modifiers)) {
-            b.append("synchronized ");
-        }
-        return b.toString();
+    private boolean equalOverloadedParamTypesExists(Stream<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
+        return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamsTypes()));
     }
 
     private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
-        if (types1.length == types2.length) {
-            for (int i = 0; i < types1.length; i++) {
-                if (types1[i] != types2[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return types1.length == types2.length &&
+                IntStream.range(0, types1.length)
+                        .allMatch(i -> types1[i].equals(types2[i]));
     }
 
 }
