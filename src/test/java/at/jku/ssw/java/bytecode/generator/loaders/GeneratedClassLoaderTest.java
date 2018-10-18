@@ -20,8 +20,8 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private static final int REPETITIONS = 50;
-    private static final int MAX_LENGTH = 20;
+    private static final int REPETITIONS = 100;
+    private static final int MAX_LENGTH = 50;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = false;
 
     private static final String DIR = "src/test/resources/generated";
