@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
+import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
@@ -211,7 +211,7 @@ class ControlFlowGenerator extends Generator {
             controlSrc.setLength(0);
         } catch (CannotCompileException e) {
             logger.fatal("Could not compile control flow source: {}", controlSrc.toString());
-            throw new CompilationFailedException(e);
+            throw new MethodCompilationFailedException(method, e);
         }
     }
 

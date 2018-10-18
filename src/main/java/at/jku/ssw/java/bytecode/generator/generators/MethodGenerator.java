@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
+import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
@@ -129,7 +130,7 @@ class MethodGenerator extends MethodCaller {
                         try {
                             ctMethod.insertAfter(Return(f.getName()));
                         } catch (CannotCompileException e) {
-                            throw new CompilationFailedException(e);
+                            throw new MethodCompilationFailedException(method, e);
                         }
                     }
             );

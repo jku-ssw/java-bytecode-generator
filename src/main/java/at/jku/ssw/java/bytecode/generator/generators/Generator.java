@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
+import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
@@ -90,7 +90,7 @@ abstract class Generator {
             ctMethod.insertAfter(src);
         } catch (CannotCompileException e) {
             logger.fatal(src);
-            throw new CompilationFailedException(e);
+            throw new MethodCompilationFailedException(method, e);
         }
     }
 }
