@@ -213,13 +213,19 @@ public class ClazzLogger extends Logger {
     }
 
     public Stream<FieldVarLogger> getNonFinalVarsUsableInMethod(MethodLogger method) {
-        return randomizer.shuffle(
-                Stream.concat(
-                        method.streamVariables(),
-                        streamVariables()
-                                .filter(f -> f.isStatic() == method.isStatic())
-                ).filter(v -> !v.isFinal())
-        );
+        return Stream.concat(
+                method.streamVariables(),
+                streamVariables()
+                        .filter(f -> !method.isStatic() || f.isStatic())
+        ).filter(v -> !v.isFinal());
+    }
+
+    public Stream<FieldVarLogger> getInitializedVarsUsableInMethod(MethodLogger method) {
+        return Stream.concat(
+                method.streamVariables(),
+                streamVariables()
+                        .filter(f -> !method.isStatic() || f.isStatic())
+        ).filter(FieldVarLogger::isInitialized);
     }
 
     public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
