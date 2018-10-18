@@ -76,18 +76,20 @@ public class RandomSupplier {
     }
 
     public FieldVarType<?> primitiveType() {
-        return randomizer.oneOf(FieldVarType.primitiveTypes()).orElse(null);
+        return randomizer.oneOf(FieldVarType.primitiveTypes())
+                .orElseThrow(() -> new AssertionError("No primitive types available"));
     }
 
     public FieldVarType<?> classType() {
-        return randomizer.oneOf(FieldVarType.classTypes()).orElse(null);
+        return randomizer.oneOf(FieldVarType.classTypes())
+                .orElseThrow(() -> new AssertionError("No class types available"));
     }
 
     public FieldVarType<?> arrayType(int dim) {
         return randomizer
                 .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
                 .map(t -> FieldVarType.arrayTypeOf(t, dim))
-                .orElse(null);
+                .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
     /**
@@ -104,7 +106,7 @@ public class RandomSupplier {
                 this::primitiveType,
                 this::classType,
                 () -> arrayType(rand.nextInt(maxArrayDim) + 1)
-        ).orElse(null);
+        ).orElseThrow(() -> new AssertionError("Could not fetch random type"));
     }
 
     /**
@@ -119,7 +121,7 @@ public class RandomSupplier {
                 new int[]{pVoid, 100 - pVoid},
                 () -> VOID,
                 this::type
-        ).orElse(null);
+        ).orElseThrow(() -> new AssertionError("Could not fetch random return type"));
     }
 
     public String castedValue(FieldVarType<?> type) {
