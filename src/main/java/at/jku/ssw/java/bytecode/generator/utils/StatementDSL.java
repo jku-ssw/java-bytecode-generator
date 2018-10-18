@@ -49,13 +49,13 @@ public class StatementDSL {
     public static class Casts {
         public static final String CAST = "(%s) %s";
 
-        private final String value;
+        private final Object value;
 
-        public Casts(String value) {
+        public Casts(Object value) {
             this.value = value;
         }
 
-        public static Casts cast(String value) {
+        public static Casts cast(Object value) {
             return new Casts(value);
         }
 
@@ -75,6 +75,7 @@ public class StatementDSL {
     public static class Patterns {
         public static final String SYSTEM_OUT_PRINTLN = "System.out.println(%s)";
         public static final String AS_STRING = "\"%s\"";
+        public static final String AS_CHAR = "\'%c\'";
         public static final String STATEMENT = "%s; ";
         public static final String SUBTRACT = "%s - %s";
         public static final String CALL_NO_PARAMS = "%s()";
@@ -85,11 +86,11 @@ public class StatementDSL {
         public static final String DECR = "%s--";
         public static final String GT = "%s > %s";
         public static final String LT = "%s < %s";
-        public static final String NEW = "new %s()";
+        public static final String NEW = "new %s(%s)";
         public static final String NEW_ARRAY = "new %s";
         public static final String ARRAY_DIM = "[%s]";
         public static final String TERNARY = "(%s ? %s : %s)";
-        public static final String NULL_AS = "(%s) null";
+        public static final String NULL = "null";
     }
 
     public static class Blocks {
@@ -139,6 +140,9 @@ public class StatementDSL {
         return String.format(AS_STRING, str);
     }
 
+    public static String asChar(char c) {
+        return String.format(AS_CHAR, c);
+    }
 
     public static String subtract(String a, String b) {
         return String.format(SUBTRACT, a, b);
@@ -176,8 +180,8 @@ public class StatementDSL {
         return String.format(LT, a, b);
     }
 
-    public static String New(Class<?> clazz) {
-        return String.format(NEW, clazz.getCanonicalName());
+    public static String New(Class<?> clazz, String... params) {
+        return String.format(NEW, clazz.getCanonicalName(), String.join(", ", params));
     }
 
     public static String NewArray(Class<?> clazz, List<Object> dim) {
@@ -194,10 +198,6 @@ public class StatementDSL {
     }
 
     public static <T> String ternary(String cond, T t, T e) {
-        return String.format(cond, t, e);
-    }
-
-    public static <T> String Null(String type) {
-        return String.format(NULL_AS, type);
+        return String.format(TERNARY, cond, t, e);
     }
 }
