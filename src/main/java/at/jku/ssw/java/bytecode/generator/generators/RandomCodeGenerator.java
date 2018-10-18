@@ -42,6 +42,7 @@ public class RandomCodeGenerator {
     private final MethodGenerator methodGenerator;
     private final MathGenerator mathGenerator;
     private final SnippetGenerator snippetGenerator;
+    private final TypeCastGenerator typeCastGenerator;
     private final ControlFlowGenerator controlFlowGenerator;
     private final int maxOpProbability;
 
@@ -76,6 +77,7 @@ public class RandomCodeGenerator {
         this.methodGenerator = new MethodGenerator(rand, this);
         this.mathGenerator = new MathGenerator(rand, container, controller.avoidOverflows(), controller.avoidDivByZero());
         this.snippetGenerator = new SnippetGenerator(rand, this);
+        this.typeCastGenerator = new TypeCastGenerator(rand, this);
         this.controlFlowGenerator = new ControlFlowGenerator(rand, this, mathGenerator);
 
         MethodLogger run = this.methodGenerator.generateRunMethod();
@@ -115,6 +117,9 @@ public class RandomCodeGenerator {
         } catch (CompilationFailedException e) {
             logger.fatal("Could not finish generation of class {} due to compilation errors", getClazzFileContainer().getFileName());
             logger.fatal("The seed that was used to initialize the random generator was {}", seed);
+            logger.fatal("-- CLASS -----------------------------------------------");
+            logger.fatal(getClazzFileContainer());
+            logger.fatal("--------------------------------------------------------");
             e.printStackTrace();
             throw e;
         }
@@ -375,6 +380,9 @@ public class RandomCodeGenerator {
 
             if (r <= controller.getSnippetProbability())
                 snippetGenerator.generateHashCodeSubtraction(context.contextMethod);
+
+            if (r <= controller.getTypeCastProbability())
+                typeCastGenerator.generatePrimitiveTypeCast(context.contextMethod);
 
             if (r <= controller.getBreakProbability())
                 controlFlowGenerator.insertBreak();

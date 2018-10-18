@@ -208,6 +208,10 @@ public class GenerationController {
         return controlValues.get(CLIOptions.MAXDIMSIZE);
     }
 
+    public int getTypeCastProbability() {
+        return controlValues.get(CLIOptions.CAST);
+    }
+
     public int getSeedValue() {
         return controlValues.get(CLIOptions.SEED);
     }

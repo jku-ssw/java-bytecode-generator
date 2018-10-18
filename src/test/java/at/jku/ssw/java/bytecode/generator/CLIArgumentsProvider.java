@@ -26,7 +26,7 @@ public interface CLIArgumentsProvider extends ArgumentsProvider {
     default Stream<? extends Arguments> provideArguments(ExtensionContext context) {
         Random r = new Random();
         Function<Integer, String> zeroTo = i -> String.valueOf(r.nextInt(i));
-        Function<Integer, String> oneTo = i -> String.valueOf(r.nextInt(i) + 1);
+        Function<Integer, String> oneTo = i -> String.valueOf(r.nextInt(i - 1) + 1);
 
         return IntStream
                 .range(0, repetitions())
@@ -70,6 +70,7 @@ public interface CLIArgumentsProvider extends ArgumentsProvider {
                                     "-objects", oneTo.apply(40),
                                     "-arrays", oneTo.apply(20),
                                     "-void", oneTo.apply(40),
+                                    "-cast", oneTo.apply(20),
                                     "-max_dim", oneTo.apply(3),
                                     "-max_dim_size", zeroTo.apply(1000)
                             ));

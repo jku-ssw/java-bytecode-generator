@@ -46,6 +46,7 @@ enum CLIOptions {
     VOID,
     MAXDIM,
     MAXDIMSIZE,
+    CAST,
     SEED;
 
     @Override
