@@ -21,7 +21,8 @@ public class FieldVarType<T> {
     private static final Set<FieldVarType<?>> types = new HashSet<>();
 
     private static <T> FieldVarType<T> register(FieldVarType<T> type) {
-        assert types.add(type) : "Type '" + type + "' already registered";
+        boolean notExists = types.add(type);
+        assert notExists : "Type '" + type + "' already registered";
         return type;
     }
 
