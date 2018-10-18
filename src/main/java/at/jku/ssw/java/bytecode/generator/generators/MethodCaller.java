@@ -5,7 +5,13 @@ import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 
+import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statement;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.call;
 
 abstract class MethodCaller extends Generator {
 
@@ -14,16 +20,14 @@ abstract class MethodCaller extends Generator {
     }
 
     static String generateMethodCallString(String methodName, FieldVarType[] paramTypes, ParamWrapper[] paramValues) {
-        StringBuilder statement = new StringBuilder(methodName + "(");
-        if (paramValues != null && paramValues.length != 0) {
-            statement.append(paramToCorrectStringFormat(paramTypes[0], paramValues[0]));
-        }
-        for (int i = 1; i < paramValues.length; i++) {
-            statement.append(", ");
-            statement.append(paramToCorrectStringFormat(paramTypes[i], paramValues[i]));
-        }
-        statement.append(");");
-        return statement.toString();
+        String params = Optional.ofNullable(paramValues)
+                .map(v ->
+                        IntStream.range(0, paramTypes.length)
+                                .mapToObj(i ->
+                                        paramToCorrectStringFormat(paramTypes[i], paramValues[i]))
+                                .collect(Collectors.joining(", ")))
+                .orElse("");
+        return Statement(call(methodName, params));
     }
 
     static String paramToCorrectStringFormat(FieldVarType<?> paramType, ParamWrapper param) {
