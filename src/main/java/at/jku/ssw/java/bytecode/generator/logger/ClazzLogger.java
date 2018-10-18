@@ -82,10 +82,6 @@ public class ClazzLogger extends Logger {
     }
 
     public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType<?> fieldVarType) {
-        List<MethodLogger> callableMethods = getCallableMethods(callingMethod).stream()
-                .filter(m -> m.getReturnType() == fieldVarType)
-                .collect(Collectors.toList());
-
         return randomizer
                 .oneOf(getCallableMethods(callingMethod).stream()
                         .filter(m -> m.getReturnType() == fieldVarType))
