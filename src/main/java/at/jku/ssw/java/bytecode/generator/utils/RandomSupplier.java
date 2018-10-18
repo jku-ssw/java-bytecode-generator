@@ -6,8 +6,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.*;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.NewArray;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Null;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;
 
 public class RandomSupplier {
 
@@ -134,7 +135,7 @@ public class RandomSupplier {
                     // add cast to signal to prevent ambiguous method calls
                     // e.g. `foo(null)` could invoke
                     // `foo(java.lang.String)` or `foo(java.lang.Object)`
-                    return Null(type.clazz.getSimpleName());
+                    return cast(NULL).to(type.clazz);
                 }
         }
 
@@ -144,11 +145,11 @@ public class RandomSupplier {
     public String castedValueNotNull(FieldVarType<?> type) {
         switch (type.kind) {
             case BYTE:
-                return "(byte)" + (byte) rand.nextInt();
+                return cast((byte) rand.nextInt()).to(byte.class);
             case SHORT:
-                return "(short)" + (short) rand.nextInt();
+                return cast((short) rand.nextInt()).to(short.class);
             case INT:
-                return "" + rand.nextInt();
+                return String.valueOf(rand.nextInt());
             case LONG:
                 return rand.nextLong() + "L";
             case FLOAT:
@@ -156,14 +157,14 @@ public class RandomSupplier {
             case DOUBLE:
                 return rand.nextDouble() + "d";
             case BOOLEAN:
-                return "" + rand.nextBoolean();
+                return String.valueOf(rand.nextBoolean());
             case CHAR:
-                return "\'" + STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())) + "\'";
+                return asChar(STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())));
             case INSTANCE:
                 if (type.clazz.equals(String.class)) {
-                    return "\"" + getString() + "\"";
+                    return asStr(getString());
                 } else if (type.clazz.equals(Date.class)) {
-                    return "new java.util.Date(" + rand.nextLong() + "L)";
+                    return New(Date.class, rand.nextLong() + "L");
                 }
             case ARRAY:
                 return NewArray(
