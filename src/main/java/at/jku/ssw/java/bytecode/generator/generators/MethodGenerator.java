@@ -119,20 +119,21 @@ class MethodGenerator extends MethodCaller {
             } catch (CannotCompileException e) {
                 e.printStackTrace();
             }
-        }
+        } else {
 
-        new Randomizer(rand).oneNotNullOf(
-                () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
-                () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
-        ).ifPresent(
-                f -> {
-                    try {
-                        ctMethod.insertAfter(Return(f.getName()));
-                    } catch (CannotCompileException e) {
-                        throw new CompilationFailedException(e);
+            new Randomizer(rand).oneNotNullOf(
+                    () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
+                    () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
+            ).ifPresent(
+                    f -> {
+                        try {
+                            ctMethod.insertAfter(Return(f.getName()));
+                        } catch (CannotCompileException e) {
+                            throw new CompilationFailedException(e);
+                        }
                     }
-                }
-        );
+            );
+        }
     }
 
     //===============================================Method Calling=====================================================
