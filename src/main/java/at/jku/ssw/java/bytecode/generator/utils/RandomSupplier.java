@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.NewArray;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Null;
 
 public class RandomSupplier {
 
@@ -130,7 +131,10 @@ public class RandomSupplier {
             case ARRAY:
                 // 25% chance for objects to be initialized with null
                 if (rand.nextInt(4) == 0) {
-                    return "null";
+                    // add cast to signal to prevent ambiguous method calls
+                    // e.g. `foo(null)` could invoke
+                    // `foo(java.lang.String)` or `foo(java.lang.Object)`
+                    return Null(type.clazz.getSimpleName());
                 }
         }
 
