@@ -38,7 +38,7 @@ public class StatementDSL {
         }
 
         public String toLocalVar(Class<?> type, String name) {
-            return String.format(LOCAL_VAR, type.getSimpleName(), name, this.type, value);
+            return String.format(LOCAL_VAR, type.getCanonicalName(), name, this.type, value);
         }
 
         public String to(String name) {
@@ -60,7 +60,7 @@ public class StatementDSL {
         }
 
         public String to(Class<?> type) {
-            return String.format(CAST, type.getSimpleName(), value);
+            return String.format(CAST, type.getCanonicalName(), value);
         }
     }
 
@@ -78,6 +78,7 @@ public class StatementDSL {
         public static final String STATEMENT = "%s; ";
         public static final String SUBTRACT = "%s - %s";
         public static final String CALL_NO_PARAMS = "%s()";
+        public static final String CALL_PARAMS = "%s(%s)";
         public static final String IN_PAR = "(%s)";
         public static final String RETURN = "return %s;";
         public static final String INCR = "%s++";
@@ -88,6 +89,7 @@ public class StatementDSL {
         public static final String NEW_ARRAY = "new %s";
         public static final String ARRAY_DIM = "[%s]";
         public static final String TERNARY = "(%s ? %s : %s)";
+        public static final String NULL_AS = "(%s) null";
     }
 
     public static class Blocks {
@@ -146,6 +148,10 @@ public class StatementDSL {
         return String.format(CALL_NO_PARAMS, method);
     }
 
+    public static String call(String method, String paramString) {
+        return String.format(CALL_PARAMS, method, paramString);
+    }
+
     public static String concat(String... words) {
         return String.join(" + ", words);
     }
@@ -189,5 +195,9 @@ public class StatementDSL {
 
     public static <T> String ternary(String cond, T t, T e) {
         return String.format(cond, t, e);
+    }
+
+    public static <T> String Null(String type) {
+        return String.format(NULL_AS, type);
     }
 }
