@@ -5,8 +5,11 @@ import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MethodLogger extends Logger {
+
+    private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
 
     private final boolean inherited;
     private String name;
@@ -89,6 +92,20 @@ public class MethodLogger extends Logger {
         int result = Objects.hash(name);
         result = 31 * result + Arrays.hashCode(paramTypes);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                TO_STRING_FORMAT,
+                (inherited ? "@Inherited " : ""),
+                Modifier.toString(modifiers),
+                returnType.clazz.getCanonicalName(),
+                name,
+                Arrays.stream(paramTypes)
+                        .map(ft -> ft.clazz)
+                        .map(Class::getCanonicalName)
+                        .collect(Collectors.joining(", ")));
     }
 
     public boolean isInherited() {
