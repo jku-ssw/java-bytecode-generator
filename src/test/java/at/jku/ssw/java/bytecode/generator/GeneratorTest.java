@@ -23,11 +23,10 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
     String outputDirectory();
 
-    default GeneratedClass generateClass(String name, int iters, String... options) {
+    default GeneratedClass generateClass(String name, String... options) {
         // join passed options and defaults
         String[] allOpts = Stream.concat(
                 Stream.of(
-                        "-l", String.valueOf(iters),    // use `iters` iterations to generate the class
                         "-filename", name               // use file name
                 ),
                 Stream.of(options)
@@ -48,10 +47,6 @@ public interface GeneratorTest extends CLIArgumentsProvider {
     default void compareResults(Result expected, Result actual) {
         assertEquals(expected.out, actual.out.replaceAll(actual.className, expected.className));
         assertEquals(expected.err, actual.err.replaceAll(actual.className, expected.className));
-    }
-
-    default GeneratedClass generateClass(String name, String... options) {
-        return generateClass(name, 1, options);
     }
 
     default GeneratedClass generateClass(String name, List<String> options) {
@@ -93,7 +88,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
             if (!p.waitFor(1, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
-                fail("Execution of " + clazz.name + " failed ");
+                fail("Execution of " + clazz + " failed ");
             }
 
             String out = outStr.lines().collect(Collectors.joining());
