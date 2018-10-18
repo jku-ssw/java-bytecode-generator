@@ -60,7 +60,8 @@ public class RandomCodeGenerator {
         this.controller = controller;
 
         this.seed = controller.getSeedValue();
-        System.out.printf("Using seed %d\n", seed);
+        logger.info("Generating class {}", fileName);
+        logger.info("SEED: {}", seed);
 
         this.rand = new Random(seed);
 
@@ -448,6 +449,10 @@ public class RandomCodeGenerator {
 
     public void writeFile(String directoryName) {
         fieldVarGenerator.writeFile(directoryName);
+    }
+
+    public int getSeed() {
+        return seed;
     }
 }
 

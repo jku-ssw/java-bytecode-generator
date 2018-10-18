@@ -23,7 +23,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
     String outputDirectory();
 
-    default String generateClass(String name, int iters, String... options) {
+    default GeneratedClass generateClass(String name, int iters, String... options) {
         // join passed options and defaults
         String[] allOpts = Stream.concat(
                 Stream.of(
@@ -42,7 +42,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         randomCodeGenerator.generate();
         randomCodeGenerator.writeFile(outputDirectory());
 
-        return className;
+        return new GeneratedClass(className, randomCodeGenerator.getSeed());
     }
 
     default void compareResults(Result expected, Result actual) {
@@ -50,11 +50,11 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         assertEquals(expected.err, actual.err.replaceAll(actual.className, expected.className));
     }
 
-    default String generateClass(String name, String... options) {
+    default GeneratedClass generateClass(String name, String... options) {
         return generateClass(name, 1, options);
     }
 
-    default String generateClass(String name, List<String> options) {
+    default GeneratedClass generateClass(String name, List<String> options) {
         return generateClass(name, options.toArray(new String[0]));
     }
 
@@ -83,23 +83,23 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         });
     }
 
-    default Result run(String className)
+    default Result run(GeneratedClass clazz)
             throws IOException, InterruptedException {
 
-        Process p = Runtime.getRuntime().exec("java " + className, null, new File(outputDirectory()));
+        Process p = Runtime.getRuntime().exec("java " + clazz.name, null, new File(outputDirectory()));
 
         try (BufferedReader outStr = new BufferedReader(new InputStreamReader(p.getInputStream()));
              BufferedReader errStr = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
 
             if (!p.waitFor(1, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
-                fail("Execution of " + className + " failed ");
+                fail("Execution of " + clazz.name + " failed ");
             }
 
             String out = outStr.lines().collect(Collectors.joining());
             String err = errStr.lines().collect(Collectors.joining());
 
-            return new Result(className, out, err);
+            return new Result(clazz.name, out, err);
         }
     }
 

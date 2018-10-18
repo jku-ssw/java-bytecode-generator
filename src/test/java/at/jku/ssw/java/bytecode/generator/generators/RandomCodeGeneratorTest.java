@@ -1,8 +1,11 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.CLIArgumentsProvider;
+import at.jku.ssw.java.bytecode.generator.GeneratedClass;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
 import at.jku.ssw.java.bytecode.generator.Result;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -14,6 +17,9 @@ import static org.hamcrest.Matchers.is;
 
 
 public class RandomCodeGeneratorTest implements GeneratorTest {
+
+    private static final Logger logger = LogManager.getLogger();
+
     private static final int REPETITIONS = 50;
     private static final int MINOR_REPETITIONS = 10;
 
@@ -27,15 +33,17 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
     @SuppressWarnings("unchecked")
     void testSeedGenerate(List<String> args) throws Exception {
         int seed = new Random().nextInt();
-        System.out.println("Using seed " + seed);
         args.add("-seed");
         args.add(String.valueOf(seed));
 
-        final String classA = generateClass("ASeededClass", args);
+        final GeneratedClass classA = generateClass("ASeededClass", args);
 
-        final String classB = generateClass("AClassWithTheSameSeed", args);
+        final GeneratedClass classB = generateClass("AClassWithTheSameSeed", args);
 
+        logger.info("Running class {}", classA);
         final Result exp = run(classA);
+
+        logger.info("Running class {}", classB);
         final Result act = run(classB);
 
         compareResults(exp, act);
@@ -69,11 +77,12 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
         printArgs(args);
 
-        generateClass(className, args);
+        GeneratedClass clazz = generateClass(className, args);
 
-        System.out.println("Executing class '" + className + "'");
+        System.out.println("Executing class '" + clazz.name + "'");
 
-        Result result = run(className);
+        logger.info("Running class {}", clazz);
+        Result result = run(clazz);
 
         if (ALLOW_ARITHMETIC_EXCEPTIONS) {
             assertThat(

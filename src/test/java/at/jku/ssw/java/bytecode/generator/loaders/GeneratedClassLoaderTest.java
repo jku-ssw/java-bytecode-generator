@@ -1,6 +1,9 @@
 package at.jku.ssw.java.bytecode.generator.loaders;
 
+import at.jku.ssw.java.bytecode.generator.GeneratedClass;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratedClassLoaderTest implements GeneratorTest {
+
+    private static final Logger logger = LogManager.getLogger();
 
     private static final int REPETITIONS = 50;
     private static final int MAX_LENGTH = 20;
@@ -36,21 +41,23 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testLoadValidClass(List<String> args, int index) throws Exception {
-        String className = generateClass("AValidClass" + index, args);
+        GeneratedClass genClass = generateClass("AValidClass" + index, args);
 
-        Class<?> clazz = generatedClassLoader.findClass(className);
+        Class<?> clazz = generatedClassLoader.findClass(genClass.name);
 
-        assertEquals(className, clazz.getCanonicalName());
+        assertEquals(genClass.name, clazz.getCanonicalName());
     }
 
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInstantiation(List<String> args, int index) throws Exception {
-        String className = generateClass("AnInstantiableClass" + index, args);
+        GeneratedClass genClass = generateClass("AnInstantiableClass" + index, args);
 
-        Class<?> clazz = generatedClassLoader.findClass(className);
+        Class<?> clazz = generatedClassLoader.findClass(genClass.name);
 
-        assertEquals(className, clazz.getCanonicalName());
+        logger.info("Created class {}", genClass);
+
+        assertEquals(genClass.name, clazz.getCanonicalName());
 
         // class must be instantiable
         Object __ = clazz.newInstance();
@@ -69,11 +76,13 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInvokeMainMethod(List<String> args, int index) throws Exception {
-        String className = generateClass("AClassWithMainMethod" + index, args);
+        GeneratedClass genClass = generateClass("AClassWithMainMethod" + index, args);
 
-        Class<?> clazz = generatedClassLoader.findClass(className);
+        Class<?> clazz = generatedClassLoader.findClass(genClass.name);
 
-        assertEquals(className, clazz.getCanonicalName());
+        logger.info("Created class {}", genClass);
+
+        assertEquals(genClass.name, clazz.getCanonicalName());
 
         Method main = clazz.getDeclaredMethod("main", String[].class);
 
@@ -88,11 +97,13 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @ParameterizedTest
     @ArgumentsSource(GeneratedClassLoaderTest.class)
     public void testInvokeRunMethod(List<String> args, int index) throws Exception {
-        String className = generateClass("AClassWithRunMethod" + index, args);
+        GeneratedClass genClass = generateClass("AClassWithRunMethod" + index, args);
 
-        Class<?> clazz = generatedClassLoader.findClass(className);
+        Class<?> clazz = generatedClassLoader.findClass(genClass.name);
 
-        assertEquals(className, clazz.getCanonicalName());
+        logger.info("Created class {}", genClass);
+
+        assertEquals(genClass.name, clazz.getCanonicalName());
 
         Method run = clazz.getDeclaredMethod("run");
 
