@@ -1,14 +1,16 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
+import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import static at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator.Context.CONTROL_CONTEXT;
 import static at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator.Context.METHOD_CONTEXT;
@@ -18,7 +20,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
 
 public class RandomCodeGenerator {
 
-    private static final Logger logger = Logger.getLogger(RandomCodeGenerator.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     enum Context {
         PROGRAM_CONTEXT,
@@ -49,10 +51,15 @@ public class RandomCodeGenerator {
      */
     private final Random rand;
 
+    /**
+     * The seed that the random generator was initialized with.
+     */
+    private final int seed;
+
     public RandomCodeGenerator(String fileName, GenerationController controller) {
         this.controller = controller;
 
-        int seed = controller.getSeedValue();
+        this.seed = controller.getSeedValue();
         System.out.printf("Using seed %d\n", seed);
 
         this.rand = new Random(seed);
@@ -91,18 +98,24 @@ public class RandomCodeGenerator {
     }
 
     public void generate() {
-        //generate code in run()-method
-        generate(Context.PROGRAM_CONTEXT);
-        //generate method-bodies
-        if (this.getClazzLogger().hasMethods()) {
-            // do not attempt to modify inherited methods
-            getClazzLogger().getMethods().stream()
-                    .filter(m -> !m.isInherited())
-                    .forEach(methodGenerator::generateMethodBody);
+        try {
+            //generate code in run()-method
+            generate(Context.PROGRAM_CONTEXT);
+            //generate method-bodies
+            if (this.getClazzLogger().hasMethods()) {
+                // do not attempt to modify inherited methods
+                getClazzLogger().getMethods().stream()
+                        .filter(m -> !m.isInherited())
+                        .forEach(methodGenerator::generateMethodBody);
+            }
+            //compute HashValue of all globals
+            this.methodGenerator.generateHashMethod();
+            this.methodGenerator.callRunAndHashMethods(controller.executeRunXTimes());
+        } catch (CompilationFailedException e) {
+            logger.fatal("Could not finish generation of class {} due to compilation errors", getClazzFileContainer().getFileName());
+            logger.fatal("The seed that was used to initialize the random generator was {}", seed);
+            e.printStackTrace();
         }
-        //compute HashValue of all globals
-        this.methodGenerator.generateHashMethod();
-        this.methodGenerator.callRunAndHashMethods(controller.executeRunXTimes());
     }
 
     void generate(Context context) {

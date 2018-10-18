@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
+import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
@@ -29,7 +30,7 @@ class FieldVarGenerator extends Generator {
             f.setModifiers(modifiers);
             this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, true);
         } catch (CannotCompileException e) {
-            throw new AssertionError(e);
+            throw new CompilationFailedException(e);
         }
     }
 
@@ -64,7 +65,7 @@ class FieldVarGenerator extends Generator {
             method.logVariable(name, type, 0, true);
             return src;
         } catch (CannotCompileException e) {
-            throw new AssertionError(e);
+            throw new CompilationFailedException(e);
         }
     }
 

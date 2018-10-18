@@ -1,14 +1,16 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
+import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.CannotCompileException;
 import javassist.CtMethod;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
 import java.util.Stack;
-import java.util.logging.Logger;
 
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
@@ -18,7 +20,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.B
 
 class ControlFlowGenerator extends Generator {
 
-    public static final Logger logger = Logger.getLogger(ControlFlowGenerator.class.getName());
+    public static final Logger logger = LogManager.getLogger();
 
     private static class Context {
         int branches = 0;
@@ -208,14 +210,14 @@ class ControlFlowGenerator extends Generator {
             ctMethod.insertAfter(controlSrc.toString());
             controlSrc.setLength(0);
         } catch (CannotCompileException e) {
-            logger.severe(controlSrc.toString());
-            throw new AssertionError(e);
+            logger.fatal("Could not compile control flow source: {}", controlSrc.toString());
+            throw new CompilationFailedException(e);
         }
     }
 
     public void addCodeToControlSrc(String code) {
         if (contexts.empty())
-            logger.severe("Cannot insert code, no open control-flow-block");
+            logger.fatal("Cannot insert code, no open control-flow-block");
         else
             controlSrc.append(code);
     }

@@ -1,17 +1,18 @@
 package at.jku.ssw.java.bytecode.generator.cli;
 
 import org.apache.commons.cli.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import static at.jku.ssw.java.bytecode.generator.cli.CLIOptions.OF;
 
 public class ControlValueParser {
 
-    private static final Logger logger = Logger.getLogger(ControlValueParser.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     private final String[] args;
     private final Options options = initOptions();
@@ -183,44 +184,48 @@ public class ControlValueParser {
                     switch (optionKind) {
                         case FILENAME:
                             generationController.setFileName(cmd.getOptionValue(signature));
-                            logger.fine("FILENAME: " + cmd.getOptionValue(signature));
+                            logger.debug("FILENAME: {}", cmd.getOptionValue(signature));
                             break;
                         case DIRECTORY:
                             generationController.setLocation(cmd.getOptionValue(signature));
-                            logger.fine("Writing file to directory: " + cmd.getOptionValue(signature));
+                            logger.debug("Writing file to directory: {}", cmd.getOptionValue(signature));
                             break;
                         case OF:
                             generationController.setAvoidOverflows(false);
-                            logger.fine("Not avoiding Overflows");
+                            logger.debug("Not avoiding Overflows");
                             break;
                         case DZ:
                             generationController.setAvoidDivByZero(false);
-                            logger.fine("Not avoiding Divisions by zero");
+                            logger.debug("Not avoiding Divisions by zero");
                             break;
                         default:
                             int value = Integer.parseInt(cmd.getOptionValue(signature));
                             generationController.addControlValue(optionKind, value);
-                            logger.fine("Using argument " + options.getOption(signature).getLongOpt() + " = " +
+                            logger.debug(
+                                    "Using argument {} = {}",
+                                    options.getOption(signature).getLongOpt(),
                                     cmd.getOptionValue(signature));
                     }
                 } else {
                     switch (optionKind) {
                         case FILENAME:
                             generationController.setFileName(DEFAULT_FILENAME);
-                            logger.fine("\nDefault filename: " + DEFAULT_FILENAME);
+                            logger.debug("Default filename: {}", DEFAULT_FILENAME);
                             break;
                         case DIRECTORY:
-                            logger.fine("\nDefault directory: " + DEFAULT_DIRECTORY);
+                            logger.debug("Default directory: {}", DEFAULT_DIRECTORY);
                             break;
                         case OF:
-                            logger.fine("\nAvoiding Overflows (use -of to disable)");
+                            logger.debug("Avoiding Overflows (use -of to disable)");
                             break;
                         case DZ:
-                            logger.fine("\nAvoiding Divisions by zero (use -dz to disable)");
+                            logger.debug("Avoiding Divisions by zero (use -dz to disable)");
                             break;
                         default:
                             generationController.addControlValue(optionKind, defaultValues.get(signature));
-                            logger.fine("Using default value " + defaultValues.get(signature) + " for " +
+                            logger.debug(
+                                    "Using default value {} for {}",
+                                    defaultValues.get(signature),
                                     options.getOption(signature).getLongOpt());
                     }
                 }

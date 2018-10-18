@@ -1,11 +1,14 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
+import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import javassist.*;
 import javassist.bytecode.BadBytecode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
@@ -13,11 +16,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
-import java.util.logging.Logger;
 
 abstract class Generator {
 
-    private static final Logger logger = Logger.getLogger(Generator.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     final ClazzFileContainer clazzContainer;
     protected final Random rand;
@@ -87,8 +89,8 @@ abstract class Generator {
             CtMethod ctMethod = this.getCtMethod(method);
             ctMethod.insertAfter(src);
         } catch (CannotCompileException e) {
-            logger.severe(src);
-            throw new AssertionError(e);
+            logger.fatal(src);
+            throw new CompilationFailedException(e);
         }
     }
 }

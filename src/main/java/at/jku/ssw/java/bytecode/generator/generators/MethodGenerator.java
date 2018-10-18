@@ -1,17 +1,16 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
+import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
@@ -23,7 +22,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.R
 
 class MethodGenerator extends MethodCaller {
 
-    private static final Logger logger = Logger.getLogger(MethodGenerator.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     private final RandomCodeGenerator randomCodeGenerator;
 
@@ -77,8 +76,8 @@ class MethodGenerator extends MethodCaller {
             this.getClazzFile().addMethod(newMethod);
             return ml;
         } catch (CannotCompileException e) {
-            logger.severe(methodStr);
-            throw new AssertionError(e);
+            logger.fatal("Could not compile source code: {}", methodStr);
+            throw new CompilationFailedException(e);
         }
     }
 
@@ -130,7 +129,7 @@ class MethodGenerator extends MethodCaller {
                     try {
                         ctMethod.insertAfter(Return(f.getName()));
                     } catch (CannotCompileException e) {
-                        throw new AssertionError(e);
+                        throw new CompilationFailedException(e);
                     }
                 }
         );
@@ -222,7 +221,7 @@ class MethodGenerator extends MethodCaller {
             CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
             this.getClazzFile().addConstructor(constructor);
         } catch (CannotCompileException e) {
-            throw new AssertionError(e);
+            throw new CompilationFailedException(e);
         }
         MethodLogger runLogger = new MethodLogger(rand, "run", Modifier.PRIVATE, FieldVarType.VOID);
         this.getClazzLogger().setRun(runLogger);
@@ -282,8 +281,8 @@ class MethodGenerator extends MethodCaller {
             computeHash.insertAfter(computeHashStr);
             this.getClazzFile().addMethod(computeHash);
         } catch (CannotCompileException e) {
-            logger.severe(computeHashStr);
-            throw new AssertionError(e);
+            logger.fatal("Could not compile code to compute the hash value: {}", computeHashStr);
+            throw new CompilationFailedException(e);
         }
     }
 
@@ -302,7 +301,7 @@ class MethodGenerator extends MethodCaller {
                         fileName.toLowerCase() + ".computeHash();");
             }
         } catch (CannotCompileException e) {
-            throw new AssertionError(e);
+            throw new CompilationFailedException(e);
         }
     }
 
