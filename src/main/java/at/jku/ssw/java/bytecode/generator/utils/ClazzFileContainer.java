@@ -5,7 +5,11 @@ import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import javassist.*;
+import javassist.bytecode.ClassFilePrinter;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Random;
 
 public class ClazzFileContainer {
@@ -54,5 +58,19 @@ public class ClazzFileContainer {
 
     public String getFileName() {
         return fileName;
+    }
+
+    @Override
+    public String toString() {
+        try (StringWriter sw = new StringWriter();
+             PrintWriter pw = new PrintWriter(sw)) {
+
+            ClassFilePrinter.print(clazz.getClassFile(), pw);
+
+            return sw.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
