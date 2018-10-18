@@ -163,7 +163,7 @@ public final class Randomizer {
      */
     public final <T> Stream<T> shuffle(Stream<T> stream) {
         List<T> l = stream.collect(Collectors.toList());
-        Collections.shuffle(l);
+        Collections.shuffle(l, rand);
 
         return l.stream();
     }
