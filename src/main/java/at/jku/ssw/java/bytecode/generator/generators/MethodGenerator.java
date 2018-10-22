@@ -58,11 +58,11 @@ class MethodGenerator extends MethodCaller {
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
             paramsStr.append(paramTypes[0]).append(" ").append(paramName);
-            ml.logVariable(paramName, paramTypes[0], 0, true);
+            ml.logVariable(paramName, paramTypes[0], 0, true, false);
             for (int i = 1; i < paramTypes.length; i++) {
                 paramsStr.append(", ");
                 paramName = this.getRandomSupplier().getParVarName(i + 1);
-                ml.logVariable(paramName, paramTypes[i], 0, true);
+                ml.logVariable(paramName, paramTypes[i], 0, true, false);
                 paramsStr.append(paramTypes[i]).append(" ").append(paramName);
             }
         }

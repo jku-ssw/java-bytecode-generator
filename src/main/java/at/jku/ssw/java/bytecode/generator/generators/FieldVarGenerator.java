@@ -29,7 +29,7 @@ class FieldVarGenerator extends Generator {
                 this.getClazzFile().addField(f, value);
             }
             f.setModifiers(modifiers);
-            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, true);
+            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, true, true);
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
@@ -63,7 +63,7 @@ class FieldVarGenerator extends Generator {
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
             String src = name + " = " + value + ";";
-            method.logVariable(name, type, 0, true);
+            method.logVariable(name, type, 0, true, false);
             return src;
         } catch (CannotCompileException e) {
             throw new MethodCompilationFailedException(method, e);

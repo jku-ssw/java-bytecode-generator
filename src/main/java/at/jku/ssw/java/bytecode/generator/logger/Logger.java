@@ -19,8 +19,8 @@ abstract class Logger {
 
     Map<String, FieldVarLogger> variables;
 
-    public void logVariable(String name, FieldVarType<?> type, int modifiers, boolean initialized) {
-        FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized);
+    public void logVariable(String name, FieldVarType<?> type, int modifiers, boolean initialized, boolean isField) {
+        FieldVarLogger f = new FieldVarLogger(name, modifiers, type, initialized, isField);
         variables.put(name, f);
     }
 

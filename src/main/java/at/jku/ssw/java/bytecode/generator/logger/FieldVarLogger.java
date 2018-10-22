@@ -10,21 +10,19 @@ public class FieldVarLogger {
     private final FieldVarType<?> type;
     private final int[] dimLens;
     private boolean initialized;
+    public final boolean isField;
 
-    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, boolean initialized) {
-        this.type = type;
-        this.name = name;
-        this.modifiers = modifiers;
-        this.initialized = initialized;
-        this.dimLens = new int[0];
+    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, boolean initialized, boolean isField) {
+        this(name, modifiers, type, new int[0], initialized, isField);
     }
 
-    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, int[] dimLens, boolean initialized) {
+    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, int[] dimLens, boolean initialized, boolean isField) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
         this.initialized = initialized;
         this.dimLens = dimLens;
+        this.isField = isField;
     }
 
     public String getName() {
@@ -37,6 +35,14 @@ public class FieldVarLogger {
 
     public void setInitialized() {
         this.initialized = true;
+    }
+
+    public int getModifiers() {
+        return modifiers;
+    }
+
+    public int[] getDimLens() {
+        return dimLens;
     }
 
     public FieldVarType<?> getType() {
