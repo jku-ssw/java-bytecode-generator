@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.*;
 
@@ -91,6 +92,8 @@ public class StatementDSL {
         public static final String ARRAY_DIM = "[%s]";
         public static final String TERNARY = "(%s ? %s : %s)";
         public static final String NULL = "null";
+        public static final String ARRAY = "[%s]";
+        public static final String FIELD_ACCESS = "%s.%s";
     }
 
     public static class Blocks {
@@ -199,5 +202,19 @@ public class StatementDSL {
 
     public static <T> String ternary(String cond, T t, T e) {
         return String.format(TERNARY, cond, t, e);
+    }
+
+    public static String array(String name, List<Object> dim) {
+        return name + dim.stream()
+                .map(d -> String.format(ARRAY, dim))
+                .collect(Collectors.joining());
+    }
+
+    public static String field(String owner, String field) {
+        return String.format(FIELD_ACCESS, owner, field);
+    }
+
+    public static String variable(String owner, String v) {
+        return owner.equals("") ? v : field(owner, v);
     }
 }
