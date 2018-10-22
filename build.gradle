@@ -16,7 +16,7 @@ ext {
 }
 
 wrapper {
-    gradleVersion = '4.9'
+    gradleVersion = '4.10'
 }
 
 mainClassName = 'at.jku.ssw.java.bytecode.generator.jb_generator.JBGenerator'
