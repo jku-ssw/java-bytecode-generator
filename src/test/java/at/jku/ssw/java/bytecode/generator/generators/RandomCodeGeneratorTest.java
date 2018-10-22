@@ -72,23 +72,25 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
     @SuppressWarnings("unchecked")
     void testGenerate(List<String> args, int index) throws Exception {
         final String className = "HighBranchingFactor" + index;
-        System.out.println("Generating class '" + className + "'");
-        System.out.println("Options: ");
-
-        printArgs(args);
+        logger.info("Generating class '{}'", className);
 
         GeneratedClass clazz = generateClass(className, args);
 
-        System.out.println("Executing class '" + clazz.name + "'");
+        logger.info("Executing class '{}'", clazz.name);
 
         logger.info("Running class {}", clazz);
         Result result = run(clazz);
 
-        if (ALLOW_ARITHMETIC_EXCEPTIONS) {
-            assertThat(
-                    validateExceptions(result, ArithmeticException.class),
-                    is(true)
-            );
+        try {
+            if (ALLOW_ARITHMETIC_EXCEPTIONS) {
+                assertThat(
+                        validateExceptions(result, ArithmeticException.class),
+                        is(true)
+                );
+            }
+        } catch (Throwable t) {
+            fail(clazz);
+            throw t;
         }
     }
 

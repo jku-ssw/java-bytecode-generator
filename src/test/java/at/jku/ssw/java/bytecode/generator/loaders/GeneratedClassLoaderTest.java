@@ -2,8 +2,6 @@ package at.jku.ssw.java.bytecode.generator.loaders;
 
 import at.jku.ssw.java.bytecode.generator.GeneratedClass;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +15,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneratedClassLoaderTest implements GeneratorTest {
-
-    private static final Logger logger = LogManager.getLogger();
 
     private static final int REPETITIONS = 100;
     private static final int MAX_LENGTH = 50;
@@ -59,8 +55,13 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
         assertEquals(genClass.name, clazz.getCanonicalName());
 
-        // class must be instantiable
-        Object __ = clazz.newInstance();
+        try {
+            // class must be instantiable
+            Object __ = clazz.newInstance();
+        } catch (Throwable t) {
+            fail(genClass);
+            throw t;
+        }
     }
 
     @Test
@@ -84,14 +85,19 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
         assertEquals(genClass.name, clazz.getCanonicalName());
 
-        Method main = clazz.getDeclaredMethod("main", String[].class);
+        try {
+            Method main = clazz.getDeclaredMethod("main", String[].class);
 
-        // check that it really is the main method
-        assertTrue(Modifier.isStatic(main.getModifiers()));
-        assertTrue(Modifier.isPublic(main.getModifiers()));
-        assertEquals(Void.TYPE, main.getReturnType());
+            // check that it really is the main method
+            assertTrue(Modifier.isStatic(main.getModifiers()));
+            assertTrue(Modifier.isPublic(main.getModifiers()));
+            assertEquals(Void.TYPE, main.getReturnType());
 
-        assertNull(main.invoke(null, (Object) new String[0]));
+            assertNull(main.invoke(null, (Object) new String[0]));
+        } catch (Throwable t) {
+            fail(genClass);
+            throw t;
+        }
     }
 
     @ParameterizedTest
@@ -105,18 +111,23 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
         assertEquals(genClass.name, clazz.getCanonicalName());
 
-        Method run = clazz.getDeclaredMethod("run");
+        try {
+            Method run = clazz.getDeclaredMethod("run");
 
-        // check that it has the expected modifiers
-        assertFalse(Modifier.isStatic(run.getModifiers()));
-        assertEquals(Void.TYPE, run.getReturnType());
+            // check that it has the expected modifiers
+            assertFalse(Modifier.isStatic(run.getModifiers()));
+            assertEquals(Void.TYPE, run.getReturnType());
 
-        // class must be instantiable
-        Object instance = clazz.newInstance();
+            // class must be instantiable
+            Object instance = clazz.newInstance();
 
-        run.setAccessible(true);
+            run.setAccessible(true);
 
-        assertNull(run.invoke(instance));
+            assertNull(run.invoke(instance));
+        } catch (Throwable t) {
+            fail(genClass);
+            throw t;
+        }
     }
 
     @Override

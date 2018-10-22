@@ -3,6 +3,9 @@ package at.jku.ssw.java.bytecode.generator;
 import at.jku.ssw.java.bytecode.generator.cli.ControlValueParser;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.generators.RandomCodeGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,18 +13,25 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public interface GeneratorTest extends CLIArgumentsProvider {
 
+    Logger logger = LogManager.getLogger();
+
     String outputDirectory();
+
+    default void fail(GeneratedClass clazz) {
+        Assertions.fail(
+                () -> "Test failed\n" +
+                        "Command line arguments: " + clazz.args + "\n" +
+                        "Seed: " + clazz.seed + "\n"
+        );
+    }
 
     default GeneratedClass generateClass(String name, String... options) {
         // join passed options and defaults
@@ -37,11 +47,20 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
         final String className = controller.getFileName();
 
-        RandomCodeGenerator randomCodeGenerator = new RandomCodeGenerator(className, controller);
-        randomCodeGenerator.generate();
-        randomCodeGenerator.writeFile(outputDirectory());
 
-        return new GeneratedClass(className, randomCodeGenerator.getSeed());
+        RandomCodeGenerator randomCodeGenerator;
+        try {
+            randomCodeGenerator = new RandomCodeGenerator(className, controller);
+            randomCodeGenerator.generate();
+            randomCodeGenerator.writeFile(outputDirectory());
+        } catch (Throwable t) {
+            logger.error("Generation failed");
+            logger.error("Command line arguments: {}", String.join(" ", allOpts));
+            logger.error("Seed: {}", controller.getSeedValue());
+            throw t;
+        }
+
+        return new GeneratedClass(className, randomCodeGenerator.getSeed(), String.join(" ", allOpts));
     }
 
     default void compareResults(Result expected, Result actual) {
@@ -51,31 +70,6 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
     default GeneratedClass generateClass(String name, List<String> options) {
         return generateClass(name, options.toArray(new String[0]));
-    }
-
-    default void printArgs(List<String> args) {
-        final String valueOptionFormat = "\t%15s %-4d\n";
-        final String noValueOptionFormat = "\t%15s\n";
-
-        // print options
-        IntStream.range(0, args.size() / 2).forEach(i -> {
-            String opt = args.get(2 * i);
-
-            Optional<String> optVal = 2 * i + 1 > args.size()
-                    ? Optional.empty()
-                    : Optional.of(args.get(2 * i + 1));
-
-            if (optVal.isPresent()) {
-                String val = optVal.get();
-                if (val.startsWith("-")) {
-                    System.out.format(noValueOptionFormat, opt);
-                    System.out.format(noValueOptionFormat, val);
-                } else {
-                    System.out.format(valueOptionFormat, opt, Integer.parseInt(val));
-                }
-            } else
-                System.out.format(noValueOptionFormat, opt);
-        });
     }
 
     default Result run(GeneratedClass clazz)
@@ -88,7 +82,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
             if (!p.waitFor(1, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
-                fail("Execution of " + clazz + " failed ");
+                fail(clazz);
             }
 
             String out = outStr.lines().collect(Collectors.joining());
@@ -108,8 +102,8 @@ public interface GeneratorTest extends CLIArgumentsProvider {
                 .collect(Collectors.toList());
 
         diff.forEach(l -> {
-            System.out.println(result.err);
-            fail("Execution of " + result.className + " failed - unexpected exception: " + l);
+            logger.error(result.err);
+            logger.error("Execution of " + result.className + " failed - difference in line: " + l);
         });
 
         return diff.isEmpty();
