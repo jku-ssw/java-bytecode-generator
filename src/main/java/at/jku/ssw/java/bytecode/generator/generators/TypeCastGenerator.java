@@ -8,6 +8,7 @@ import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.Random;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
@@ -40,9 +41,13 @@ public class TypeCastGenerator extends Generator {
                                         .filter(isPrimitiveCastable)
                                         // only add type cast for variables that are actually of different types
                                         .filter(v -> !dest.getType().equals(v.getType()))
-                                        .map(v ->
-                                                Statement(assign(cast(v.getName()).to(dest.getType().clazz)).to(dest.getName()))))
-        ).findAny().ifPresent(statement -> insertIntoMethodBody(method, statement));
+                                        .map(v -> (Supplier<String>) () -> {
+                                            dest.setInitialized();
+                                            return Statement(assign(cast(v.access()).to(dest.getType().clazz)).to(dest.access()));
+                                        }))
+        ).findAny()
+                .map(Supplier::get)
+                .ifPresent(statement -> insertIntoMethodBody(method, statement));
 
     }
 }
