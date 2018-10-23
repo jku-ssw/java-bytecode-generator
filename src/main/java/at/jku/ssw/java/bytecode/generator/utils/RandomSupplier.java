@@ -170,6 +170,7 @@ public class RandomSupplier {
                 return NewArray(
                         type.clazz,
                         rand.ints(0, maxArrayDimSize + 1)
+                                .map(i -> i + FieldVarType.MIN_ARRAY_DIM_LENGTH)
                                 .limit(type.dim)
                                 .boxed()
                                 .collect(Collectors.toList())
