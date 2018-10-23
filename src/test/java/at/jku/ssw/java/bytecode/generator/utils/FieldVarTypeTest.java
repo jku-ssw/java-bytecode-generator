@@ -44,16 +44,16 @@ public class FieldVarTypeTest {
 
     private static Stream<Arguments> arrayTypeProvider() {
         return Stream.of(
-                arguments(classType(String.class), 1, arrayType(String[].class)),
-                arguments(classType(Date.class), 3, arrayType(Date[][][].class)),
-                arguments(type(byte.class, Kind.BYTE), 19, arrayType(byte[][][][][][][][][][][][][][][][][][][].class)),
-                arguments(type(short.class, Kind.SHORT), 2, arrayType(short[][].class)),
-                arguments(type(int.class, Kind.INT), 10, arrayType(int[][][][][][][][][][].class)),
-                arguments(type(long.class, Kind.LONG), 5, arrayType(long[][][][][].class)),
-                arguments(type(float.class, Kind.FLOAT), 2, arrayType(float[][].class)),
-                arguments(type(double.class, Kind.DOUBLE), 4, arrayType(double[][][][].class)),
-                arguments(type(char.class, Kind.CHAR), 7, arrayType(char[][][][][][][].class)),
-                arguments(type(boolean.class, Kind.BOOLEAN), 1, arrayType(boolean[].class))
+                arguments(classType(String.class), 1, arrayType(String[].class, STRING)),
+                arguments(classType(Date.class), 3, arrayType(Date[][][].class, DATE)),
+                arguments(type(byte.class, Kind.BYTE), 19, arrayType(byte[][][][][][][][][][][][][][][][][][][].class, BYTE)),
+                arguments(type(short.class, Kind.SHORT), 2, arrayType(short[][].class, SHORT)),
+                arguments(type(int.class, Kind.INT), 10, arrayType(int[][][][][][][][][][].class, INT)),
+                arguments(type(long.class, Kind.LONG), 5, arrayType(long[][][][][].class, LONG)),
+                arguments(type(float.class, Kind.FLOAT), 2, arrayType(float[][].class, FLOAT)),
+                arguments(type(double.class, Kind.DOUBLE), 4, arrayType(double[][][][].class, DOUBLE)),
+                arguments(type(char.class, Kind.CHAR), 7, arrayType(char[][][][][][][].class, CHAR)),
+                arguments(type(boolean.class, Kind.BOOLEAN), 1, arrayType(boolean[].class, BOOLEAN))
         );
     }
 
@@ -84,18 +84,14 @@ public class FieldVarTypeTest {
         return new FieldVarType<>(type, Kind.INSTANCE);
     }
 
-    private static <T> FieldVarType<T> arrayType(Class<T> type) {
+    private static <T> FieldVarType<T> arrayType(Class<T> type, FieldVarType<?> componentType) {
         assert type.isArray();
 
-        int dim = 0;
-
-        for (Class<?> componentType = type.getComponentType();
-             componentType != null;
-             componentType = componentType.getComponentType()) {
-            dim++;
-        }
-
-        return new FieldVarType<>(type, dim);
+        return new FieldVarType<>(
+                type,
+                ClassUtils.dimensions(type),
+                componentType
+        );
     }
 
 }

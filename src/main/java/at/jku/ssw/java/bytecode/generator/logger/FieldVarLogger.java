@@ -4,29 +4,27 @@ import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 
 import java.lang.reflect.Modifier;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.variable;
+
 public class FieldVarLogger {
-    private final String name;
+    public final String name;
     private final int modifiers;
     private final FieldVarType<?> type;
-    private final int[] dimLens;
     private boolean initialized;
     public final boolean isField;
+    public final String clazz;
 
-    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, boolean initialized, boolean isField) {
-        this(name, modifiers, type, new int[0], initialized, isField);
-    }
-
-    public FieldVarLogger(String name, int modifiers, FieldVarType<?> type, int[] dimLens, boolean initialized, boolean isField) {
+    public FieldVarLogger(String name, String clazz, int modifiers, FieldVarType<?> type, boolean initialized, boolean isField) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
         this.initialized = initialized;
-        this.dimLens = dimLens;
         this.isField = isField;
+        this.clazz = clazz;
     }
 
-    public String getName() {
-        return name;
+    public String access() {
+        return variable(getCaller(), name);
     }
 
     public boolean isInitialized() {
@@ -41,10 +39,6 @@ public class FieldVarLogger {
         return modifiers;
     }
 
-    public int[] getDimLens() {
-        return dimLens;
-    }
-
     public FieldVarType<?> getType() {
         return type;
     }
@@ -55,5 +49,22 @@ public class FieldVarLogger {
 
     public boolean isStatic() {
         return Modifier.isStatic(modifiers);
+    }
+
+    /**
+     * Returns the descriptor of the caller of this field or variable
+     * in the corresponding class.
+     *
+     * @return a string representation of the caller
+     */
+    public String getCaller() {
+        return isStatic()
+                ? clazz
+                : isField ? "this" : "";
+    }
+
+    @Override
+    public String toString() {
+        return access();
     }
 }

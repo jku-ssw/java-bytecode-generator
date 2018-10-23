@@ -53,16 +53,16 @@ class MethodGenerator extends MethodCaller {
     //============================================Method Generation=====================================================
 
     private MethodLogger generateMethod(String name, FieldVarType<?> returnType, FieldVarType[] paramTypes, int modifiers) {
-        MethodLogger ml = new MethodLogger(rand, name, modifiers, returnType, paramTypes);
+        MethodLogger ml = new MethodLogger(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
             paramsStr.append(paramTypes[0]).append(" ").append(paramName);
-            ml.logVariable(paramName, paramTypes[0], 0, true, false);
+            ml.logVariable(paramName, clazzContainer.getFileName(), paramTypes[0], 0, true, false);
             for (int i = 1; i < paramTypes.length; i++) {
                 paramsStr.append(", ");
                 paramName = this.getRandomSupplier().getParVarName(i + 1);
-                ml.logVariable(paramName, paramTypes[i], 0, true, false);
+                ml.logVariable(paramName, clazzContainer.getFileName(), paramTypes[i], 0, true, false);
                 paramsStr.append(paramTypes[i]).append(" ").append(paramName);
             }
         }
@@ -133,7 +133,7 @@ class MethodGenerator extends MethodCaller {
             ).ifPresent(
                     f -> {
                         try {
-                            ctMethod.insertAfter(Return(f.getName()));
+                            ctMethod.insertAfter(Return(f.access()));
                         } catch (CannotCompileException e) {
                             throw new MethodCompilationFailedException(method, e);
                         }
@@ -146,7 +146,7 @@ class MethodGenerator extends MethodCaller {
 
     private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
         FieldVarType[] paramTypes = calledMethod.getParamsTypes();
-        ParamWrapper[] values = getClazzLogger().getParamValues(paramTypes, method);
+        ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
         Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
         calledMethod.addToExcludedForCalling(excludedForCalling);
@@ -189,7 +189,7 @@ class MethodGenerator extends MethodCaller {
             return null;
         }
         fieldVar.setInitialized();
-        return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + srcCallMethod(calledMethod, method);
+        return fieldVar.access() + " = (" + fieldVar.getType() + ") " + srcCallMethod(calledMethod, method);
     }
 
     public String srcSetFieldToReturnValue(MethodLogger method) {
@@ -229,7 +229,7 @@ class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger runLogger = new MethodLogger(rand, "run", Modifier.PRIVATE, FieldVarType.VOID);
+        MethodLogger runLogger = new MethodLogger(rand, getClazzLogger().name, "run", Modifier.PRIVATE, FieldVarType.VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
     }
@@ -264,7 +264,7 @@ class MethodGenerator extends MethodCaller {
         if (this.getClazzLogger().hasVariables()) {
             src.append(
                     initGlobals.stream()
-                            .map(f -> getHashComputation(f.getType(), f.getName()))
+                            .map(f -> getHashComputation(f.getType(), f.access()))
                             .collect(Collectors.joining())
             );
         }

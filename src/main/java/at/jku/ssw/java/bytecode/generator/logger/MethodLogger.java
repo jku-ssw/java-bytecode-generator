@@ -20,12 +20,15 @@ public class MethodLogger extends Logger {
     private Set<MethodLogger> methodsExcludedForCalling;
     private Set<MethodLogger> calledByThisMethod;
 
-    public MethodLogger(Random rand, String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
-        this(rand, name, modifiers, returnType, false, paramTypes);
+    public final String clazz;
+
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
+        this(rand, clazz, name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(Random rand, String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
         super(rand);
+        this.clazz = clazz;
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;
@@ -43,7 +46,6 @@ public class MethodLogger extends Logger {
     public void addMethodToCalledByThisMethod(Set<MethodLogger> calledByThisMethod) {
         this.calledByThisMethod.addAll(calledByThisMethod);
     }
-
 
     public Set<MethodLogger> getMethodsExcludedForCalling() {
         return new HashSet<>(methodsExcludedForCalling);

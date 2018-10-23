@@ -2,7 +2,10 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.*;
+import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
+import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.utils.Operator;
+import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import javassist.*;
 
 import java.util.*;
@@ -82,7 +85,7 @@ class MathGenerator extends MethodCaller {
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
         FieldVarType[] paramTypes = getParamTypes(signature);
-        ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
+        ParamWrapper[] paramValues = getClazzLogger().randomParameterValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && (noOverflow || noDivByZero)) {
             String noExceptionIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noExceptionIf == null) {
@@ -117,14 +120,14 @@ class MathGenerator extends MethodCaller {
 
     private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
         FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
-        ParamWrapper[] paramValues = getClazzLogger().getParamValues(paramTypes, method);
+        ParamWrapper[] paramValues = getClazzLogger().randomParameterValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
             String noOverFlowIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
             if (noOverFlowIf == null) return null;
-            return noOverFlowIf + fieldVar.getName() + " = " + "Math." +
+            return noOverFlowIf + fieldVar.access() + " = " + "Math." +
                     generateMethodCallString(mathMethod.getName(), paramTypes, paramValues) + "}";
         } else
-            return fieldVar.getName() + " = (" + fieldVar.getType() + ") " + "Math." +
+            return fieldVar.access() + " = (" + fieldVar.getType() + ") " + "Math." +
                     generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
@@ -204,9 +207,9 @@ class MathGenerator extends MethodCaller {
         }
         StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind, false));
         if (src.indexOf("if") != -1) {
-            src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
+            src.insert(src.indexOf("{") + 1, f.access() + " = (" + f.getType() + ") (");
         } else {
-            src.insert(0, f.getName() + " = (" + f.getType() + ") (");
+            src.insert(0, f.access() + " = (" + f.getType() + ") (");
         }
         src.insert(src.indexOf(";"), ")");
         return src.toString();
@@ -226,9 +229,9 @@ class MathGenerator extends MethodCaller {
         }
         StringBuilder src = new StringBuilder(srcGenerateOperatorStatement(method, maxOperations, opStatKind, false));
         if (src.indexOf("if") != -1) {
-            src.insert(src.indexOf("{") + 1, f.getName() + " = (" + f.getType() + ") (");
+            src.insert(src.indexOf("{") + 1, f.access() + " = (" + f.getType() + ") (");
         } else {
-            src.insert(0, f.getName() + " = (" + f.getType() + ") (");
+            src.insert(0, f.access() + " = (" + f.getType() + ") (");
         }
         src.insert(src.indexOf(";"), ")");
         return src.toString();
@@ -246,9 +249,9 @@ class MathGenerator extends MethodCaller {
 
     private static String getNoExceptionIf(String longName, ParamWrapper[] paramValues, FieldVarType[] paramTypes) {
         String[] params = new String[2];
-        params[0] = paramToCorrectStringFormat(paramTypes[0], paramValues[0]);
+        params[0] = paramValues[0].getParamValue().toString();
         if (paramTypes.length == 2) {
-            params[1] = paramToCorrectStringFormat(paramTypes[1], paramValues[1]);
+            params[1] = paramValues[1].getParamValue().toString();
         }
         if (noOverflow) {
             switch (longName) {
@@ -436,7 +439,7 @@ class MathGenerator extends MethodCaller {
                 }
                 addToCheckForDivByZero = false;
             } else {
-                operand = f.getName();
+                operand = f.access();
                 if (f.isFinal() || (operator == MOD || operator == DIV)) {
                     useNonUnary = true;
                 }

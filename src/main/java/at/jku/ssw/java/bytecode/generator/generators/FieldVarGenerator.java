@@ -12,6 +12,8 @@ import javassist.CtMethod;
 
 import java.util.Random;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
+
 class FieldVarGenerator extends Generator {
 
     public FieldVarGenerator(Random rand, ClazzFileContainer clazzContainer) {
@@ -29,7 +31,7 @@ class FieldVarGenerator extends Generator {
                 this.getClazzFile().addField(f, value);
             }
             f.setModifiers(modifiers);
-            this.getClazzContainer().getClazzLogger().logVariable(name, type, modifiers, true, true);
+            this.getClazzContainer().getClazzLogger().logVariable(name, clazzContainer.getFileName(), type, modifiers, true, true);
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
@@ -63,7 +65,7 @@ class FieldVarGenerator extends Generator {
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());
             String src = name + " = " + value + ";";
-            method.logVariable(name, type, 0, true, false);
+            method.logVariable(name, clazzContainer.getFileName(), type, 0, true, false);
             return src;
         } catch (CannotCompileException e) {
             throw new MethodCompilationFailedException(method, e);
@@ -73,7 +75,14 @@ class FieldVarGenerator extends Generator {
     //=============================================PRINT VARIABLES======================================================
 
     private String srcGeneratePrintStatement(FieldVarLogger variable) {
-        return "System.out.println(\"" + variable.getName() + " = \" + " + variable.getName() + ");";
+        return Statement(
+                SystemOutPrintln(
+                        concat(
+                                asStr(variable.name + " = "),
+                                variable.access()
+                        )
+                )
+        );
     }
 
     public void generatePrintStatement(MethodLogger method) {
@@ -115,7 +124,7 @@ class FieldVarGenerator extends Generator {
     private String srcSetVarValue(FieldVarLogger fieldVar, String value) {
         if (value != null) {
             fieldVar.setInitialized();
-            return fieldVar.getName() + " = " + value + ";";
+            return fieldVar.access() + " = " + value + ";";
         } else return null;
     }
 
@@ -251,7 +260,7 @@ class FieldVarGenerator extends Generator {
 
     private String srcAssignVariableToVariable(FieldVarLogger var1, FieldVarLogger var2) {
         var1.setInitialized();
-        return var1.getName() + " = " + var2.getName() + ";";
+        return var1.access() + " = " + var2.access() + ";";
     }
 }
 

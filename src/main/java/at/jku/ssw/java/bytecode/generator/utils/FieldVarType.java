@@ -14,6 +14,8 @@ import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.INSTANC
 
 public class FieldVarType<T> {
 
+    public static final int MIN_ARRAY_DIM_LENGTH = 10;
+
     /**
      * Instance container that stores any object of type {@link FieldVarType}
      * that is created. Is used to retrieve random types.
@@ -165,10 +167,15 @@ public class FieldVarType<T> {
             throw new AssertionError(e);
         }
 
-        return new FieldVarType<>(clazz, dim);
+        return new FieldVarType<>(clazz, dim, type);
     }
 
     public final Kind kind;
+
+    /**
+     * Optional inner type descriptor for array types.
+     */
+    public final FieldVarType<?> inner;
     public final Class<T> clazz;
     private final CtClass clazzType;
     public final int dim;
@@ -193,16 +200,17 @@ public class FieldVarType<T> {
         this(clazz, getCtClassType(clazz.getCanonicalName()), kind);
     }
 
-    FieldVarType(Class<T> clazz, int dim) {
-        this(clazz, getCtClassType(clazz.getCanonicalName()), ARRAY, dim);
+    public FieldVarType(Class<T> clazz, int dim, FieldVarType<?> inner) {
+        this(clazz, getCtClassType(clazz.getCanonicalName()), ARRAY, inner, dim);
     }
 
     FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind) {
-        this(clazz, clazzType, kind, 0);
+        this(clazz, clazzType, kind, null, 0);
     }
 
-    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, int dim) {
+    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim) {
         this.kind = kind;
+        this.inner = inner;
         this.clazz = clazz;
         this.clazzType = clazzType;
         this.dim = dim;
@@ -216,6 +224,14 @@ public class FieldVarType<T> {
         return NUMERIC_TYPES;
     }
 
+    /**
+     * Checks whether this type is assignable from the given type -
+     * e.g. {@code Object} being assignable from anything
+     *
+     * @param other The other type whose compatibility is checked
+     * @return {@code true} if the type is assignable to this type;
+     * {@code false} otherwise
+     */
     public boolean isAssignableFrom(FieldVarType<?> other) {
         switch (kind) {
             case INSTANCE:

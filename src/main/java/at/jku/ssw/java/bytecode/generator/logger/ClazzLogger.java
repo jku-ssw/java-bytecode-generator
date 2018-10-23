@@ -6,23 +6,26 @@ import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ClazzLogger extends Logger {
 
+    public final String name;
     private final List<MethodLogger> methods;
     private final MethodLogger main;
     private MethodLogger run;
     private final RandomSupplier randomSupplier;
     private final Randomizer randomizer;
 
-    public ClazzLogger(Random rand, MethodLogger main, RandomSupplier randomSupplier) {
+    public ClazzLogger(Random rand, String name, MethodLogger main, RandomSupplier randomSupplier) {
         super(rand);
+        this.name = name;
         this.methods = new ArrayList<>();
         // only use these if result should be non-deterministic
-        // this.methods.add(new MethodLogger("hashCode", Modifier.PUBLIC, FieldVarType.INT, true));
-        // this.methods.add(new MethodLogger("toString", Modifier.PUBLIC, FieldVarType.STRING, true));
+        // this.methods.add(new MethodLogger("hashCode", name, Modifier.PUBLIC, FieldVarType.INT, true));
+        // this.methods.add(new MethodLogger("toString", name, Modifier.PUBLIC, FieldVarType.STRING, true));
         this.variables = new HashMap<>();
         this.main = main;
         this.randomSupplier = randomSupplier;
@@ -112,42 +115,35 @@ public class ClazzLogger extends Logger {
         return !methods.isEmpty();
     }
 
-    private boolean addFieldToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType<?> type) {
-        return Optional.ofNullable(getInitializedFieldOfTypeUsableInMethod(method, type))
-                .map(fvl -> values.add(new ParamWrapper<>(fvl)))
-                .isPresent();
+    public ParamWrapper[] randomParameterValues(FieldVarType<?>[] paramTypes, MethodLogger method) {
+        return randomParameterValues(Arrays.stream(paramTypes), method)
+                .toArray(ParamWrapper[]::new);
     }
 
-    private boolean addLocalVariableToParamValues(List<ParamWrapper> values, MethodLogger method, FieldVarType<?> type) {
-        return Optional.ofNullable(getInitializedLocalVarOfType(method, type))
-                .map(fvl -> values.add(new ParamWrapper<>(fvl)))
-                .isPresent();
+    /**
+     * Returns a stream that contains parameter values that map to the given
+     * stream of expected parameter types.
+     *
+     * @param paramTypes The expected parameter types
+     * @param method     The corresponding method
+     * @return a stream of randomly picked parameter values - either variables
+     * or constant values
+     */
+    public Stream<ParamWrapper<?>> randomParameterValues(Stream<FieldVarType<?>> paramTypes, MethodLogger method) {
+        return paramTypes
+                .map(t ->
+                        randomizer.oneOf(
+                                // try to find a suitable local variable, field or constant
+                                getInitializedVarsUsableInMethod(method)
+                                        .filter(v -> t.isAssignableFrom(v.getType()))
+                                        .map((Function<FieldVarLogger, ParamWrapper<?>>) ParamWrapper::new))
+                                // or assign a constant value
+                                .orElseGet(
+                                        () -> new ParamWrapper<>(randomSupplier.castedValue(t))
+                                )
+                );
     }
 
-    public ParamWrapper[] getParamValues(FieldVarType[] paramTypes, MethodLogger method) {
-        List<ParamWrapper> values = new ArrayList<>();
-        for (FieldVarType t : paramTypes) {
-            if (rand.nextBoolean()) { //add global variable
-                if (!addFieldToParamValues(values, method, t)) {
-                    //add local variable if no global variable available
-                    if (!addLocalVariableToParamValues(values, method, t)) {
-                        //add RANDOM value if no variables available
-                        values.add(new ParamWrapper<>(randomSupplier.castedValue(t)));
-                    }
-                }
-            } else { //add local variable
-                if (!addLocalVariableToParamValues(values, method, t)) {
-                    //add global variable if no local variable available
-                    if (!addFieldToParamValues(values, method, t)) {
-                        //add RANDOM value if no variables available
-                        values.add(new ParamWrapper<>(randomSupplier.castedValue(t)));
-                    }
-                }
-            }
-        }
-
-        return values.toArray(new ParamWrapper[0]);
-    }
 
     public FieldVarLogger getNonFinalFieldUsableInMethod(MethodLogger method) {
         if (method.isStatic())
