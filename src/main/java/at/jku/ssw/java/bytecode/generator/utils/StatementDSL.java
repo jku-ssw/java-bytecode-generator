@@ -206,7 +206,7 @@ public class StatementDSL {
 
     public static String array(String name, List<Object> dim) {
         return name + dim.stream()
-                .map(d -> String.format(ARRAY, dim))
+                .map(d -> String.format(ARRAY, d))
                 .collect(Collectors.joining());
     }
 
