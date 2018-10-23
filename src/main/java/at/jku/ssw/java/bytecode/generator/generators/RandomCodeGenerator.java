@@ -145,7 +145,7 @@ public class RandomCodeGenerator {
 
             if (r <= controller.getGlobalAssignProbability()) {
                 String src = null;
-                int assignKind = rand.nextInt(4);
+                int assignKind = rand.nextInt(3);
                 switch (assignKind) {
                     case 0: //set field to RANDOM value
                         if (context == CONTROL_CONTEXT) {
@@ -168,7 +168,6 @@ public class RandomCodeGenerator {
                             fieldVarGenerator.assignLocalVarToField(context.contextMethod);
                         }
                         break;
-                    case 3:
 
                 }
                 if (src != null) {
