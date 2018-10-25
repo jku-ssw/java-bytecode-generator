@@ -130,8 +130,8 @@ public class RandomSupplier {
         switch (type.kind) {
             case INSTANCE:
             case ARRAY:
-                // 25% chance for objects to be initialized with null
-                if (rand.nextInt(4) == 0) {
+                // 10% chance for objects to be initialized with null
+                if (rand.nextInt(10) == 0) {
                     // add cast to signal to prevent ambiguous method calls
                     // e.g. `foo(null)` could invoke
                     // `foo(java.lang.String)` or `foo(java.lang.Object)`
