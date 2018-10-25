@@ -44,11 +44,15 @@ public interface GeneratorTest extends CLIArgumentsProvider {
                 Stream.of(options)
         ).toArray(String[]::new);
 
+
         ControlValueParser parser = new ControlValueParser(allOpts);
         GenerationController controller = parser.parse();
 
-        final String className = controller.getFileName();
+        logger.info("Generating class {}", name);
+        logger.info("Seed: {}", controller.getSeedValue());
+        logger.info("Parameters: {}", String.join(" ", allOpts));
 
+        final String className = controller.getFileName();
 
         RandomCodeGenerator randomCodeGenerator;
         try {
