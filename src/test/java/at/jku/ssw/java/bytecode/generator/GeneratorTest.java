@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public interface GeneratorTest extends CLIArgumentsProvider {
 
+    int TIMEOUT = 2;
+
     Logger logger = LogManager.getLogger();
 
     String outputDirectory();
@@ -80,7 +82,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         try (BufferedReader outStr = new BufferedReader(new InputStreamReader(p.getInputStream()));
              BufferedReader errStr = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
 
-            if (!p.waitFor(1, TimeUnit.MINUTES)) {
+            if (!p.waitFor(TIMEOUT, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
                 fail(clazz);
             }
