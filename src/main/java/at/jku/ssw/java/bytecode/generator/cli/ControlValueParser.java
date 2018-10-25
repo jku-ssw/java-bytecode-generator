@@ -113,6 +113,8 @@ public class ControlValueParser {
                 true, "The maximum number of elements per array dimension");
         options.addOption(CLIOptions.CAST.toString(), "cast",
                 true, "The probability to insert typecasts");
+        options.addOption(CLIOptions.ARRAY_ACCESS.toString(), "arrayaccess",
+                true, "The probability to access arrays");
         options.addOption(CLIOptions.SEED.toString(), "seed",
                 true, "The seed to use for the random generation");
         return options;
@@ -163,6 +165,7 @@ public class ControlValueParser {
         defaultValues.put(CLIOptions.MAXDIM.toString(), 3);
         defaultValues.put(CLIOptions.MAXDIMSIZE.toString(), 1_000);
         defaultValues.put(CLIOptions.CAST.toString(), 10);
+        defaultValues.put(CLIOptions.ARRAY_ACCESS.toString(), 10);
         defaultValues.put(CLIOptions.SEED.toString(), new Random().nextInt());
         return defaultValues;
     }

@@ -215,4 +215,8 @@ public class GenerationController {
     public int getSeedValue() {
         return controlValues.get(CLIOptions.SEED);
     }
+
+    public int getArrayAccessProbability() {
+        return controlValues.get(CLIOptions.ARRAY_ACCESS);
+    }
 }

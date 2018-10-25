@@ -5,6 +5,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
+import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,6 +45,7 @@ public class RandomCodeGenerator {
     private final SnippetGenerator snippetGenerator;
     private final TypeCastGenerator typeCastGenerator;
     private final ControlFlowGenerator controlFlowGenerator;
+    private final ArrayAccessGenerator arrayAccessGenerator;
     private final int maxOpProbability;
 
     /**
@@ -79,6 +81,7 @@ public class RandomCodeGenerator {
         this.snippetGenerator = new SnippetGenerator(rand, this);
         this.typeCastGenerator = new TypeCastGenerator(rand, this);
         this.controlFlowGenerator = new ControlFlowGenerator(rand, this, mathGenerator);
+        this.arrayAccessGenerator = new ArrayAccessGenerator(rand, container);
 
         MethodLogger run = this.methodGenerator.generateRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
@@ -173,6 +176,13 @@ public class RandomCodeGenerator {
                 if (src != null) {
                     controlFlowGenerator.addCodeToControlSrc(src);
                 }
+            }
+
+            if (context != CONTROL_CONTEXT && r <= controller.getArrayAccessProbability()) {
+                new Randomizer(rand).oneOf(
+                        () -> arrayAccessGenerator.scrGenerateArrayReadAccess(context.contextMethod))
+                        .ifPresent(src ->
+                                arrayAccessGenerator.insertIntoMethodBody(context.contextMethod, src));//, Arrays.asList(ArrayIndexOutOfBoundsException.class, NullPointerException.class)));
             }
 
             if (r <= controller.getLocalAssignProbability() && context != CONTROL_CONTEXT) {
