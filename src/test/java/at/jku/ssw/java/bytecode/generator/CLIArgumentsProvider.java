@@ -72,7 +72,8 @@ public interface CLIArgumentsProvider extends ArgumentsProvider {
                                     "-void", oneTo.apply(40),
                                     "-cast", oneTo.apply(20),
                                     "-max_dim", oneTo.apply(3),
-                                    "-max_dim_size", zeroTo.apply(1000)
+                                    "-max_dim_size", zeroTo.apply(1000),
+                                    "-arrayaccess", zeroTo.apply(50)
                             ));
 
                             // optionally allow exceptions
