@@ -84,7 +84,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                             if (remainingDim == 0)
                                 returnType = innerType;
                             else
-                                returnType = new FieldVarType<>(
+                                returnType = FieldVarType.of(
                                         componentType,
                                         remainingDim,
                                         a.getType().inner

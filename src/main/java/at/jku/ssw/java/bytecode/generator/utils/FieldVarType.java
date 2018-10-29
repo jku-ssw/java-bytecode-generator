@@ -1,8 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
-import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,20 +11,14 @@ import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.INSTANCE;
 
 public class FieldVarType<T> {
+    //-------------------------------------------------------------------------
+    // region constants
 
     public static final int MIN_ARRAY_DIM_LENGTH = 10;
 
-    /**
-     * Instance container that stores any object of type {@link FieldVarType}
-     * that is created. Is used to retrieve random types.
-     */
-    private static final Set<FieldVarType<?>> types = new HashSet<>();
-
-    private static <T> FieldVarType<T> register(FieldVarType<T> type) {
-        boolean notExists = types.add(type);
-        assert notExists : "Type '" + type + "' already registered";
-        return type;
-    }
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Inner classes / types
 
     /**
      * The available kinds of types. Those represent the actual type
@@ -47,22 +39,44 @@ public class FieldVarType<T> {
         VOID
     }
 
-    // ------------------------------------------------------------------------
-    // Type declarations and compatibility sets
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Type management
 
-    public static final FieldVarType<Byte> BYTE = register(new FieldVarType<>(byte.class, CtClass.byteType, Kind.BYTE));
-    public static final FieldVarType<Short> SHORT = register(new FieldVarType<>(short.class, CtClass.shortType, Kind.SHORT));
-    public static final FieldVarType<Integer> INT = register(new FieldVarType<>(int.class, CtClass.intType, Kind.INT));
-    public static final FieldVarType<Long> LONG = register(new FieldVarType<>(long.class, CtClass.longType, Kind.LONG));
-    public static final FieldVarType<Float> FLOAT = register(new FieldVarType<>(float.class, CtClass.floatType, Kind.FLOAT));
-    public static final FieldVarType<Double> DOUBLE = register(new FieldVarType<>(double.class, CtClass.doubleType, Kind.DOUBLE));
-    public static final FieldVarType<Boolean> BOOLEAN = register(new FieldVarType<>(boolean.class, CtClass.booleanType, Kind.BOOLEAN));
-    public static final FieldVarType<Character> CHAR = register(new FieldVarType<>(char.class, CtClass.charType, Kind.CHAR));
+    /**
+     * Instance container that stores any object of type {@link FieldVarType}
+     * that is created. Is used to retrieve random types.
+     */
+    private static final Set<FieldVarType<?>> types = new HashSet<>();
+
+    private static <T> FieldVarType<T> register(FieldVarType<T> type) {
+        assert types != null;
+        boolean notExists = types.add(type);
+        assert notExists : "Type '" + type + "' already registered";
+        return type;
+    }
+
+    // rendregion
+    //-------------------------------------------------------------------------
+    // region Type declarations
+
+    public static final FieldVarType<Byte> BYTE = register(of(byte.class, CtClass.byteType, Kind.BYTE));
+    public static final FieldVarType<Short> SHORT = register(of(short.class, CtClass.shortType, Kind.SHORT));
+    public static final FieldVarType<Integer> INT = register(of(int.class, CtClass.intType, Kind.INT));
+    public static final FieldVarType<Long> LONG = register(of(long.class, CtClass.longType, Kind.LONG));
+    public static final FieldVarType<Float> FLOAT = register(of(float.class, CtClass.floatType, Kind.FLOAT));
+    public static final FieldVarType<Double> DOUBLE = register(of(double.class, CtClass.doubleType, Kind.DOUBLE));
+    public static final FieldVarType<Boolean> BOOLEAN = register(of(boolean.class, CtClass.booleanType, Kind.BOOLEAN));
+    public static final FieldVarType<Character> CHAR = register(of(char.class, CtClass.charType, Kind.CHAR));
     @SuppressWarnings("unused")
-    public static final FieldVarType<String> STRING = register(new FieldVarType<>(String.class));
+    public static final FieldVarType<String> STRING = register(of(String.class));
     @SuppressWarnings("unused")
-    public static final FieldVarType<Date> DATE = register(new FieldVarType<>(Date.class));
-    public static final FieldVarType<Void> VOID = register(new FieldVarType<>(Void.class, CtClass.voidType, Kind.VOID));
+    public static final FieldVarType<Date> DATE = register(of(Date.class));
+    public static final FieldVarType<Void> VOID = register(of(Void.class, CtClass.voidType, Kind.VOID));
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Type compatibility sets
 
     private static final List<FieldVarType<?>> NUMERIC_TYPES = Arrays.asList(
             FieldVarType.BYTE,
@@ -100,6 +114,10 @@ public class FieldVarType<T> {
             FieldVarType.DOUBLE
     );
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Type accessors
+
     public static List<FieldVarType<?>> numericTypes() {
         return NUMERIC_TYPES;
     }
@@ -121,6 +139,10 @@ public class FieldVarType<T> {
     }
 
     public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim) {
+        return FieldVarType.arrayTypeOf(type, dim, null);
+    }
+
+    public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim, int[][] restrictions) {
         assert type != null : "Array type must not be null";
         assert type.kind != Kind.VOID : "Cannot create array of void type";
         assert dim > 0 : "Invalid array dimensions";
@@ -171,42 +193,60 @@ public class FieldVarType<T> {
             throw new AssertionError(e);
         }
 
-        return new FieldVarType<>(clazz, dim, type);
+        return of(clazz, dim, type, restrictions);
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
+
+    /**
+     * Type category to distinguish between different primitive types,
+     * reference types and arrays.
+     */
     public final Kind kind;
 
     /**
      * Optional inner type descriptor for array types.
      */
     public final FieldVarType<?> inner;
+
+    /**
+     * The Java {@link Class} instance corresponding to this type.
+     */
     public final Class<T> clazz;
+
+    /**
+     * The Javassist {@link CtClass} that maps to this type.
+     */
     private final CtClass clazzType;
+
+    /**
+     * The number of dimensions for array types (otherwise {@code 0}).
+     */
     public final int dim;
 
     /**
-     * Determines and returns the {@link javassist.CtClass} instance
-     * corresponding to the given class name.
-     *
-     * @param className The name of the class (in canonical form - e.g.
-     *                  {@code java.lang.String}
-     * @return the class type corresponding to the class name
+     * Restrictions on access for array types (otherwise {@code null}).
      */
-    private static CtClass getCtClassType(String className) {
-        try {
-            return ClassPool.getDefault().get(className);
-        } catch (NotFoundException e) {
-            throw new AssertionError(e);
-        }
-    }
+    private final int[][] restrictions;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
 
     /**
      * Initializes a new reference type based on the given class.
      *
      * @param clazz The class to base the reference type on
+     * @param <T>   The type corresponding to the Java class type
      */
-    FieldVarType(Class<T> clazz) {
-        this(clazz, getCtClassType(clazz.getCanonicalName()), INSTANCE);
+    public static <T> FieldVarType<T> of(Class<T> clazz) {
+        return of(
+                clazz,
+                JavassistUtils.toCtClass(clazz),
+                INSTANCE
+        );
     }
 
     /**
@@ -216,9 +256,25 @@ public class FieldVarType<T> {
      *                     (e.g. an instance of {@code Class<int[]>})
      * @param dim          The number of dimensions of the array type
      * @param inner        The inner field type (e.g. {@link FieldVarType#INT})
+     * @param restrictions Optional restrictions on the access range
+     *                     (e.g. only access dimension 0 at positions 3 to 5)
      */
-    public FieldVarType(Class<T> clazz, int dim, FieldVarType<?> inner) {
-        this(clazz, getCtClassType(clazz.getCanonicalName()), ARRAY, inner, dim);
+    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner, int[][] restrictions) {
+        return new FieldVarType<>(
+                clazz,
+                JavassistUtils.toCtClass(clazz),
+                ARRAY,
+                inner,
+                dim,
+                restrictions
+        );
+    }
+
+    /**
+     * @see #of(Class, int, FieldVarType, int[][])
+     */
+    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner) {
+        return of(clazz, dim, inner, null);
     }
 
     /**
@@ -230,8 +286,8 @@ public class FieldVarType<T> {
      *                  (e.g. {@link CtClass#intType}.
      * @param kind      The kind of the type
      */
-    FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind) {
-        this(clazz, clazzType, kind, null, 0);
+    public static <T> FieldVarType<T> of(Class<T> clazz, CtClass clazzType, Kind kind) {
+        return new FieldVarType<>(clazz, clazzType, kind, null, 0, null);
     }
 
     /**
@@ -243,14 +299,46 @@ public class FieldVarType<T> {
      * @param kind         The kind descriptor to catgorize different types
      * @param inner        Optional inner type reference for array types
      * @param dim          Optional number of dimensions for array types
+     * @param restrictions Optional access restrictions for array types
      */
-    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim) {
+    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim, int[][] restrictions) {
         this.kind = kind;
         this.inner = inner;
         this.clazz = clazz;
         this.clazzType = clazzType;
         this.dim = dim;
+        this.restrictions = restrictions;
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Overridden methods
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FieldVarType<?> that = (FieldVarType<?>) o;
+        return dim == that.dim &&
+                kind == that.kind &&
+                Objects.equals(clazz, that.clazz);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(kind, clazz, dim);
+    }
+
+    @Override
+    public String toString() {
+        if (kind == Kind.VOID)
+            return "void";
+        return clazz.getCanonicalName();
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Public utility methods
 
     /**
      * Checks whether this type is assignable from the given type -
@@ -285,6 +373,11 @@ public class FieldVarType<T> {
         }
     }
 
+    /**
+     * Returns the types that are assignable to this type.
+     *
+     * @return a list of types that are assignable to this type
+     */
     public List<FieldVarType<?>> getAssignableTypes() {
         switch (kind) {
             case BYTE:
@@ -311,29 +404,18 @@ public class FieldVarType<T> {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FieldVarType<?> that = (FieldVarType<?>) o;
-        return dim == that.dim &&
-                kind == that.kind &&
-                Objects.equals(clazz, that.clazz);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(kind, clazz, dim);
-    }
-
-    @Override
-    public String toString() {
-        if (kind == Kind.VOID)
-            return "void";
-        return clazz.getCanonicalName();
-    }
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Getters / setters
 
     public CtClass getClazzType() {
         return clazzType;
     }
+
+    public int[][] getRestrictions() {
+        return restrictions;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

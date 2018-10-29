@@ -46,14 +46,14 @@ public class FieldVarTypeTest {
         return Stream.of(
                 arguments(classType(String.class), 1, arrayType(String[].class, STRING)),
                 arguments(classType(Date.class), 3, arrayType(Date[][][].class, DATE)),
-                arguments(type(byte.class, Kind.BYTE), 19, arrayType(byte[][][][][][][][][][][][][][][][][][][].class, BYTE)),
-                arguments(type(short.class, Kind.SHORT), 2, arrayType(short[][].class, SHORT)),
-                arguments(type(int.class, Kind.INT), 10, arrayType(int[][][][][][][][][][].class, INT)),
-                arguments(type(long.class, Kind.LONG), 5, arrayType(long[][][][][].class, LONG)),
-                arguments(type(float.class, Kind.FLOAT), 2, arrayType(float[][].class, FLOAT)),
-                arguments(type(double.class, Kind.DOUBLE), 4, arrayType(double[][][][].class, DOUBLE)),
-                arguments(type(char.class, Kind.CHAR), 7, arrayType(char[][][][][][][].class, CHAR)),
-                arguments(type(boolean.class, Kind.BOOLEAN), 1, arrayType(boolean[].class, BOOLEAN))
+                arguments(FieldVarType.BYTE, 19, arrayType(byte[][][][][][][][][][][][][][][][][][][].class, BYTE)),
+                arguments(FieldVarType.SHORT, 2, arrayType(short[][].class, SHORT)),
+                arguments(FieldVarType.INT, 10, arrayType(int[][][][][][][][][][].class, INT)),
+                arguments(FieldVarType.LONG, 5, arrayType(long[][][][][].class, LONG)),
+                arguments(FieldVarType.FLOAT, 2, arrayType(float[][].class, FLOAT)),
+                arguments(FieldVarType.DOUBLE, 4, arrayType(double[][][][].class, DOUBLE)),
+                arguments(FieldVarType.CHAR, 7, arrayType(char[][][][][][][].class, CHAR)),
+                arguments(FieldVarType.BOOLEAN, 1, arrayType(boolean[].class, BOOLEAN))
         );
     }
 
@@ -76,18 +76,14 @@ public class FieldVarTypeTest {
         assertThat(arrayTypeOf(componentType, dim), is(arrayType));
     }
 
-    private static <T> FieldVarType<T> type(Class<T> type, Kind kind) {
-        return new FieldVarType<>(type, kind);
-    }
-
     private static <T> FieldVarType<T> classType(Class<T> type) {
-        return new FieldVarType<>(type, Kind.INSTANCE);
+        return FieldVarType.of(type);
     }
 
     private static <T> FieldVarType<T> arrayType(Class<T> type, FieldVarType<?> componentType) {
         assert type.isArray();
 
-        return new FieldVarType<>(
+        return FieldVarType.of(
                 type,
                 ClassUtils.dimensions(type),
                 componentType
