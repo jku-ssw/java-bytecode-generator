@@ -59,9 +59,9 @@ public class FieldVarType<T> {
     public static final FieldVarType<Boolean> BOOLEAN = register(new FieldVarType<>(boolean.class, CtClass.booleanType, Kind.BOOLEAN));
     public static final FieldVarType<Character> CHAR = register(new FieldVarType<>(char.class, CtClass.charType, Kind.CHAR));
     @SuppressWarnings("unused")
-    public static final FieldVarType<String> STRING = register(new FieldVarType<>(String.class, INSTANCE));
+    public static final FieldVarType<String> STRING = register(new FieldVarType<>(String.class));
     @SuppressWarnings("unused")
-    public static final FieldVarType<Date> DATE = register(new FieldVarType<>(Date.class, INSTANCE));
+    public static final FieldVarType<Date> DATE = register(new FieldVarType<>(Date.class));
     public static final FieldVarType<Void> VOID = register(new FieldVarType<>(Void.class, CtClass.voidType, Kind.VOID));
 
     private static final List<FieldVarType<?>> NUMERIC_TYPES = Arrays.asList(
@@ -196,18 +196,50 @@ public class FieldVarType<T> {
         }
     }
 
-    FieldVarType(Class<T> clazz, Kind kind) {
-        this(clazz, getCtClassType(clazz.getCanonicalName()), kind);
+    /**
+     * Initializes a new reference type based on the given class.
+     *
+     * @param clazz The class to base the reference type on
+     */
+    FieldVarType(Class<T> clazz) {
+        this(clazz, getCtClassType(clazz.getCanonicalName()), INSTANCE);
     }
 
+    /**
+     * Initializes an array type.
+     *
+     * @param clazz        The array type descriptor
+     *                     (e.g. an instance of {@code Class<int[]>})
+     * @param dim          The number of dimensions of the array type
+     * @param inner        The inner field type (e.g. {@link FieldVarType#INT})
+     */
     public FieldVarType(Class<T> clazz, int dim, FieldVarType<?> inner) {
         this(clazz, getCtClassType(clazz.getCanonicalName()), ARRAY, inner, dim);
     }
 
+    /**
+     * Initializes special types that are backed by specific {@link CtClass}
+     * type constants (i.e. primitive types, void).
+     *
+     * @param clazz     The corresponding class (e.g. {@code int.class})
+     * @param clazzType The mapped {@link CtClass} type instance
+     *                  (e.g. {@link CtClass#intType}.
+     * @param kind      The kind of the type
+     */
     FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind) {
         this(clazz, clazzType, kind, null, 0);
     }
 
+    /**
+     * Generates a new type based on the given properties.
+     *
+     * @param clazz        The actual Java class type instance corresponding to
+     *                     this {@link FieldVarType}.
+     * @param clazzType    The {@link CtClass} type that maps to this type
+     * @param kind         The kind descriptor to catgorize different types
+     * @param inner        Optional inner type reference for array types
+     * @param dim          Optional number of dimensions for array types
+     */
     public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim) {
         this.kind = kind;
         this.inner = inner;
