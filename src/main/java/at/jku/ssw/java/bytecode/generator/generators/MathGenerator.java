@@ -336,7 +336,7 @@ class MathGenerator extends MethodCaller {
             case BITWISE:
             case ARITHMETIC_BITWISE:
             case ARITHMETIC:
-                types.addAll(FieldVarType.getNumericTypes());
+                types.addAll(FieldVarType.numericTypes());
         }
         return types.get(rand.nextInt(types.size()));
     }
@@ -511,10 +511,10 @@ class MathGenerator extends MethodCaller {
                 types.add(FieldVarType.BOOLEAN);
                 break;
             case ARITHMETIC:
-                types = new ArrayList<>(FieldVarType.getNumericTypes());
+                types = new ArrayList<>(FieldVarType.numericTypes());
                 break;
             case BITWISE:
-                types = new ArrayList<>(FieldVarType.getNumericTypes());
+                types = new ArrayList<>(FieldVarType.numericTypes());
                 types.remove(FieldVarType.FLOAT);
                 types.remove(FieldVarType.DOUBLE);
                 types.remove(FieldVarType.LONG);

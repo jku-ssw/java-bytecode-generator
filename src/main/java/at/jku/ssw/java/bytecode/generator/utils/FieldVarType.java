@@ -100,6 +100,10 @@ public class FieldVarType<T> {
             FieldVarType.DOUBLE
     );
 
+    public static List<FieldVarType<?>> numericTypes() {
+        return NUMERIC_TYPES;
+    }
+
     public static Stream<FieldVarType<?>> types() {
         return types.stream();
     }
@@ -248,14 +252,6 @@ public class FieldVarType<T> {
         this.dim = dim;
     }
 
-    public CtClass getClazzType() {
-        return clazzType;
-    }
-
-    public static List<FieldVarType<?>> getNumericTypes() {
-        return NUMERIC_TYPES;
-    }
-
     /**
      * Checks whether this type is assignable from the given type -
      * e.g. {@code Object} being assignable from anything
@@ -335,5 +331,9 @@ public class FieldVarType<T> {
         if (kind == Kind.VOID)
             return "void";
         return clazz.getCanonicalName();
+    }
+
+    public CtClass getClazzType() {
+        return clazzType;
     }
 }
