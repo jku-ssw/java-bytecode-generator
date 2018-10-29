@@ -142,7 +142,7 @@ public class FieldVarType<T> {
         return FieldVarType.arrayTypeOf(type, dim, null);
     }
 
-    public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim, int[][] restrictions) {
+    public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim, BitSet[] restrictions) {
         assert type != null : "Array type must not be null";
         assert type.kind != Kind.VOID : "Cannot create array of void type";
         assert dim > 0 : "Invalid array dimensions";
@@ -229,7 +229,7 @@ public class FieldVarType<T> {
     /**
      * Restrictions on access for array types (otherwise {@code null}).
      */
-    private final int[][] restrictions;
+    private final BitSet[] restrictions;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -259,7 +259,7 @@ public class FieldVarType<T> {
      * @param restrictions Optional restrictions on the access range
      *                     (e.g. only access dimension 0 at positions 3 to 5)
      */
-    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner, int[][] restrictions) {
+    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner, BitSet[] restrictions) {
         return new FieldVarType<>(
                 clazz,
                 JavassistUtils.toCtClass(clazz),
@@ -271,7 +271,7 @@ public class FieldVarType<T> {
     }
 
     /**
-     * @see #of(Class, int, FieldVarType, int[][])
+     * @see #of(Class, int, FieldVarType, BitSet[])
      */
     public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner) {
         return of(clazz, dim, inner, null);
@@ -299,9 +299,11 @@ public class FieldVarType<T> {
      * @param kind         The kind descriptor to catgorize different types
      * @param inner        Optional inner type reference for array types
      * @param dim          Optional number of dimensions for array types
-     * @param restrictions Optional access restrictions for array types
+     * @param restrictions Optional access restrictions for array types.
+     *                     Those can be specified for each dimension
+     *                     individually.
      */
-    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim, int[][] restrictions) {
+    public FieldVarType(Class<T> clazz, CtClass clazzType, Kind kind, FieldVarType<?> inner, int dim, BitSet[] restrictions) {
         this.kind = kind;
         this.inner = inner;
         this.clazz = clazz;
@@ -412,8 +414,12 @@ public class FieldVarType<T> {
         return clazzType;
     }
 
-    public int[][] getRestrictions() {
+    public BitSet[] getRestrictions() {
         return restrictions;
+    }
+
+    public boolean isRestricted() {
+        return restrictions != null;
     }
 
     // endregion

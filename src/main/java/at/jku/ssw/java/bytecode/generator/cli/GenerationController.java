@@ -219,4 +219,8 @@ public class GenerationController {
     public int getArrayAccessProbability() {
         return controlValues.get(CLIOptions.ARRAY_ACCESS);
     }
+
+    public int getArrayRestrictionProbability() {
+        return controlValues.get(CLIOptions.ARRAY_RESTRICTION);
+    }
 }

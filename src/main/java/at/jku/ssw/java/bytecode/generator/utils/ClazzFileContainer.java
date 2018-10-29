@@ -28,7 +28,8 @@ public class ClazzFileContainer {
                 controller.getPrimitiveTypesProbability(),
                 controller.getObjectProbability(),
                 controller.getArrayProbability(),
-                controller.getVoidProbability()
+                controller.getVoidProbability(),
+                controller.getArrayRestrictionProbability()
         );
 
         this.fileName = fileName;

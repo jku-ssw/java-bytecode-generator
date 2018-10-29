@@ -7,12 +7,14 @@ import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
+import java.util.BitSet;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.MIN_ARRAY_DIM_LENGTH;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;
@@ -40,10 +42,18 @@ public class ArrayAccessGenerator extends MethodCaller {
     private String srcAccessArray(FieldVarLogger a, int dims) {
         assert dims > 0;
 
+        BitSet[] restrictions = a.getType().getRestrictions();
+
+        boolean unrestricted = !a.getType().isRestricted();
+
         return array(
                 a.access(),
                 IntStream.range(0, a.getType().dim)
-                        .map(i -> rand.nextInt(FieldVarType.MIN_ARRAY_DIM_LENGTH))
+                        .map(d -> rand.ints(0, MIN_ARRAY_DIM_LENGTH)
+                                // filter values that do not fit the restrictions (if any)
+                                .filter(i -> unrestricted || restrictions[d] == null || restrictions[d].isEmpty() || restrictions[d].get(i))
+                                .findAny()
+                                .orElseThrow(AssertionError::new))
                         .mapToObj(i -> cast(i).to(int.class))
                         .collect(Collectors.toList())
         );

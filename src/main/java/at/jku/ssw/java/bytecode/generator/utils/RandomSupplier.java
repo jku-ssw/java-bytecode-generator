@@ -12,12 +12,13 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NUL
 
 public class RandomSupplier {
 
-    public final int maxArrayDim;
-    public final int maxArrayDimSize;
-    public final int pPrimitives;
-    public final int pObjects;
-    public final int pArray;
-    public final int pVoid;
+    private final int maxArrayDim;
+    private final int maxArrayDimSize;
+    private final int pPrimitives;
+    private final int pObjects;
+    private final int pArray;
+    private final int pVoid;
+    private final int pRestrictedArray;
 
     private int methodCharNum = 97;
     private int varCharNum = 97;
@@ -39,7 +40,7 @@ public class RandomSupplier {
             Modifier.PROTECTED
     );
 
-    public RandomSupplier(Random rand, int maxArrayDim, int maxArrayDimSize, int pPrimitives, int pObjects, int pArray, int pVoid) {
+    public RandomSupplier(Random rand, int maxArrayDim, int maxArrayDimSize, int pPrimitives, int pObjects, int pArray, int pVoid, int pRestrictedArray) {
         this.rand = rand;
         this.randomizer = new Randomizer(rand);
 
@@ -49,6 +50,7 @@ public class RandomSupplier {
         this.pObjects = pObjects;
         this.pArray = pArray;
         this.pVoid = pVoid;
+        this.pRestrictedArray = pRestrictedArray;
     }
 
     public String getVarName() {
@@ -94,6 +96,31 @@ public class RandomSupplier {
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
+    public FieldVarType<?> restrictedArrayType(int dim) {
+        return randomizer
+                .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
+                .map(t -> FieldVarType.arrayTypeOf(t, dim, arrayRestriction(dim)))
+                .orElseThrow(() -> new AssertionError("Could not create array type"));
+    }
+
+    public BitSet[] arrayRestriction(int dim) {
+        return IntStream.of(0, dim)
+                .mapToObj(__ ->
+                        rand.ints(0, MIN_ARRAY_DIM_LENGTH)
+                                .limit(rand.nextInt(MIN_ARRAY_DIM_LENGTH))
+                                .boxed()
+                                .reduce(
+                                        new BitSet(),
+                                        (b, s) -> {
+                                            b.set(s);
+                                            return b;
+                                        }, (b1, b2) -> {
+                                            b1.and(b2);
+                                            return b1;
+                                        }))
+                .toArray(BitSet[]::new);
+    }
+
     /**
      * Returns a random type.
      * This can either be a primitive type, one of the registered instance
@@ -104,10 +131,11 @@ public class RandomSupplier {
      */
     public FieldVarType<?> type() {
         return randomizer.withProbabilities(
-                new int[]{pPrimitives, pObjects, pArray},
+                new int[]{pPrimitives, pObjects, pArray, pRestrictedArray},
                 this::primitiveType,
                 this::classType,
-                () -> arrayType(rand.nextInt(maxArrayDim) + 1)
+                () -> arrayType(rand.nextInt(maxArrayDim) + 1),
+                () -> restrictedArrayType(rand.nextInt(maxArrayDim) + 1)
         ).orElseThrow(() -> new AssertionError("Could not fetch random type"));
     }
 
