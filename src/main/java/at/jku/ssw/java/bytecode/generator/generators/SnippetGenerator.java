@@ -11,20 +11,31 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+/**
+ * Generates predefined snippets of code to test vulnerable methods or
+ * code sequences.
+ */
 public class SnippetGenerator extends Generator {
 
-    private final List<Class<? extends Snippet>> snippetTypes = Arrays.asList(
+    /**
+     * Contains all available snippet generators.
+     */
+    private static final List<Class<? extends Snippet>> GENERATORS = Arrays.asList(
             HashCodeSubtraction.class,
             AssignableFromCall.class
     );
 
+    /**
+     * Holds an instance of each generator to allow for fast checks and
+     * invocations.
+     */
     private final List<? extends Snippet> snippets;
 
 
     public SnippetGenerator(Random rand, RandomCodeGenerator codeGenerator) {
         super(rand, codeGenerator.getClazzFileContainer());
 
-        snippets = snippetTypes.stream()
+        snippets = GENERATORS.stream()
                 .map(c -> {
                     try {
                         return c.newInstance();
@@ -36,6 +47,11 @@ public class SnippetGenerator extends Generator {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Inserts a randomly picked snippet into the method.
+     *
+     * @param method The method to which the snippet is added
+     */
     public void generate(MethodLogger method) {
         new Randomizer(rand)
                 .shuffle(snippets.stream())
