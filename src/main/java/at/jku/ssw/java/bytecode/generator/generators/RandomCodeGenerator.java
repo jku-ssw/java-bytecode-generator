@@ -388,7 +388,7 @@ public class RandomCodeGenerator {
             }
 
             if (r <= controller.getSnippetProbability())
-                snippetGenerator.generateHashCodeSubtraction(context.contextMethod);
+                snippetGenerator.generate(context.contextMethod);
 
             if (r <= controller.getTypeCastProbability())
                 typeCastGenerator.generatePrimitiveTypeCast(context.contextMethod);
