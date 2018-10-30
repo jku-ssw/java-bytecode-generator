@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -7,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.Date;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.*;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;

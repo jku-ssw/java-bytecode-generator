@@ -3,7 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.Random;

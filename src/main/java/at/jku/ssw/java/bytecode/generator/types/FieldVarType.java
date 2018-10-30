@@ -1,5 +1,6 @@
-package at.jku.ssw.java.bytecode.generator.utils;
+package at.jku.ssw.java.bytecode.generator.types;
 
+import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
 import java.util.*;
@@ -7,8 +8,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.ARRAY;
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.INSTANCE;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.INSTANCE;
 
 public class FieldVarType<T> {
     //-------------------------------------------------------------------------

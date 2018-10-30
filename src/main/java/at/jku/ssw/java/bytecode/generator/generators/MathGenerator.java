@@ -3,7 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import javassist.*;

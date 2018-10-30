@@ -5,7 +5,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedExce
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;

@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;

@@ -4,7 +4,7 @@ import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.utils.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.BitSet;
@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.Kind.ARRAY;
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.MIN_ARRAY_DIM_LENGTH;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.MIN_ARRAY_DIM_LENGTH;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;

@@ -1,12 +1,14 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.FieldVarType.*;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;

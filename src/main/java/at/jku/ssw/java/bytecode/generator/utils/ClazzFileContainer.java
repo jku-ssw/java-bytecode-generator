@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import javassist.*;
 import javassist.bytecode.ClassFilePrinter;
 
