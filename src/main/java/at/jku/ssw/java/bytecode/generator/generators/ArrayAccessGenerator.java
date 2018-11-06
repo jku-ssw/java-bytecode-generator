@@ -2,9 +2,8 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
-import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.BitSet;
@@ -48,7 +47,7 @@ public class ArrayAccessGenerator extends MethodCaller {
 
         return array(
                 a.access(),
-                IntStream.range(0, a.getType().dim)
+                IntStream.range(0, dims)
                         .map(d -> rand.ints(0, MIN_ARRAY_DIM_LENGTH)
                                 // filter values that do not fit the restrictions (if any)
                                 .filter(i -> unrestricted || restrictions[d] == null || restrictions[d].isEmpty() || restrictions[d].get(i))
@@ -68,37 +67,11 @@ public class ArrayAccessGenerator extends MethodCaller {
                         // only initialized arrays
                         .filter(FieldVarLogger::isInitialized)
                         .flatMap(a -> {
-                            Class<?> aClass = a.getType().clazz;
-
-                            int dim = a.getType().dim;
-
                             // fetch random number of dimensions
                             // (minimum 1, maximum the dimensions of a)
-                            int nParams = rand.nextInt(dim) + 1;
+                            int nParams = rand.nextInt(a.getType().dim) + 1;
 
-                            // determine the return type
-                            // (e.g. accessing int[][][] with 2 parameters
-                            // yields a 1-dimensional array
-                            int remainingDim = dim - nParams;
-
-                            FieldVarType<?> innerType = a.getType().inner;
-                            Class<?> componentType = ClassUtils.nthComponentType(nParams, aClass)
-                                    .orElseThrow(() ->
-                                            new AssertionError(String.format(
-                                                    "Mismatching dimensions: %d for %s",
-                                                    nParams,
-                                                    aClass
-                                            )));
-
-                            FieldVarType<?> returnType;
-                            if (remainingDim == 0)
-                                returnType = innerType;
-                            else
-                                returnType = FieldVarType.of(
-                                        componentType,
-                                        remainingDim,
-                                        a.getType().inner
-                                );
+                            FieldVarType<?> returnType = FieldVarType.resultingTypeOf(a, nParams);
 
                             return getClazzLogger()
                                     .getNonFinalVarsUsableInMethod(method)
@@ -118,9 +91,7 @@ public class ArrayAccessGenerator extends MethodCaller {
     }
 
     private String srcGenerateArrayWriteAccess(MethodLogger method) {
-
-        int[] a = new int[1];
-        a[(short) 0] = 99;
+        /* TODO */
         return null;
     }
 }
