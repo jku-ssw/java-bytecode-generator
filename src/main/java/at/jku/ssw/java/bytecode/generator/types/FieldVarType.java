@@ -1,5 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
+import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
@@ -10,6 +12,10 @@ import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.INSTANCE;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 
 public class FieldVarType<T> {
     //-------------------------------------------------------------------------
@@ -48,9 +54,9 @@ public class FieldVarType<T> {
      * Instance container that stores any object of type {@link FieldVarType}
      * that is created. Is used to retrieve random types.
      */
-    private static final Set<FieldVarType<?>> types = new HashSet<>();
+    static final Set<FieldVarType<?>> types = new HashSet<>();
 
-    private static <T> FieldVarType<T> register(FieldVarType<T> type) {
+    static <T> FieldVarType<T> register(FieldVarType<T> type) {
         assert types != null;
         boolean notExists = types.add(type);
         assert notExists : "Type '" + type + "' already registered";
@@ -70,16 +76,35 @@ public class FieldVarType<T> {
     public static final FieldVarType<Boolean> BOOLEAN = register(of(boolean.class, CtClass.booleanType, Kind.BOOLEAN));
     public static final FieldVarType<Character> CHAR = register(of(char.class, CtClass.charType, Kind.CHAR));
     @SuppressWarnings("unused")
-    public static final FieldVarType<String> STRING = register(of(String.class));
+    public static final FieldVarType<String> STRING = register(refTypeOf(String.class));
     @SuppressWarnings("unused")
-    public static final FieldVarType<Date> DATE = register(of(Date.class));
+    public static final FieldVarType<Date> DATE = register(refTypeOf(Date.class));
+    @SuppressWarnings("unused")
+    public static final FieldVarType<Object> OBJECT = register(refTypeOf(Object.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Byte> BYTE_BOXED = register(of(Byte.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Short> SHORT_BOXED = register(of(Short.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Integer> INT_BOXED = register(of(Integer.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Long> LONG_BOXED = register(of(Long.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Float> FLOAT_BOXED = register(of(Float.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Double> DOUBLE_BOXED = register(of(Double.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Boolean> BOOLEAN_BOXED = register(of(Boolean.class));
+//    @SuppressWarnings("unused")
+//    public static final FieldVarType<Character> CHAR_BOXED = register(of(Character.class));
+
     public static final FieldVarType<Void> VOID = register(of(Void.class, CtClass.voidType, Kind.VOID));
 
     // endregion
     //-------------------------------------------------------------------------
     // region Type compatibility sets
 
-    private static final List<FieldVarType<?>> NUMERIC_TYPES = Arrays.asList(
+    static final List<FieldVarType<?>> NUMERIC_TYPES = Arrays.asList(
             FieldVarType.BYTE,
             FieldVarType.CHAR,
             FieldVarType.DOUBLE,
@@ -89,20 +114,20 @@ public class FieldVarType<T> {
             FieldVarType.SHORT
     );
 
-    private static final List<FieldVarType<?>> COMP_WITH_SHORT = Arrays.asList(
+    static final List<FieldVarType<?>> COMP_WITH_SHORT = Arrays.asList(
             FieldVarType.BYTE,
             FieldVarType.SHORT,
             FieldVarType.CHAR
     );
 
-    private static final List<FieldVarType<?>> COMP_WITH_INT = Arrays.asList(
+    static final List<FieldVarType<?>> COMP_WITH_INT = Arrays.asList(
             FieldVarType.BYTE,
             FieldVarType.SHORT,
             FieldVarType.CHAR,
             FieldVarType.INT
     );
 
-    private static final List<FieldVarType<?>> COMP_WITH_LONG = Arrays.asList(
+    static final List<FieldVarType<?>> COMP_WITH_LONG = Arrays.asList(
             FieldVarType.BYTE,
             FieldVarType.SHORT,
             FieldVarType.CHAR,
@@ -110,7 +135,7 @@ public class FieldVarType<T> {
             FieldVarType.LONG
     );
 
-    private static final List<FieldVarType<?>> COMP_WITH_DOUBLE = Arrays.asList(
+    static final List<FieldVarType<?>> COMP_WITH_DOUBLE = Arrays.asList(
             FieldVarType.FLOAT,
             FieldVarType.DOUBLE
     );
@@ -139,10 +164,146 @@ public class FieldVarType<T> {
                 .filter(t -> t.kind == INSTANCE);
     }
 
-    public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim) {
-        return FieldVarType.arrayTypeOf(type, dim, null);
+    /**
+     * Determines the resulting type if the given array is accessed with
+     * the given number of parameters (i.e. dimensions).
+     * E.g. accessing int[][][] with 2 parameters yields a 1-dimensional
+     * int-array.
+     *
+     * @param array   The accessed array
+     * @param nParams The number of dimensions
+     * @return the type that this array access results in
+     */
+    public static FieldVarType<?> resultingTypeOf(FieldVarLogger array, int nParams) {
+        assert array != null;
+        assert nParams > 0;
+
+        Class<?> aClass = array.getType().clazz;
+
+        // determine the return type
+        // (e.g. accessing int[][][] with 2 parameters
+        // yields a 1-dimensional array
+        int remainingDim = array.getType().dim - nParams;
+
+        FieldVarType<?> innerType = array.getType().inner;
+        Class<?> componentType = ClassUtils.nthComponentType(nParams, array.getType().clazz)
+                .orElseThrow(() ->
+                        new AssertionError(String.format(
+                                "Mismatching dimensions: %d for %s",
+                                nParams,
+                                aClass
+                        )));
+
+        return remainingDim == 0
+                ? innerType
+                : FieldVarType.arrayTypeOf(
+                componentType,
+                remainingDim,
+                innerType
+        );
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
+
+    /**
+     * Type category to distinguish between different primitive types,
+     * reference types and arrays.
+     */
+    public final Kind kind;
+
+    /**
+     * Optional inner type descriptor for array types.
+     */
+    public final FieldVarType<?> inner;
+
+    /**
+     * The Java {@link Class} instance corresponding to this type.
+     */
+    public final Class<T> clazz;
+
+    /**
+     * The Javassist {@link CtClass} that maps to this type.
+     */
+    final CtClass clazzType;
+
+    /**
+     * The number of dimensions for array types (otherwise {@code 0}).
+     */
+    public final int dim;
+
+    /**
+     * Restrictions on access for array types (otherwise {@code null}).
+     */
+    final BitSet[] restrictions;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
+
+    /**
+     * Initializes a new reference type based on the given class.
+     *
+     * @param clazz The class to base the reference type on
+     * @param <T>   The type corresponding to the Java class type
+     */
+    public static <T> FieldVarType<T> refTypeOf(Class<T> clazz) {
+        assert !clazz.isPrimitive();
+        return of(
+                clazz,
+                JavassistUtils.toCtClass(clazz),
+                INSTANCE
+        );
+    }
+
+    /**
+     * Initializes an array type.
+     *
+     * @param clazz        The array type descriptor
+     *                     (e.g. an instance of {@code Class<int[]>})
+     * @param dim          The number of dimensions of the array type
+     * @param inner        The inner field type (e.g. {@link FieldVarType#INT})
+     * @param restrictions Optional restrictions on the access range
+     *                     (e.g. only access dimension 0 at positions 3 to 5)
+     */
+    public static <T> FieldVarType<T> arrayTypeOf(Class<T> clazz, int dim, FieldVarType<?> inner, BitSet[] restrictions) {
+        assert clazz.isArray();
+
+        return new FieldVarType<>(
+                clazz,
+                JavassistUtils.toCtClass(clazz),
+                ARRAY,
+                inner,
+                dim,
+                restrictions
+        );
+    }
+
+    /**
+     * @see #arrayTypeOf(Class, int, FieldVarType, BitSet[])
+     */
+    public static <T> FieldVarType<T> arrayTypeOf(Class<T> clazz, int dim, FieldVarType<?> inner) {
+        return arrayTypeOf(clazz, dim, inner, null);
+    }
+
+    /**
+     * @see #arrayTypeOf(Class, int, FieldVarType, BitSet[])
+     */
+    public static <T> FieldVarType<T> arrayTypeOf(Class<T> clazz, FieldVarType<?> inner) {
+        return arrayTypeOf(clazz, ClassUtils.dimensions(clazz), inner, null);
+    }
+
+    /**
+     * Creates an array type with the given {@link FieldVarType} describing the
+     * component type and the given number of dimensions.
+     *
+     * @param type         The component type
+     * @param dim          The number of dimensions
+     * @param restrictions Optional access restrictions
+     * @return an array type with the given component type, dimensions and
+     * restrictions
+     */
     public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim, BitSet[] restrictions) {
         assert type != null : "Array type must not be null";
         assert type.kind != Kind.VOID : "Cannot create array of void type";
@@ -194,88 +355,14 @@ public class FieldVarType<T> {
             throw new AssertionError(e);
         }
 
-        return of(clazz, dim, type, restrictions);
-    }
-
-    // endregion
-    //-------------------------------------------------------------------------
-    // region Properties
-
-    /**
-     * Type category to distinguish between different primitive types,
-     * reference types and arrays.
-     */
-    public final Kind kind;
-
-    /**
-     * Optional inner type descriptor for array types.
-     */
-    public final FieldVarType<?> inner;
-
-    /**
-     * The Java {@link Class} instance corresponding to this type.
-     */
-    public final Class<T> clazz;
-
-    /**
-     * The Javassist {@link CtClass} that maps to this type.
-     */
-    private final CtClass clazzType;
-
-    /**
-     * The number of dimensions for array types (otherwise {@code 0}).
-     */
-    public final int dim;
-
-    /**
-     * Restrictions on access for array types (otherwise {@code null}).
-     */
-    private final BitSet[] restrictions;
-
-    // endregion
-    //-------------------------------------------------------------------------
-    // region Initialization
-
-    /**
-     * Initializes a new reference type based on the given class.
-     *
-     * @param clazz The class to base the reference type on
-     * @param <T>   The type corresponding to the Java class type
-     */
-    public static <T> FieldVarType<T> of(Class<T> clazz) {
-        return of(
-                clazz,
-                JavassistUtils.toCtClass(clazz),
-                INSTANCE
-        );
+        return arrayTypeOf(clazz, dim, type, restrictions);
     }
 
     /**
-     * Initializes an array type.
-     *
-     * @param clazz        The array type descriptor
-     *                     (e.g. an instance of {@code Class<int[]>})
-     * @param dim          The number of dimensions of the array type
-     * @param inner        The inner field type (e.g. {@link FieldVarType#INT})
-     * @param restrictions Optional restrictions on the access range
-     *                     (e.g. only access dimension 0 at positions 3 to 5)
+     * {@link #arrayTypeOf(FieldVarType, int, BitSet[])}
      */
-    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner, BitSet[] restrictions) {
-        return new FieldVarType<>(
-                clazz,
-                JavassistUtils.toCtClass(clazz),
-                ARRAY,
-                inner,
-                dim,
-                restrictions
-        );
-    }
-
-    /**
-     * @see #of(Class, int, FieldVarType, BitSet[])
-     */
-    public static <T> FieldVarType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner) {
-        return of(clazz, dim, inner, null);
+    public static FieldVarType<?> arrayTypeOf(FieldVarType<?> type, int dim) {
+        return FieldVarType.arrayTypeOf(type, dim, null);
     }
 
     /**
@@ -288,6 +375,7 @@ public class FieldVarType<T> {
      * @param kind      The kind of the type
      */
     public static <T> FieldVarType<T> of(Class<T> clazz, CtClass clazzType, Kind kind) {
+        assert !clazz.isArray();
         return new FieldVarType<>(clazz, clazzType, kind, null, 0, null);
     }
 
@@ -343,6 +431,56 @@ public class FieldVarType<T> {
     //-------------------------------------------------------------------------
     // region Public utility methods
 
+    public final String inspect() {
+        return String.format(
+                "FieldVarType{clazz=\"%s\", kind=\"%s\", inner=\"%s\", dim=%d}",
+                clazz,
+                kind,
+                inner,
+                dim
+        );
+    }
+
+    /**
+     * Returns a hash that corresponds to this values.
+     *
+     * @param variable The variable holding this value
+     * @return a hash code that identifies this value
+     */
+    public final String hashValue(FieldVarLogger variable) {
+        String name = variable.access();
+
+        switch (kind) {
+            case BOOLEAN:
+                return ternary(name, 1, 0);
+            case INSTANCE:
+                if (clazz.equals(String.class)) {
+                    return ternary(
+                            notNull(name),
+                            method(name, "hashCode"),
+                            "0L"
+                    );
+                } else if (clazz.equals(Date.class)) {
+                    return ternary(
+                            notNull(name),
+                            method(name, "getTime"),
+                            "0L"
+                    );
+                } else {
+                    // skip other instance types for now
+                    return "0L";
+                }
+            case ARRAY:
+                return ternary(
+                        notNull(name),
+                        cast(field(name, "length")).to(long.class),
+                        "0L"
+                );
+            default:
+                return Statement(pAssign("(long) " + name).to("hashValue"));
+        }
+    }
+
     /**
      * Checks whether this type is assignable from the given type -
      * e.g. {@code Object} being assignable from anything
@@ -352,9 +490,13 @@ public class FieldVarType<T> {
      * {@code false} otherwise
      */
     public boolean isAssignableFrom(FieldVarType<?> other) {
+        // void is neither assignable from nor to
+        if (this.kind == Kind.VOID || other.kind == Kind.VOID)
+            return false;
+
         switch (kind) {
             case INSTANCE:
-                return clazz.isAssignableFrom(other.clazz);
+                return (other.kind == INSTANCE || other.kind == ARRAY) && clazz.isAssignableFrom(other.clazz);
             case DOUBLE:
                 if (other.kind == Kind.DOUBLE) return true;
             case FLOAT:
@@ -371,6 +513,8 @@ public class FieldVarType<T> {
                 return other.kind == Kind.BOOLEAN;
             case BYTE:
                 return other.kind == Kind.BYTE;
+            case ARRAY:
+                return this.equals(other);
             default:
                 return false;
         }
@@ -402,6 +546,8 @@ public class FieldVarType<T> {
             default:
                 return Stream
                         .concat(types.stream(), Stream.of(this))
+                        .filter(t -> t.kind != Kind.VOID)
+                        .filter(t -> t.kind == Kind.ARRAY || t.kind == INSTANCE)
                         .filter(t -> clazz.isAssignableFrom(t.clazz))
                         .collect(Collectors.toList());
         }
@@ -411,15 +557,15 @@ public class FieldVarType<T> {
     //-------------------------------------------------------------------------
     // region Getters / setters
 
-    public CtClass getClazzType() {
+    public final CtClass getClazzType() {
         return clazzType;
     }
 
-    public BitSet[] getRestrictions() {
+    public final BitSet[] getRestrictions() {
         return restrictions;
     }
 
-    public boolean isRestricted() {
+    public final boolean isRestricted() {
         return restrictions != null;
     }
 

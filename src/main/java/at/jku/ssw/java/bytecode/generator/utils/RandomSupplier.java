@@ -207,6 +207,10 @@ public class RandomSupplier {
                     return asStr(getString());
                 } else if (type.clazz.equals(Date.class)) {
                     return New(Date.class, rand.nextLong() + "L");
+                } else if (type.clazz.equals(Object.class)) {
+                    return New(Object.class);
+                } else {
+                    throw new AssertionError();
                 }
             case ARRAY:
                 return NewArray(
@@ -218,7 +222,7 @@ public class RandomSupplier {
                                 .collect(Collectors.toList())
                 );
             default:
-                throw new java.lang.AssertionError();
+                throw new AssertionError();
         }
     }
 
@@ -267,7 +271,7 @@ public class RandomSupplier {
                     return "\'" + c + "\'";
                 }
             default:
-                throw new java.lang.AssertionError();
+                throw new AssertionError();
         }
     }
 
