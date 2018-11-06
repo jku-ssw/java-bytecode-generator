@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.INSTANCE;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
@@ -477,7 +476,7 @@ public class FieldVarType<T> {
                         "0L"
                 );
             default:
-                return inPar(pAssign("(long) " + name).to("hashValue"));
+                return inPar(name);
         }
     }
 

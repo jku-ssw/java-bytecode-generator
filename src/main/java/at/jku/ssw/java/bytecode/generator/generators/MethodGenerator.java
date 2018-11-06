@@ -18,8 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Return;
 
 class MethodGenerator extends MethodCaller {
@@ -237,7 +238,7 @@ class MethodGenerator extends MethodCaller {
      * @return a string describing how to get a hash value from this value
      */
     public String getHashComputation(FieldVarLogger variable) {
-        return Statement(pAssign(variable.getType().hashValue(variable)).to("hashValue"));
+        return Statement(pAssign(cast(variable.getType().hashValue(variable)).to(long.class)).to("hashValue"));
     }
 
     public void generateHashMethod() {
