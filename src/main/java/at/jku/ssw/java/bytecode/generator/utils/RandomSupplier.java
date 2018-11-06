@@ -107,7 +107,7 @@ public class RandomSupplier {
     }
 
     public BitSet[] arrayRestriction(int dim) {
-        return IntStream.of(0, dim)
+        return IntStream.range(0, dim)
                 .mapToObj(__ ->
                         rand.ints(0, MIN_ARRAY_DIM_LENGTH)
                                 .limit(rand.nextInt(MIN_ARRAY_DIM_LENGTH))
