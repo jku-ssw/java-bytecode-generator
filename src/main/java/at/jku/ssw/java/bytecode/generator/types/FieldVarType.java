@@ -477,7 +477,7 @@ public class FieldVarType<T> {
                         "0L"
                 );
             default:
-                return Statement(pAssign("(long) " + name).to("hashValue"));
+                return pAssign("(long) " + name).to("hashValue");
         }
     }
 
