@@ -94,6 +94,7 @@ public class StatementDSL {
         public static final String NULL = "null";
         public static final String ARRAY = "[%s]";
         public static final String FIELD_ACCESS = "%s.%s";
+        public static final String METHOD_CALL_NO_ARGS = "%s.%s()";
     }
 
     public static class Blocks {
@@ -212,6 +213,10 @@ public class StatementDSL {
 
     public static String field(String owner, String field) {
         return String.format(FIELD_ACCESS, owner, field);
+    }
+
+    public static String method(String owner, String name) {
+        return String.format(METHOD_CALL_NO_ARGS, owner, name);
     }
 
     public static String variable(String owner, String v) {
