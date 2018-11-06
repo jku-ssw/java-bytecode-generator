@@ -27,11 +27,12 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
     String outputDirectory();
 
-    default void fail(GeneratedClass clazz) {
+    default void fail(GeneratedClass clazz, Throwable throwable) {
         Assertions.fail(
-                () -> "Test failed\n" +
+                "Test failed\n" +
                         "Command line arguments: " + clazz.args + "\n" +
-                        "Seed: " + clazz.seed + "\n"
+                        "Seed: " + clazz.seed + "\n",
+                throwable
         );
     }
 
@@ -88,7 +89,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
             if (!p.waitFor(TIMEOUT, TimeUnit.MINUTES)) {
                 p.destroyForcibly();
-                fail(clazz);
+                fail(clazz, new RuntimeException("Sample class exceeded maximum runtime"));
             }
 
             String out = outStr.lines().collect(Collectors.joining());

@@ -89,8 +89,7 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
                 );
             }
         } catch (Throwable t) {
-            fail(clazz);
-            throw t;
+            fail(clazz, t);
         }
     }
 

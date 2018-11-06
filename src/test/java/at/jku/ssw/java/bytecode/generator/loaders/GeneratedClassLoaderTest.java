@@ -57,10 +57,10 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
         try {
             // class must be instantiable
+            @SuppressWarnings("unused")
             Object __ = clazz.newInstance();
         } catch (Throwable t) {
-            fail(genClass);
-            throw t;
+            fail(genClass, t);
         }
     }
 
@@ -95,8 +95,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
             assertNull(main.invoke(null, (Object) new String[0]));
         } catch (Throwable t) {
-            fail(genClass);
-            throw t;
+            fail(genClass, t);
         }
     }
 
@@ -125,8 +124,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
 
             assertNull(run.invoke(instance));
         } catch (Throwable t) {
-            fail(genClass);
-            throw t;
+            fail(genClass, t);
         }
     }
 
