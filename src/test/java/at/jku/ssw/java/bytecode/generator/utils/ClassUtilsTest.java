@@ -9,14 +9,45 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.ClassUtils.dimensions;
-import static at.jku.ssw.java.bytecode.generator.utils.ClassUtils.nthComponentType;
+import static at.jku.ssw.java.bytecode.generator.utils.ClassUtils.*;
 import static java.util.Optional.empty;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class ClassUtilsTest {
+
+    //-------------------------------------------------------------------------
+    // region Test cases
+
+    @ParameterizedTest(name = "type ''{0}'' has ''{1}'' dimensions")
+    @MethodSource("arrayTypesProvider")
+    public void testDimensions(Class<?> type, int dim) {
+        assertThat(dimensions(type), is(dim));
+    }
+
+    @ParameterizedTest(name = "type ''{2}'' is the {1}-th component type of ''{0}''")
+    @MethodSource("componentTypesProvider")
+    public void testNthComponentType(Class<?> type, int n, Class<?> componentType) {
+        assertThat(nthComponentType(n, type), is(Optional.ofNullable(componentType)));
+    }
+
+    @ParameterizedTest(name = "type ''{0}'' does not have a component type")
+    @MethodSource("nonArrayTypesProvider")
+    public void testNthComponentTypeForNonArrayTypes(Class<?> nonArrayType) {
+        assertThat(nthComponentType(1, nonArrayType), is(empty()));
+    }
+
+    @ParameterizedTest(name = "inner component type of ''{0}'' is ''{1}''")
+    @MethodSource("innerComponentTypesProvider")
+    public void testInnerComponentType(Class<?> arrayType, Class<?> innerComponentType) {
+        assertThat(innerComponentType(arrayType), is(equalTo(innerComponentType)));
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Argument providers
 
     private static Stream<Arguments> arrayTypesProvider() {
         return Stream.of(
@@ -49,21 +80,13 @@ public class ClassUtilsTest {
         );
     }
 
-    @ParameterizedTest(name = "type ''{0}'' has ''{1}'' dimensions")
-    @MethodSource("arrayTypesProvider")
-    public void testDimensions(Class<?> type, int dim) {
-        assertThat(dimensions(type), is(dim));
+    private static Stream<Arguments> innerComponentTypesProvider() {
+        return Stream.of(
+                arguments(Class[][][].class, Class.class),
+                arguments(int[].class, int.class)
+        );
     }
 
-    @ParameterizedTest(name = "type ''{2}'' is the {1}-th component type of ''{0}''")
-    @MethodSource("componentTypesProvider")
-    public void testNthComponentType(Class<?> type, int n, Class<?> componentType) {
-        assertThat(nthComponentType(n, type), is(Optional.ofNullable(componentType)));
-    }
-
-    @ParameterizedTest(name = "type ''{0}'' does not have a component type")
-    @MethodSource("nonArrayTypesProvider")
-    public void testNthComponentTypeForNonArrayTypes(Class<?> nonArrayType) {
-        assertThat(nthComponentType(1, nonArrayType), is(empty()));
-    }
+    // endregion
+    //-------------------------------------------------------------------------
 }

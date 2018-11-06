@@ -41,4 +41,23 @@ public class ClassUtils {
                         c -> Optional.ofNullable(c.getComponentType())))
                 .flatMap(Function.identity());
     }
+
+    /**
+     * Returns the innermost component type of the given array type.
+     * E.g. inner component type of {@code int[][][].class} is
+     * {@code int.class}.
+     *
+     * @param type The array type
+     * @return the inner component type
+     */
+    public static Class<?> innerComponentType(Class<?> type) {
+        assert type.isArray();
+
+        Class<?> inner = type.getComponentType();
+
+        while (inner.getComponentType() != null)
+            inner = inner.getComponentType();
+
+        return inner;
+    }
 }
