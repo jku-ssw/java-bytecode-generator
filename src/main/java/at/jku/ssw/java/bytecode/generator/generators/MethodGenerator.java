@@ -11,7 +11,6 @@ import javassist.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -19,11 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statements.Return;
 
 class MethodGenerator extends MethodCaller {
@@ -234,28 +230,14 @@ class MethodGenerator extends MethodCaller {
         return runLogger;
     }
 
-    public String getHashComputation(FieldVarType<?> type, String name) {
-        switch (type.kind) {
-            case BOOLEAN:
-                return Statement(pAssign(ternary(name, 1, 0)).to("hashValue"));
-            case INSTANCE:
-                // TODO maybe relocate to FieldVarType
-                if (type.clazz.equals(String.class)) {
-                    return If(notNull(name)) +
-                            Statement(pAssign(name + ".hashCode()").to("hashValue")) +
-                            BlockEnd;
-                } else if (type.clazz.equals(Date.class)) {
-                    return If(notNull(name)) +
-                            Statement(pAssign(name + ".getTime()").to("hashValue")) +
-                            BlockEnd;
-                }
-            case ARRAY:
-                return If(notNull(name)) +
-                        Statement(pAssign("(long) " + name + ".length").to("hashValue")) +
-                        BlockEnd;
-            default:
-                return Statement(pAssign("(long) " + name).to("hashValue"));
-        }
+    /**
+     * Returns a computable value from this variable and this type.
+     *
+     * @param variable The variable (field, local variable)
+     * @return a string describing how to get a hash value from this value
+     */
+    public String getHashComputation(FieldVarLogger variable) {
+        return Statement(pAssign(variable.getType().hashValue(variable)).to("hashValue"));
     }
 
     public void generateHashMethod() {
@@ -264,7 +246,7 @@ class MethodGenerator extends MethodCaller {
         if (this.getClazzLogger().hasVariables()) {
             src.append(
                     initGlobals.stream()
-                            .map(f -> getHashComputation(f.getType(), f.access()))
+                            .map(this::getHashComputation)
                             .collect(Collectors.joining())
             );
         }
