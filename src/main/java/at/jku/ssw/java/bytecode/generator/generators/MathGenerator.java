@@ -2,14 +2,15 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.types.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import javassist.*;
 
 import java.util.*;
 
+import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.*;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.*;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
 
@@ -84,7 +85,7 @@ class MathGenerator extends MethodCaller {
         CtMethod mathMethod = getMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
-        FieldVarType[] paramTypes = getParamTypes(signature);
+        PrimitiveType[] paramTypes = getParamTypes(signature);
         ParamWrapper[] paramValues = getClazzLogger().randomParameterValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && (noOverflow || noDivByZero)) {
             String noExceptionIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
@@ -106,7 +107,7 @@ class MathGenerator extends MethodCaller {
     public String srcSetFieldToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType<?> returnType = getType(signature.charAt(signature.length() - 1));
+        PrimitiveType<?> returnType = getType(signature.charAt(signature.length() - 1));
         if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleFieldUsableInMethod(method, returnType);
             if (fieldVar == null) {
@@ -119,7 +120,7 @@ class MathGenerator extends MethodCaller {
     }
 
     private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger fieldVar) {
-        FieldVarType[] paramTypes = getParamTypes(mathMethod.getSignature());
+        PrimitiveType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().randomParameterValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
             String noOverFlowIf = getNoExceptionIf(mathMethod.getLongName(), paramValues, paramTypes);
@@ -139,7 +140,7 @@ class MathGenerator extends MethodCaller {
     public String srcSetLocalVarToMathReturnValue(MethodLogger method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
-        FieldVarType<?> returnType = getType(signature.charAt(signature.length() - 1));
+        PrimitiveType<?> returnType = getType(signature.charAt(signature.length() - 1));
         if (method.hasVariables()) {
             FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalCompatibleLocalVar(method, returnType);
             if (fieldVar == null) {
@@ -247,7 +248,7 @@ class MathGenerator extends MethodCaller {
         return methods[rand.nextInt(methods.length)];
     }
 
-    private static String getNoExceptionIf(String longName, ParamWrapper[] paramValues, FieldVarType[] paramTypes) {
+    private static String getNoExceptionIf(String longName, ParamWrapper[] paramValues, PrimitiveType[] paramTypes) {
         String[] params = new String[2];
         params[0] = paramValues[0].getParamValue().toString();
         if (paramTypes.length == 2) {
@@ -288,55 +289,55 @@ class MathGenerator extends MethodCaller {
         return null;
     }
 
-    private static FieldVarType<?> getType(char t) {
+    private static PrimitiveType<?> getType(char t) {
         switch (t) {
             case 'D':
-                return FieldVarType.DOUBLE;
+                return DOUBLE;
             case 'I':
-                return FieldVarType.INT;
+                return INT;
             case 'F':
-                return FieldVarType.FLOAT;
+                return FLOAT;
             case 'J':
-                return FieldVarType.LONG;
+                return LONG;
             default:
-                return null;
+                throw new AssertionError("Unexpected math data type requested: " + t);
         }
     }
 
-    private static FieldVarType[] getParamTypes(String methodSignature) {
-        List<FieldVarType> paramTypes = new ArrayList<>();
+    private static PrimitiveType[] getParamTypes(String methodSignature) {
+        List<PrimitiveType<?>> paramTypes = new ArrayList<>();
         for (int i = 1; i < methodSignature.length() - 2; i++) {
             paramTypes.add(getType(methodSignature.charAt(i)));
         }
-        FieldVarType[] paramTypesArray = new FieldVarType[paramTypes.size()];
+        PrimitiveType[] paramTypesArray = new PrimitiveType[paramTypes.size()];
         return paramTypes.toArray(paramTypesArray);
     }
 
 
     private FieldVarLogger fetchLocalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
+        PrimitiveType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalLocalVarOfType(method, type);
     }
 
     private FieldVarLogger fetchGlobalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
+        PrimitiveType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, type);
     }
 
-    private FieldVarType<?> fetchAssignVarTypeForOperandStatement(OpStatKind opStatKind) {
-        List<FieldVarType> types = new ArrayList<>();
+    private PrimitiveType<?> fetchAssignVarTypeForOperandStatement(OpStatKind opStatKind) {
+        List<PrimitiveType<?>> types = new ArrayList<>();
         switch (opStatKind) {
             case LOGICAL:
-                types.add(FieldVarType.BOOLEAN);
+                types.add(BOOLEAN);
                 break;
             case ARITHMETIC_LOGICAL:
             case BITWISE_LOGICAL:
             case ARITHMETIC_LOGICAL_BITWISE:
-                types.add(FieldVarType.BOOLEAN);
+                types.add(BOOLEAN);
             case BITWISE:
             case ARITHMETIC_BITWISE:
             case ARITHMETIC:
-                types.addAll(FieldVarType.numericTypes());
+                types.addAll(PrimitiveType.numeric());
         }
         return types.get(rand.nextInt(types.size()));
     }
@@ -348,7 +349,7 @@ class MathGenerator extends MethodCaller {
         while (numberOfOperands > 0) {
             int operandsInPartition = 1 + ((maxPartitionSize > 1) ? rand.nextInt(maxPartitionSize - 1) : 0);
             StringBuilder statement;
-            FieldVarType<?> type;
+            PrimitiveType<?> type;
             if (rand.nextBoolean()) {
                 statement = srcGenerateOperatorStatementOfKind(method, operandsInPartition, ARITHMETIC, useNoVars);
                 operator = getNonDivNonUnaryArithmeticOperator();
@@ -423,10 +424,10 @@ class MathGenerator extends MethodCaller {
                 f = fetchOperand(method, opStatKind);
             }
             String operand;
-            FieldVarType<?> type;
+            PrimitiveType<?> type;
             if (f == null || (operator == DIV || operator == MOD) && incDecrementOperands.contains(f)) {
                 type = getOperandType(opStatKind);
-                if (type == FieldVarType.BOOLEAN) {
+                if (type == BOOLEAN) {
                     operand = getRandomSupplier().castedValue(type);
                 } else if (operator == DIV || operator == MOD) {
                     operand = getRandomSupplier().getRandomNumericValue(type, true);
@@ -504,27 +505,27 @@ class MathGenerator extends MethodCaller {
         return operators.get(rand.nextInt(operators.size()));
     }
 
-    private FieldVarType<?> getOperandType(OpStatKind opStatKind) {
-        List<FieldVarType> types = new ArrayList<>();
+    private PrimitiveType<?> getOperandType(OpStatKind opStatKind) {
+        List<PrimitiveType<?>> types = new ArrayList<>();
         switch (opStatKind) {
             case LOGICAL:
-                types.add(FieldVarType.BOOLEAN);
+                types.add(BOOLEAN);
                 break;
             case ARITHMETIC:
-                types = new ArrayList<>(FieldVarType.numericTypes());
+                types = new ArrayList<>(PrimitiveType.numeric());
                 break;
             case BITWISE:
-                types = new ArrayList<>(FieldVarType.numericTypes());
-                types.remove(FieldVarType.FLOAT);
-                types.remove(FieldVarType.DOUBLE);
-                types.remove(FieldVarType.LONG);
+                types = new ArrayList<>(PrimitiveType.numeric());
+                types.remove(FLOAT);
+                types.remove(DOUBLE);
+                types.remove(LONG);
                 break;
         }
         return types.get(rand.nextInt(types.size()));
     }
 
     private FieldVarLogger fetchOperand(MethodLogger method, OpStatKind opStatKind) {
-        FieldVarType<?> type = getOperandType(opStatKind);
+        PrimitiveType<?> type = getOperandType(opStatKind);
         return this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
     }
 

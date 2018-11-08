@@ -1,6 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
+import at.jku.ssw.java.bytecode.generator.types.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -8,7 +10,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.*;
+import static at.jku.ssw.java.bytecode.generator.types.ArrayType.MIN_ARRAY_DIM_LENGTH;
+import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind;
+import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.BYTE;
+import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.SHORT;
+import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;
@@ -83,26 +89,26 @@ public class RandomSupplier {
     }
 
     public FieldVarType<?> primitiveType() {
-        return randomizer.oneOf(FieldVarType.primitiveTypes())
+        return randomizer.oneOf(TypeCache.INSTANCE.primitiveTypes())
                 .orElseThrow(() -> new AssertionError("No primitive types available"));
     }
 
     public FieldVarType<?> classType() {
-        return randomizer.oneOf(FieldVarType.classTypes())
+        return randomizer.oneOf(TypeCache.INSTANCE.refTypes())
                 .orElseThrow(() -> new AssertionError("No class types available"));
     }
 
     public FieldVarType<?> arrayType(int dim) {
         return randomizer
-                .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
-                .map(t -> FieldVarType.arrayTypeOf(t, dim))
+                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind != Kind.VOID))
+                .map(t -> ArrayType.of(t, dim))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
     public FieldVarType<?> restrictedArrayType(int dim) {
         return randomizer
-                .oneOf(FieldVarType.types().filter(t -> t.kind != Kind.VOID))
-                .map(t -> FieldVarType.arrayTypeOf(t, dim, arrayRestriction(dim)))
+                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind != Kind.VOID))
+                .map(t -> ArrayType.of(t, dim, arrayRestriction(dim)))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
@@ -216,13 +222,13 @@ public class RandomSupplier {
                 return NewArray(
                         type.clazz,
                         rand.ints(0, maxArrayDimSize + 1)
-                                .map(i -> i + FieldVarType.MIN_ARRAY_DIM_LENGTH)
+                                .map(i -> i + MIN_ARRAY_DIM_LENGTH)
                                 .limit(type.dim)
                                 .boxed()
                                 .collect(Collectors.toList())
                 );
             default:
-                throw new AssertionError();
+                throw new AssertionError("Unexpected type " + type);
         }
     }
 

@@ -7,6 +7,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+
 public class MethodLogger extends Logger {
 
     private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
@@ -77,7 +79,7 @@ public class MethodLogger extends Logger {
     }
 
     public boolean isVoid() {
-        return returnType == FieldVarType.VOID;
+        return returnType == VOID;
     }
 
     @Override

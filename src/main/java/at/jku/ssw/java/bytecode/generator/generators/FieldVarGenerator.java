@@ -79,7 +79,7 @@ class FieldVarGenerator extends Generator {
                 SystemOutPrintln(
                         concat(
                                 asStr(variable.name + " = "),
-                                variable.getType().hashValue(variable)
+                                variable.getType().getHashCode(variable)
                         )
                 )
         );

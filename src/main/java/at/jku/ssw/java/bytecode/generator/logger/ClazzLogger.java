@@ -24,8 +24,8 @@ public class ClazzLogger extends Logger {
         this.name = name;
         this.methods = new ArrayList<>();
         // only use these if result should be non-deterministic
-        // this.methods.add(new MethodLogger("hashCode", name, Modifier.PUBLIC, FieldVarType.INT, true));
-        // this.methods.add(new MethodLogger("toString", name, Modifier.PUBLIC, FieldVarType.STRING, true));
+        // this.methods.add(new MethodLogger("hashCode", name, Modifier.PUBLIC, INT, true));
+        // this.methods.add(new MethodLogger("toString", name, Modifier.PUBLIC, STRING, true));
         this.variables = new HashMap<>();
         this.main = main;
         this.randomSupplier = randomSupplier;

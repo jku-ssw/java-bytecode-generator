@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
@@ -116,7 +117,7 @@ class MethodGenerator extends MethodCaller {
         CtMethod ctMethod = getCtMethod(method);
         FieldVarType<?> returnType = method.getReturnType();
 
-        if (returnType == FieldVarType.VOID) {
+        if (returnType == VOID) {
             try {
                 ctMethod.insertAfter(Return);
             } catch (CannotCompileException e) {
@@ -178,7 +179,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
-        List<FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
+        List<? extends FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
 
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(rand.nextInt(compatibleTypes.size())));
@@ -226,7 +227,7 @@ class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger runLogger = new MethodLogger(rand, getClazzLogger().name, "run", Modifier.PRIVATE, FieldVarType.VOID);
+        MethodLogger runLogger = new MethodLogger(rand, getClazzLogger().name, "run", Modifier.PRIVATE, VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
     }
@@ -238,7 +239,7 @@ class MethodGenerator extends MethodCaller {
      * @return a string describing how to get a hash value from this value
      */
     public String getHashComputation(FieldVarLogger variable) {
-        return Statement(pAssign(cast(variable.getType().hashValue(variable)).to(long.class)).to("hashValue"));
+        return Statement(pAssign(cast(variable.getType().getHashCode(variable)).to(long.class)).to("hashValue"));
     }
 
     public void generateHashMethod() {
