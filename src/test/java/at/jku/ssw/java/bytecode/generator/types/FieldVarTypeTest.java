@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.BOOLEAN;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.INT;
 import static at.jku.ssw.java.bytecode.generator.types.RefType.*;
-import static at.jku.ssw.java.bytecode.generator.types.RootType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
 import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

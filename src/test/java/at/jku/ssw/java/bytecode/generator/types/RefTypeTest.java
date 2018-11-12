@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.RefType.DATE;
 import static at.jku.ssw.java.bytecode.generator.types.RefType.STRING;
-import static at.jku.ssw.java.bytecode.generator.types.RootType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;

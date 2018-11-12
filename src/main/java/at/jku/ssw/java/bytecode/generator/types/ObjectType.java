@@ -5,11 +5,11 @@ import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class RootType extends RefType<Object> {
+public final class ObjectType extends RefType<Object> {
 
-    public static final RootType OBJECT = new RootType();
+    public static final ObjectType OBJECT = new ObjectType();
 
-    private RootType() {
+    private ObjectType() {
         super(Object.class, JavassistUtils.toCtClass(Object.class), Kind.INSTANCE, null, 0, null);
     }
 

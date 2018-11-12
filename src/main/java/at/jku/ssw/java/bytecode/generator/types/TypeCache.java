@@ -34,7 +34,7 @@ public enum TypeCache {
         primitiveTypes.put(boolean.class, BOOLEAN);
         primitiveTypes.put(char.class, CHAR);
 
-        refTypes.put(Object.class, RootType.OBJECT);
+        refTypes.put(Object.class, ObjectType.OBJECT);
         refTypes.put(Date.class, RefType.DATE);
         refTypes.put(String.class, RefType.STRING);
     }
