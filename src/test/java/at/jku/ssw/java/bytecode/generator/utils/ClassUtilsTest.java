@@ -22,25 +22,25 @@ public class ClassUtilsTest {
     // region Test cases
 
     @ParameterizedTest(name = "type ''{0}'' has ''{1}'' dimensions")
-    @MethodSource("arrayTypesProvider")
+    @MethodSource("arrayTypeProvider")
     public void testDimensions(Class<?> type, int dim) {
         assertThat(dimensions(type), is(dim));
     }
 
     @ParameterizedTest(name = "type ''{2}'' is the {1}-th component type of ''{0}''")
-    @MethodSource("componentTypesProvider")
+    @MethodSource("componentTypeProvider")
     public void testNthComponentType(Class<?> type, int n, Class<?> componentType) {
         assertThat(nthComponentType(n, type), is(Optional.ofNullable(componentType)));
     }
 
     @ParameterizedTest(name = "type ''{0}'' does not have a component type")
-    @MethodSource("nonArrayTypesProvider")
+    @MethodSource("nonArrayTypeProvider")
     public void testNthComponentTypeForNonArrayTypes(Class<?> nonArrayType) {
         assertThat(nthComponentType(1, nonArrayType), is(empty()));
     }
 
     @ParameterizedTest(name = "inner component type of ''{0}'' is ''{1}''")
-    @MethodSource("innerComponentTypesProvider")
+    @MethodSource("innerComponentTypeProvider")
     public void testInnerComponentType(Class<?> arrayType, Class<?> innerComponentType) {
         assertThat(innerComponentType(arrayType), is(equalTo(innerComponentType)));
     }
@@ -49,7 +49,7 @@ public class ClassUtilsTest {
     //-------------------------------------------------------------------------
     // region Argument providers
 
-    private static Stream<Arguments> arrayTypesProvider() {
+    private static Stream<Arguments> arrayTypeProvider() {
         return Stream.of(
                 arguments(Class[][][].class, 3),
                 arguments(int[].class, 1),
@@ -59,7 +59,7 @@ public class ClassUtilsTest {
         );
     }
 
-    private static Stream<Arguments> componentTypesProvider() {
+    private static Stream<Arguments> componentTypeProvider() {
         return Stream.of(
                 arguments(Class[][][].class, 1, Class[][].class),
                 arguments(Class[][][].class, 2, Class[].class),
@@ -69,7 +69,7 @@ public class ClassUtilsTest {
         );
     }
 
-    private static Stream<Class<?>> nonArrayTypesProvider() {
+    private static Stream<Class<?>> nonArrayTypeProvider() {
         return Stream.of(
                 int.class,
                 Object.class,
@@ -80,7 +80,7 @@ public class ClassUtilsTest {
         );
     }
 
-    private static Stream<Arguments> innerComponentTypesProvider() {
+    private static Stream<Arguments> innerComponentTypeProvider() {
         return Stream.of(
                 arguments(Class[][][].class, Class.class),
                 arguments(int[].class, int.class)
