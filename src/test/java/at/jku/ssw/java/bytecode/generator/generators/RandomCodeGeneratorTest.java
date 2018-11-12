@@ -9,9 +9,12 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
 
+import static at.jku.ssw.java.bytecode.generator.BytecodeComparator.assertSameStructure;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -47,6 +50,11 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
         final Result act = run(classB);
 
         compareResults(exp, act);
+
+        byte[] classABytecode = Files.readAllBytes(Paths.get(DIR).resolve(classA.name + ".class"));
+        byte[] classBBytecode = Files.readAllBytes(Paths.get(DIR).resolve(classB.name + ".class"));
+
+        assertSameStructure(classABytecode, classBBytecode);
     }
 
     static class MinorRepetitionProvider implements CLIArgumentsProvider {
