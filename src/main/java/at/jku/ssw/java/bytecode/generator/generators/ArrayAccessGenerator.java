@@ -52,7 +52,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                         .map(d -> rand.ints(0, MIN_ARRAY_DIM_LENGTH)
                                 // filter values that do not fit the restrictions (if any)
                                 .filter(i -> unrestricted || restrictions[d] == null || restrictions[d].isEmpty() || restrictions[d].get(i))
-                                .findAny()
+                                .findFirst()
                                 .orElseThrow(AssertionError::new))
                         .mapToObj(i -> cast(i).to(int.class))
                         .collect(Collectors.toList())
@@ -86,7 +86,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                                                     BlockEnd
                                     );
                         })
-        ).findAny()
+        ).findFirst()
                 .map(Supplier::get)
                 .orElse("");
     }

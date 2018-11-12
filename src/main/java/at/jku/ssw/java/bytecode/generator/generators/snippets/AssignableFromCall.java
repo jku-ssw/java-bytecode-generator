@@ -23,7 +23,7 @@ public class AssignableFromCall implements Snippet {
         MetaType<?> t1 = randomSupplier.type();
         MetaType<?> t2 = randomSupplier.types()
                 .filter(t -> !t.equals(t1))
-                .findAny()
+                .findFirst()
                 .get();
         String c1 = t1.clazz.getCanonicalName();
         String c2 = t2.clazz.getCanonicalName();

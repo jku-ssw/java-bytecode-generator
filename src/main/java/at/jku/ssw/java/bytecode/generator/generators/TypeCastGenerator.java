@@ -45,7 +45,7 @@ public class TypeCastGenerator extends Generator {
                                             dest.setInitialized();
                                             return Statement(assign(cast(v.access()).to(dest.getType().clazz)).to(dest.access()));
                                         }))
-        ).findAny()
+        ).findFirst()
                 .map(Supplier::get)
                 .ifPresent(statement -> insertIntoMethodBody(method, statement));
 

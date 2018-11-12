@@ -32,7 +32,7 @@ public final class Randomizer {
         return stream(suppliers)
                 .map(Supplier::get)
                 .filter(Objects::nonNull)
-                .findAny();
+                .findFirst();
     }
 
     /**
@@ -43,7 +43,7 @@ public final class Randomizer {
                 ? Optional.empty()
                 : values.stream()
                 .skip(rand.nextInt(values.size()))
-                .findAny();
+                .findFirst();
     }
 
     /**
@@ -66,7 +66,7 @@ public final class Randomizer {
     @SafeVarargs
     public final <T> Optional<T> oneOf(T... values) {
         return skipRandom(values)
-                .findAny();
+                .findFirst();
     }
 
     /**
@@ -81,7 +81,7 @@ public final class Randomizer {
         return skipRandom(suppliers)
                 .map(Supplier::get)
                 .map(Optional::ofNullable)
-                .findAny()
+                .findFirst()
                 .flatMap(Function.identity());
     }
 
@@ -92,7 +92,7 @@ public final class Randomizer {
      */
     public void oneOf(Runnable... runnables) {
         skipRandom(runnables)
-                .findAny()
+                .findFirst()
                 .ifPresent(Runnable::run);
     }
 
@@ -136,7 +136,7 @@ public final class Randomizer {
                 .reduce(Arrays.stream(values), Stream::concat)
                 .limit(options)
                 .skip(rand.nextInt(options))
-                .findAny();
+                .findFirst();
     }
 
     /**
