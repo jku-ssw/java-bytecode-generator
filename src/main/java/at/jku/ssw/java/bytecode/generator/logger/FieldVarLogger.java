@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 
 import java.lang.reflect.Modifier;
 
@@ -9,12 +9,12 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.variable;
 public class FieldVarLogger {
     public final String name;
     private final int modifiers;
-    private final FieldVarType<?> type;
+    private final MetaType<?> type;
     private boolean initialized;
     public final boolean isField;
     public final String clazz;
 
-    public FieldVarLogger(String name, String clazz, int modifiers, FieldVarType<?> type, boolean initialized, boolean isField) {
+    public FieldVarLogger(String name, String clazz, int modifiers, MetaType<?> type, boolean initialized, boolean isField) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
@@ -39,7 +39,7 @@ public class FieldVarLogger {
         return modifiers;
     }
 
-    public FieldVarType<?> getType() {
+    public MetaType<?> getType() {
         return type;
     }
 

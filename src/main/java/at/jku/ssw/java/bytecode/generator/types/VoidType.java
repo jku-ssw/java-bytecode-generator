@@ -6,7 +6,7 @@ import javassist.CtClass;
 import java.util.Collections;
 import java.util.List;
 
-public final class VoidType extends FieldVarType<VoidType.Void> {
+public final class VoidType extends MetaType<VoidType.Void> {
 
     /**
      * Singleton instance.
@@ -71,7 +71,7 @@ public final class VoidType extends FieldVarType<VoidType.Void> {
      * {@inheritDoc}
      */
     @Override
-    public List<? extends FieldVarType<?>> getAssignableTypes() {
+    public List<? extends MetaType<?>> getAssignableTypes() {
         return Collections.emptyList();
     }
 
@@ -79,7 +79,7 @@ public final class VoidType extends FieldVarType<VoidType.Void> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAssignableFrom(FieldVarType<?> __) {
+    public boolean isAssignableFrom(MetaType<?> __) {
         return false;
     }
 

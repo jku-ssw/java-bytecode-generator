@@ -4,7 +4,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
@@ -35,13 +35,13 @@ class MethodGenerator extends MethodCaller {
         this.randomCodeGenerator = randomCodeGenerator;
     }
 
-    public FieldVarType[] getParameterTypes(int maxParameters) {
+    public MetaType[] getParameterTypes(int maxParameters) {
         int n = maxParameters == 0 ? 0 : rand.nextInt(maxParameters);
         return getNParameterTypes(n);
     }
 
-    public FieldVarType[] getNParameterTypes(int n) {
-        FieldVarType[] types = new FieldVarType[n];
+    public MetaType[] getNParameterTypes(int n) {
+        MetaType[] types = new MetaType[n];
         for (int i = 0; i < n; i++) {
             types[i] = getRandomSupplier().type();
         }
@@ -50,7 +50,7 @@ class MethodGenerator extends MethodCaller {
 
     //============================================Method Generation=====================================================
 
-    private MethodLogger generateMethod(String name, FieldVarType<?> returnType, FieldVarType[] paramTypes, int modifiers) {
+    private MethodLogger generateMethod(String name, MetaType<?> returnType, MetaType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
@@ -65,7 +65,7 @@ class MethodGenerator extends MethodCaller {
             }
         }
         String returnStatement;
-        if (returnType.kind == FieldVarType.Kind.VOID) {
+        if (returnType.kind == MetaType.Kind.VOID) {
             returnStatement = "";
         } else {
             returnStatement = "return " + getRandomSupplier().castedValue(returnType) + ";";
@@ -104,7 +104,7 @@ class MethodGenerator extends MethodCaller {
         }
 
         List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
-        FieldVarType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
+        MetaType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
@@ -115,7 +115,7 @@ class MethodGenerator extends MethodCaller {
 
     public void insertReturn(MethodLogger method) {
         CtMethod ctMethod = getCtMethod(method);
-        FieldVarType<?> returnType = method.getReturnType();
+        MetaType<?> returnType = method.getReturnType();
 
         if (returnType == VOID) {
             try {
@@ -143,7 +143,7 @@ class MethodGenerator extends MethodCaller {
     //===============================================Method Calling=====================================================
 
     private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
-        FieldVarType[] paramTypes = calledMethod.getParamsTypes();
+        MetaType[] paramTypes = calledMethod.getParamsTypes();
         ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
         Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
@@ -179,7 +179,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
-        List<? extends FieldVarType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
+        List<? extends MetaType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
 
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(rand.nextInt(compatibleTypes.size())));
@@ -297,9 +297,9 @@ class MethodGenerator extends MethodCaller {
 
     //=================================================Utility==========================================================
 
-    private FieldVarType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
+    private MetaType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {
-            FieldVarType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
+            MetaType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
             Stream<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
                     m -> m.getParamsTypes().length == parameterTypes.length);
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
@@ -309,11 +309,11 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    private boolean equalOverloadedParamTypesExists(Stream<MethodLogger> equalNumberOfParamMethods, FieldVarType[] parameterTypes) {
+    private boolean equalOverloadedParamTypesExists(Stream<MethodLogger> equalNumberOfParamMethods, MetaType[] parameterTypes) {
         return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamsTypes()));
     }
 
-    private static boolean equalParameterTypes(FieldVarType[] types1, FieldVarType[] types2) {
+    private static boolean equalParameterTypes(MetaType[] types1, MetaType[] types2) {
         return types1.length == types2.length &&
                 IntStream.range(0, types1.length)
                         .allMatch(i -> types1[i].equals(types2[i]));

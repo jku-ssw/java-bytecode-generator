@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @param <T> The actual Java type that is described
  */
-public abstract class FieldVarType<T> {
+public abstract class MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Inner classes / types
@@ -50,7 +50,7 @@ public abstract class FieldVarType<T> {
     /**
      * Optional inner type descriptor for array types.
      */
-    public final FieldVarType<?> inner;
+    public final MetaType<?> inner;
 
     /**
      * The Java {@link Class} instance corresponding to this type.
@@ -80,7 +80,7 @@ public abstract class FieldVarType<T> {
      * Generates a new type based on the given properties.
      *
      * @param clazz        The actual Java class type instance corresponding to
-     *                     this {@link FieldVarType}.
+     *                     this {@link MetaType}.
      * @param clazzType    The {@link CtClass} type that maps to this type
      * @param kind         The kind descriptor to catgorize different types
      * @param inner        Optional inner type reference for array types
@@ -89,12 +89,12 @@ public abstract class FieldVarType<T> {
      *                     Those can be specified for each dimension
      *                     individually.
      */
-    protected FieldVarType(Class<T> clazz,
-                           CtClass clazzType,
-                           Kind kind,
-                           FieldVarType<?> inner,
-                           int dim,
-                           BitSet[] restrictions) {
+    protected MetaType(Class<T> clazz,
+                       CtClass clazzType,
+                       Kind kind,
+                       MetaType<?> inner,
+                       int dim,
+                       BitSet[] restrictions) {
 
         // iff the type does not have dimensions, it must not be an array
         // and not have an inner type
@@ -118,7 +118,7 @@ public abstract class FieldVarType<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FieldVarType<?> that = (FieldVarType<?>) o;
+        MetaType<?> that = (MetaType<?>) o;
         return dim == that.dim &&
                 kind == that.kind &&
                 Objects.equals(clazz, that.clazz);
@@ -187,11 +187,11 @@ public abstract class FieldVarType<T> {
      *
      * @return
      */
-    public abstract List<? extends FieldVarType<?>> getAssignableTypes();
+    public abstract List<? extends MetaType<?>> getAssignableTypes();
 
-    public abstract boolean isAssignableFrom(FieldVarType<?> type);
+    public abstract boolean isAssignableFrom(MetaType<?> type);
 
-    public boolean isAssignableTo(FieldVarType<?> type) {
+    public boolean isAssignableTo(MetaType<?> type) {
         assert type != null;
         return type.isAssignableFrom(this);
     }
@@ -204,7 +204,7 @@ public abstract class FieldVarType<T> {
         return kind;
     }
 
-    public FieldVarType<?> getInner() {
+    public MetaType<?> getInner() {
         return inner;
     }
 

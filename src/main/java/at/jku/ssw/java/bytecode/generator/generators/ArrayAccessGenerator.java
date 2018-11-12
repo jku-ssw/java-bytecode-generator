@@ -3,7 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.types.ArrayType;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static at.jku.ssw.java.bytecode.generator.types.ArrayType.MIN_ARRAY_DIM_LENGTH;
-import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;
@@ -72,7 +72,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                             // (minimum 1, maximum the dimensions of a)
                             int nParams = rand.nextInt(a.getType().dim) + 1;
 
-                            FieldVarType<?> returnType = ArrayType.resultingTypeOf(a, nParams);
+                            MetaType<?> returnType = ArrayType.resultingTypeOf(a, nParams);
 
                             return getClazzLogger()
                                     .getNonFinalVarsUsableInMethod(method)

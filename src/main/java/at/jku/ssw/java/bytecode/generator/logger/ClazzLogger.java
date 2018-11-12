@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
@@ -84,10 +84,10 @@ public class ClazzLogger extends Logger {
         return callableMethods;
     }
 
-    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, FieldVarType<?> fieldVarType) {
+    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, MetaType<?> metaType) {
         return randomizer
                 .oneOf(getCallableMethods(callingMethod).stream()
-                        .filter(m -> m.getReturnType() == fieldVarType))
+                        .filter(m -> m.getReturnType() == metaType))
                 .orElse(null);
     }
 
@@ -115,7 +115,7 @@ public class ClazzLogger extends Logger {
         return !methods.isEmpty();
     }
 
-    public ParamWrapper[] randomParameterValues(FieldVarType<?>[] paramTypes, MethodLogger method) {
+    public ParamWrapper[] randomParameterValues(MetaType<?>[] paramTypes, MethodLogger method) {
         return randomParameterValues(Arrays.stream(paramTypes), method)
                 .toArray(ParamWrapper[]::new);
     }
@@ -129,7 +129,7 @@ public class ClazzLogger extends Logger {
      * @return a stream of randomly picked parameter values - either variables
      * or constant values
      */
-    public Stream<ParamWrapper<?>> randomParameterValues(Stream<FieldVarType<?>> paramTypes, MethodLogger method) {
+    public Stream<ParamWrapper<?>> randomParameterValues(Stream<MetaType<?>> paramTypes, MethodLogger method) {
         return paramTypes
                 .map(t ->
                         randomizer.oneOf(
@@ -152,7 +152,7 @@ public class ClazzLogger extends Logger {
             return getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, MetaType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() &&
@@ -162,7 +162,7 @@ public class ClazzLogger extends Logger {
                     !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, MetaType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isStatic() && v.isInitialized() && !v.isFinal() &&
@@ -173,12 +173,12 @@ public class ClazzLogger extends Logger {
                             type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, MetaType<?> type) {
         return method.getVariableWithPredicate(v ->
                 v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, MetaType<?> type) {
         return method.getVariableWithPredicate(v ->
                 v.isInitialized() && type.isAssignableFrom(v.getType()));
     }
@@ -187,12 +187,12 @@ public class ClazzLogger extends Logger {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, MetaType<?> type) {
         return method.getVariableWithPredicate(v ->
                 !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isInitialized() && v.isStatic() && v.getType() == type);
@@ -201,7 +201,7 @@ public class ClazzLogger extends Logger {
                     v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
         return randomizer.oneNotNullOf(
                 () -> getInitializedLocalVarOfType(method, type),
                 () -> getInitializedFieldOfTypeUsableInMethod(method, type)
@@ -224,7 +224,7 @@ public class ClazzLogger extends Logger {
         ).filter(FieldVarLogger::isInitialized);
     }
 
-    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
         if (method.isStatic())
             return getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() && v.getType() == type);
@@ -233,7 +233,7 @@ public class ClazzLogger extends Logger {
                     !v.isFinal() && v.getType() == type);
     }
 
-    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, FieldVarType<?> type) {
+    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, MetaType<?> type) {
         return method.getVariableWithPredicate(v ->
                 !v.isFinal() && v.getType() == type);
     }

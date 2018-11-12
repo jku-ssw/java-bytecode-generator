@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.INSTANCE;
+import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.INSTANCE;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
@@ -19,7 +19,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
  *
  * @param <T> TODO
  */
-public class RefType<T> extends FieldVarType<T> {
+public class RefType<T> extends MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Type constants
@@ -66,7 +66,7 @@ public class RefType<T> extends FieldVarType<T> {
      * Generates a new reference type based on the given properties.
      *
      * @param clazz     The actual Java class type instance corresponding to
-     *                  this {@link FieldVarType}.
+     *                  this {@link MetaType}.
      * @param clazzType The {@link CtClass} type that maps to this type
      */
     private RefType(Class<T> clazz, CtClass clazzType) {
@@ -76,7 +76,7 @@ public class RefType<T> extends FieldVarType<T> {
     public RefType(Class<T> clazz,
                    CtClass clazzType,
                    Kind kind,
-                   FieldVarType<?> inner,
+                   MetaType<?> inner,
                    int dim,
                    BitSet[] restrictions) {
 
@@ -120,7 +120,7 @@ public class RefType<T> extends FieldVarType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAssignableFrom(FieldVarType<?> other) {
+    public boolean isAssignableFrom(MetaType<?> other) {
         return other instanceof RefType && clazz.isAssignableFrom(other.clazz);
     }
 

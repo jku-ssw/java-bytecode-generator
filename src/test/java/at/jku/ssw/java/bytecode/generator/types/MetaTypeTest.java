@@ -15,14 +15,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class FieldVarTypeTest {
+public class MetaTypeTest {
 
     //-------------------------------------------------------------------------
     // region Test cases
 
     @ParameterizedTest(name = "''{0}'' is not assignable from ''{1}''")
     @MethodSource("incompatibleTypesProvider")
-    public void testIsNotAssignableFrom(FieldVarType<?> that, FieldVarType<?> other) {
+    public void testIsNotAssignableFrom(MetaType<?> that, MetaType<?> other) {
         assertThat(that.isAssignableFrom(other), is(false));
     }
 

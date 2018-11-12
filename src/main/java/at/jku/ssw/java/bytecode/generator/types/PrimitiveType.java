@@ -10,7 +10,7 @@ import java.util.List;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.inPar;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
 
-public final class PrimitiveType<T> extends FieldVarType<T> {
+public final class PrimitiveType<T> extends MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Type constants
@@ -92,7 +92,7 @@ public final class PrimitiveType<T> extends FieldVarType<T> {
      * Generates a new type based on the given properties.
      *
      * @param clazz     The actual Java class type instance corresponding to
-     *                  this {@link FieldVarType}.
+     *                  this {@link MetaType}.
      * @param clazzType The {@link CtClass} type that maps to this type
      * @param kind      The kind descriptor to catgorize different types
      */
@@ -117,7 +117,7 @@ public final class PrimitiveType<T> extends FieldVarType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAssignableFrom(FieldVarType<?> other) {
+    public boolean isAssignableFrom(MetaType<?> other) {
         // void is neither assignable from nor to anything
         if (other.kind == Kind.VOID)
             return false;

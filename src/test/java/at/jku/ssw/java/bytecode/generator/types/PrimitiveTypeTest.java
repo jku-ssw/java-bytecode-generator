@@ -18,13 +18,13 @@ public class PrimitiveTypeTest {
 
     @ParameterizedTest(name = "''{0}'' is assignable from ''{1}''")
     @MethodSource("compatibleTypesProvider")
-    public void testIsAssignableFrom(FieldVarType<?> that, FieldVarType<?> other) {
+    public void testIsAssignableFrom(MetaType<?> that, MetaType<?> other) {
         assertThat(that.isAssignableFrom(other), is(true));
     }
 
     @ParameterizedTest(name = "''{0}'' is not assignable from ''{1}''")
     @MethodSource("incompatibleTypesProvider")
-    public void testIsNotAssignableFrom(FieldVarType<?> that, FieldVarType<?> other) {
+    public void testIsNotAssignableFrom(MetaType<?> that, MetaType<?> other) {
         assertThat(that.isAssignableFrom(other), is(false));
     }
 

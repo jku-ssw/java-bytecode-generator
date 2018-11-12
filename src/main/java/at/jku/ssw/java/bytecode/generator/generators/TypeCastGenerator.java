@@ -3,7 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.Random;
@@ -28,10 +28,10 @@ public class TypeCastGenerator extends Generator {
         ClazzLogger cl = getClazzLogger();
 
         Predicate<FieldVarLogger> isPrimitiveCastable = v ->
-                v.getType().kind != FieldVarType.Kind.BOOLEAN &&
-                        v.getType().kind != FieldVarType.Kind.INSTANCE &&
-                        v.getType().kind != FieldVarType.Kind.VOID &&
-                        v.getType().kind != FieldVarType.Kind.ARRAY;
+                v.getType().kind != MetaType.Kind.BOOLEAN &&
+                        v.getType().kind != MetaType.Kind.INSTANCE &&
+                        v.getType().kind != MetaType.Kind.VOID &&
+                        v.getType().kind != MetaType.Kind.ARRAY;
 
         randomizer.shuffle(
                 cl.getNonFinalVarsUsableInMethod(method)

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static at.jku.ssw.java.bytecode.generator.types.FieldVarType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.field;
@@ -38,7 +38,7 @@ public final class ArrayType<T> extends RefType<T> {
      * @param restrictions Optional restrictions on the access range
      *                     (e.g. only access dimension 0 at positions 3 to 5)
      */
-    public static <T> ArrayType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner, BitSet[] restrictions) {
+    public static <T> ArrayType<T> of(Class<T> clazz, int dim, MetaType<?> inner, BitSet[] restrictions) {
         assert clazz.isArray();
 
         return new ArrayType<>(
@@ -51,21 +51,21 @@ public final class ArrayType<T> extends RefType<T> {
     }
 
     /**
-     * @see #of(Class, int, FieldVarType, BitSet[])
+     * @see #of(Class, int, MetaType, BitSet[])
      */
-    public static <T> ArrayType<T> of(Class<T> clazz, int dim, FieldVarType<?> inner) {
+    public static <T> ArrayType<T> of(Class<T> clazz, int dim, MetaType<?> inner) {
         return of(clazz, dim, inner, null);
     }
 
     /**
-     * @see #of(Class, int, FieldVarType, BitSet[])
+     * @see #of(Class, int, MetaType, BitSet[])
      */
-    public static <T> ArrayType<T> of(Class<T> clazz, FieldVarType<?> inner) {
+    public static <T> ArrayType<T> of(Class<T> clazz, MetaType<?> inner) {
         return of(clazz, ClassUtils.dimensions(clazz), inner, null);
     }
 
     /**
-     * Creates an array type with the given {@link FieldVarType} describing the
+     * Creates an array type with the given {@link MetaType} describing the
      * component type and the given number of dimensions.
      *
      * @param type         The component type
@@ -74,7 +74,7 @@ public final class ArrayType<T> extends RefType<T> {
      * @return an array type with the given component type, dimensions and
      * restrictions
      */
-    public static ArrayType<?> of(FieldVarType<?> type, int dim, BitSet[] restrictions) {
+    public static ArrayType<?> of(MetaType<?> type, int dim, BitSet[] restrictions) {
         assert type != null : "Array type must not be null";
         assert type.kind != Kind.VOID : "Cannot create array of void type";
         assert dim > 0 : "Invalid array dimensions";
@@ -129,9 +129,9 @@ public final class ArrayType<T> extends RefType<T> {
     }
 
     /**
-     * {@link #of(FieldVarType, int, BitSet[])}
+     * {@link #of(MetaType, int, BitSet[])}
      */
-    public static ArrayType<?> of(FieldVarType<?> type, int dim) {
+    public static ArrayType<?> of(MetaType<?> type, int dim) {
         return of(type, dim, null);
     }
 
@@ -139,7 +139,7 @@ public final class ArrayType<T> extends RefType<T> {
      * Generates a new array type based on the given properties.
      *
      * @param clazz        The actual Java class type instance corresponding to
-     *                     this {@link FieldVarType}.
+     *                     this {@link MetaType}.
      * @param clazzType    The {@link CtClass} type that maps to this type
      * @param inner        Optional inner type reference for array types
      * @param dim          Optional number of dimensions for array types
@@ -148,7 +148,7 @@ public final class ArrayType<T> extends RefType<T> {
      */
     private ArrayType(Class<T> clazz,
                       CtClass clazzType,
-                      FieldVarType<?> inner,
+                      MetaType<?> inner,
                       int dim,
                       BitSet[] restrictions) {
 
@@ -169,7 +169,7 @@ public final class ArrayType<T> extends RefType<T> {
      * @param nParams The number of dimensions
      * @return the type that this array access results in
      */
-    public static FieldVarType<?> resultingTypeOf(FieldVarLogger array, int nParams) {
+    public static MetaType<?> resultingTypeOf(FieldVarLogger array, int nParams) {
         assert array != null;
         assert nParams > 0;
 
@@ -180,7 +180,7 @@ public final class ArrayType<T> extends RefType<T> {
         // yields a 1-dimensional array
         int remainingDim = array.getType().dim - nParams;
 
-        FieldVarType<?> innerType = array.getType().inner;
+        MetaType<?> innerType = array.getType().inner;
         Class<?> componentType = ClassUtils.nthComponentType(nParams, array.getType().clazz)
                 .orElseThrow(() ->
                         new AssertionError(String.format(
@@ -220,7 +220,7 @@ public final class ArrayType<T> extends RefType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAssignableFrom(FieldVarType<?> other) {
+    public boolean isAssignableFrom(MetaType<?> other) {
         // void is neither assignable from nor to
         return this.equals(other);
     }

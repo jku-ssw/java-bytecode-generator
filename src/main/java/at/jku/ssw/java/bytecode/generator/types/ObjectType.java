@@ -14,7 +14,7 @@ public final class ObjectType extends RefType<Object> {
     }
 
     @Override
-    public boolean isAssignableFrom(FieldVarType<?> other) {
+    public boolean isAssignableFrom(MetaType<?> other) {
         return other instanceof RefType<?>;
     }
 

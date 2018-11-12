@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ abstract class Logger {
 
     Map<String, FieldVarLogger> variables;
 
-    public void logVariable(String name, String clazz, FieldVarType<?> type, int modifiers, boolean initialized, boolean isField) {
+    public void logVariable(String name, String clazz, MetaType<?> type, int modifiers, boolean initialized, boolean isField) {
         FieldVarLogger f = new FieldVarLogger(name, clazz, modifiers, type, initialized, isField);
         variables.put(name, f);
     }

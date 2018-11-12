@@ -49,16 +49,16 @@ public enum TypeCache {
     }
 
     @SuppressWarnings("unchecked")
-    public final <T> Optional<? extends FieldVarType<T>> find(Class<T> clazz) {
-        FieldVarType<T> type =
-                (FieldVarType<T>) primitiveTypes.get(clazz);
+    public final <T> Optional<? extends MetaType<T>> find(Class<T> clazz) {
+        MetaType<T> type =
+                (MetaType<T>) primitiveTypes.get(clazz);
 
         return type == null
-                ? Optional.ofNullable((FieldVarType<T>) refTypes.get(clazz))
+                ? Optional.ofNullable((MetaType<T>) refTypes.get(clazz))
                 : Optional.of(type);
     }
 
-    public final Stream<? extends FieldVarType<?>> types() {
+    public final Stream<? extends MetaType<?>> types() {
         return Stream
                 .of(primitiveTypes, refTypes)
                 .map(Map::values)

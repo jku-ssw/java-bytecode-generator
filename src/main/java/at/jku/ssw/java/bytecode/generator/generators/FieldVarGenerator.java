@@ -5,7 +5,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedExce
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
@@ -22,7 +22,7 @@ class FieldVarGenerator extends Generator {
 
     //===========================================FIELD GENERATION=======================================================
 
-    private void generateField(String name, FieldVarType<?> type, int modifiers, String value) {
+    private void generateField(String name, MetaType<?> type, int modifiers, String value) {
         try {
             CtField f = new CtField(type.getClazzType(), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
@@ -38,7 +38,7 @@ class FieldVarGenerator extends Generator {
     }
 
     public void generateField() {
-        FieldVarType<?> ft = getRandomSupplier().type();
+        MetaType<?> ft = getRandomSupplier().type();
         String value = null;
         if (rand.nextBoolean()) { //50% chance to be initialized
             value = getRandomSupplier().castedValue(ft);
@@ -48,19 +48,19 @@ class FieldVarGenerator extends Generator {
 
     //==========================================LOCAL VARIABLE GENERATION===============================================
 
-    private void generateLocalVariable(String name, FieldVarType<?> type, MethodLogger method, String value) {
+    private void generateLocalVariable(String name, MetaType<?> type, MethodLogger method, String value) {
         String src = srcGenerateLocalVariable(name, type, method, value);
         if (value != null) insertIntoMethodBody(method, src);
     }
 
     public void generateLocalVariable(MethodLogger method) {
-        FieldVarType<?> ft = getRandomSupplier().type();
+        MetaType<?> ft = getRandomSupplier().type();
         String value = getRandomSupplier().castedValue(ft);
         String name = getRandomSupplier().getVarName();
         this.generateLocalVariable(name, ft, method, value);
     }
 
-    private String srcGenerateLocalVariable(String name, FieldVarType<?> type, MethodLogger method, String value) {
+    private String srcGenerateLocalVariable(String name, MetaType<?> type, MethodLogger method, String value) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
             ctMethod.addLocalVariable(name, type.getClazzType());

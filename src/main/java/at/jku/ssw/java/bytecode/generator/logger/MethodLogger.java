@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
@@ -16,19 +16,19 @@ public class MethodLogger extends Logger {
     private final boolean inherited;
     private String name;
     private int modifiers;
-    private FieldVarType[] paramTypes;
-    private FieldVarType<?> returnType;
+    private MetaType[] paramTypes;
+    private MetaType<?> returnType;
 
     private Set<MethodLogger> methodsExcludedForCalling;
     private Set<MethodLogger> calledByThisMethod;
 
     public final String clazz;
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, FieldVarType<?> returnType, FieldVarType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<?> returnType, MetaType... paramTypes) {
         this(rand, clazz, name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, FieldVarType<?> returnType, boolean inherited, FieldVarType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<?> returnType, boolean inherited, MetaType... paramTypes) {
         super(rand);
         this.clazz = clazz;
         this.name = name;
@@ -65,16 +65,16 @@ public class MethodLogger extends Logger {
         return (modifiers & Modifier.STATIC) != 0;
     }
 
-    public FieldVarType[] getParamsTypes() {
+    public MetaType[] getParamsTypes() {
         return paramTypes;
     }
 
     public CtClass[] getCtParamTypes() {
         if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(FieldVarType::getClazzType).toArray(CtClass[]::new);
+        return Arrays.stream(paramTypes).map(MetaType::getClazzType).toArray(CtClass[]::new);
     }
 
-    public FieldVarType<?> getReturnType() {
+    public MetaType<?> getReturnType() {
         return returnType;
     }
 

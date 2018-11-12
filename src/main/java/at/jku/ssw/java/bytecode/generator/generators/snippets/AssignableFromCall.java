@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
@@ -20,8 +20,8 @@ public class AssignableFromCall implements Snippet {
 
     @Override
     public String generate(RandomSupplier randomSupplier) {
-        FieldVarType<?> t1 = randomSupplier.type();
-        FieldVarType<?> t2 = randomSupplier.types()
+        MetaType<?> t1 = randomSupplier.type();
+        MetaType<?> t2 = randomSupplier.types()
                 .filter(t -> !t.equals(t1))
                 .findAny()
                 .get();

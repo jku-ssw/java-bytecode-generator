@@ -30,26 +30,26 @@ public class ArrayTypeTest {
 
     @ParameterizedTest(name = "''{0}'' is assignable from ''{1}''")
     @MethodSource("compatibleTypesProvider")
-    public void testIsAssignableFrom(FieldVarType<?> that, FieldVarType<?> other) {
+    public void testIsAssignableFrom(MetaType<?> that, MetaType<?> other) {
         assertThat(that.isAssignableFrom(other), is(true));
     }
 
     @ParameterizedTest(name = "''{0}'' is not assignable from ''{1}''")
     @MethodSource("incompatibleTypesProvider")
-    public void testIsNotAssignableFrom(FieldVarType<?> that, FieldVarType<?> other) {
+    public void testIsNotAssignableFrom(MetaType<?> that, MetaType<?> other) {
         assertThat(that.isAssignableFrom(other), is(false));
     }
 
 
     @ParameterizedTest(name = "array type of ''{0}'' with {1} dimension(s) is ''{2}''")
     @MethodSource("arrayTypeProvider")
-    public void testCreateArrayType(FieldVarType<?> componentType, int dim, FieldVarType<?> arrayType) {
+    public void testCreateArrayType(MetaType<?> componentType, int dim, MetaType<?> arrayType) {
         assertThat(ArrayType.of(componentType, dim), is(arrayType));
     }
 
     @ParameterizedTest(name = "resulting type of ''{0}'' being accessed at dimension ''{2}'' is ''{3}''")
     @MethodSource("arrayTypeAndAccessProvider")
-    public void testResultingTypeOf(Class<?> arrayType, FieldVarType<?> inner, int nParams, FieldVarType<?> expected) {
+    public void testResultingTypeOf(Class<?> arrayType, MetaType<?> inner, int nParams, MetaType<?> expected) {
         assertThat(
                 resultingTypeOf(arrayOf(arrayType, inner), nParams),
                 is(expected)
@@ -60,7 +60,7 @@ public class ArrayTypeTest {
     //-------------------------------------------------------------------------
     // region Test utilities
 
-    private static FieldVarLogger arrayOf(Class<?> type, FieldVarType<?> componentType) {
+    private static FieldVarLogger arrayOf(Class<?> type, MetaType<?> componentType) {
         return new FieldVarLogger("", "", 0, arrayType(type, componentType), false, false);
     }
 
@@ -68,7 +68,7 @@ public class ArrayTypeTest {
         return RefType.of(type);
     }
 
-    private static <T> FieldVarType<T> arrayType(Class<T> type, FieldVarType<?> componentType) {
+    private static <T> MetaType<T> arrayType(Class<T> type, MetaType<?> componentType) {
         assert type.isArray();
 
         return ArrayType.of(type, componentType);

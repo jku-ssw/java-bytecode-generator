@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.types.FieldVarType;
+import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 
 import java.util.Optional;
@@ -19,7 +19,7 @@ abstract class MethodCaller extends Generator {
         super(rand, clazzContainer);
     }
 
-    static String generateMethodCallString(String methodName, FieldVarType<?>[] paramTypes, ParamWrapper[] paramValues) {
+    static String generateMethodCallString(String methodName, MetaType<?>[] paramTypes, ParamWrapper[] paramValues) {
         String params = Optional.ofNullable(paramValues)
                 .map(v -> IntStream.range(0, paramTypes.length)
                         .mapToObj(i ->
