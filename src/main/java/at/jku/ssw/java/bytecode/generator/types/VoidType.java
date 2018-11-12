@@ -6,6 +6,9 @@ import javassist.CtClass;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Specialized {@link MetaType} for {@code void}.
+ */
 public final class VoidType extends MetaType<VoidType.Void> {
 
     /**
@@ -24,7 +27,7 @@ public final class VoidType extends MetaType<VoidType.Void> {
      * Creates the {@code void} type.
      */
     private VoidType() {
-        super(Void.class, CtClass.voidType, Kind.VOID, null, 0, null);
+        super(Void.class, CtClass.voidType, Kind.VOID);
     }
 
     /**
@@ -72,6 +75,7 @@ public final class VoidType extends MetaType<VoidType.Void> {
      */
     @Override
     public List<? extends MetaType<?>> getAssignableTypes() {
+        // void is incompatible with everything
         return Collections.emptyList();
     }
 

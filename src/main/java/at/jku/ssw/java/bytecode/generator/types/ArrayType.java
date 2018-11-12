@@ -17,12 +17,45 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.n
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.field;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
 
+/**
+ * Meta type for specifying, creating and analyzing array types.
+ * Array types generally extend the {@link MetaType} model by providing access
+ * to the inner type ("component type") - e.g. {@code int} for {@code int[]}.
+ *
+ * @param <T> The actual Java class corresponding to the array type (including
+ *            dimension indicator) - e.g. {@code int[][].class}
+ */
 public final class ArrayType<T> extends RefType<T> {
 
     //-------------------------------------------------------------------------
-    // region constants
+    // region Constants
 
+    /**
+     * The minimum number of elements per array dimension.
+     * This restriction is necessary to allow safe access to certain array
+     * areas without risking {@link ArrayIndexOutOfBoundsException} at
+     * runtime.
+     */
     public static final int MIN_ARRAY_DIM_LENGTH = 10;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
+
+    /**
+     * Optional inner type descriptor for array types.
+     */
+    final MetaType<?> inner;
+
+    /**
+     * The number of dimensions for array types (otherwise {@code 0}).
+     */
+    final int dim;
+
+    /**
+     * Restrictions on access for array types (otherwise {@code null}).
+     */
+    private final BitSet[] restrictions;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -54,14 +87,14 @@ public final class ArrayType<T> extends RefType<T> {
      * @see #of(Class, int, MetaType, BitSet[])
      */
     public static <T> ArrayType<T> of(Class<T> clazz, int dim, MetaType<?> inner) {
-        return of(clazz, dim, inner, null);
+        return of(clazz, dim, inner, UNRESTRICTED);
     }
 
     /**
      * @see #of(Class, int, MetaType, BitSet[])
      */
     public static <T> ArrayType<T> of(Class<T> clazz, MetaType<?> inner) {
-        return of(clazz, ClassUtils.dimensions(clazz), inner, null);
+        return of(clazz, ClassUtils.dimensions(clazz), inner, UNRESTRICTED);
     }
 
     /**
@@ -132,7 +165,7 @@ public final class ArrayType<T> extends RefType<T> {
      * {@link #of(MetaType, int, BitSet[])}
      */
     public static ArrayType<?> of(MetaType<?> type, int dim) {
-        return of(type, dim, null);
+        return of(type, dim, UNRESTRICTED);
     }
 
     /**
@@ -151,8 +184,21 @@ public final class ArrayType<T> extends RefType<T> {
                       MetaType<?> inner,
                       int dim,
                       BitSet[] restrictions) {
+        super(clazz, clazzType, ARRAY);
 
-        super(clazz, clazzType, ARRAY, inner, dim, restrictions);
+        // iff the type does not have dimensions, it must not be an array
+        // and not have an inner type
+        // if restrictions are given, it must be an array
+        assert dim == 0 && inner == null && kind != Kind.ARRAY && restrictions == null ||
+                dim > 0 && inner != null && kind == Kind.ARRAY;
+
+        // the restrictions must cover all dimensions (if any)
+        // and provide empty sets for unrestricted dimensions
+        assert restrictions == null || restrictions.length == dim;
+
+        this.inner = inner;
+        this.dim = dim;
+        this.restrictions = restrictions;
     }
 
     // endregion
@@ -178,9 +224,9 @@ public final class ArrayType<T> extends RefType<T> {
         // determine the return type
         // (e.g. accessing int[][][] with 2 parameters
         // yields a 1-dimensional array
-        int remainingDim = array.getType().dim - nParams;
+        int remainingDim = array.getType().getDim() - nParams;
 
-        MetaType<?> innerType = array.getType().inner;
+        MetaType<?> innerType = array.getType().getInner();
         Class<?> componentType = ClassUtils.nthComponentType(nParams, array.getType().clazz)
                 .orElseThrow(() ->
                         new AssertionError(String.format(
@@ -233,9 +279,36 @@ public final class ArrayType<T> extends RefType<T> {
         return Collections.singletonList(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isArray() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MetaType<?> getInner() {
+        return inner;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getDim() {
+        return dim;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BitSet[] getRestrictions() {
+        return restrictions;
     }
 
     // endregion

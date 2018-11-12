@@ -70,7 +70,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                         .flatMap(a -> {
                             // fetch random number of dimensions
                             // (minimum 1, maximum the dimensions of a)
-                            int nParams = rand.nextInt(a.getType().dim) + 1;
+                            int nParams = rand.nextInt(a.getType().getDim()) + 1;
 
                             MetaType<?> returnType = ArrayType.resultingTypeOf(a, nParams);
 

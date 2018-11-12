@@ -4,7 +4,6 @@ import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
-import java.util.BitSet;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,17 +14,25 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
 
 /**
- * TODO
+ * Meta type which generally describes reference types such as objects
+ * of various kinds and arrays.
  *
- * @param <T> TODO
+ * @param <T> The actual Java class associated with this type
  */
 public class RefType<T> extends MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Type constants
 
-    public static final RefType<String> STRING = RefType.of(String.class);
-    public static final RefType<Date> DATE = RefType.of(Date.class);
+    /**
+     * {@link String} type constant.
+     */
+    static final RefType<String> STRING = RefType.of(String.class);
+
+    /**
+     * {@link Date} type constant.
+     */
+    static final RefType<Date> DATE = RefType.of(Date.class);
 
 //    @SuppressWarnings("unused")
 //    public static final RefType<Byte> BYTE_BOXED = of(Byte.class);
@@ -56,10 +63,7 @@ public class RefType<T> extends MetaType<T> {
      */
     public static <T> RefType<T> of(Class<T> clazz) {
         assert !clazz.isPrimitive();
-        return new RefType<>(
-                clazz,
-                JavassistUtils.toCtClass(clazz)
-        );
+        return new RefType<>(clazz, JavassistUtils.toCtClass(clazz));
     }
 
     /**
@@ -70,17 +74,14 @@ public class RefType<T> extends MetaType<T> {
      * @param clazzType The {@link CtClass} type that maps to this type
      */
     private RefType(Class<T> clazz, CtClass clazzType) {
-        super(clazz, clazzType, INSTANCE, null, 0, null);
+        super(clazz, clazzType, INSTANCE);
     }
 
-    public RefType(Class<T> clazz,
-                   CtClass clazzType,
-                   Kind kind,
-                   MetaType<?> inner,
-                   int dim,
-                   BitSet[] restrictions) {
+    RefType(Class<T> clazz,
+            CtClass clazzType,
+            Kind kind) {
 
-        super(clazz, clazzType, kind, inner, dim, restrictions);
+        super(clazz, clazzType, kind);
     }
 
     // endregion

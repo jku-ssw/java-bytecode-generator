@@ -223,7 +223,7 @@ public class RandomSupplier {
                         type.clazz,
                         rand.ints(0, maxArrayDimSize + 1)
                                 .map(i -> i + MIN_ARRAY_DIM_LENGTH)
-                                .limit(type.dim)
+                                .limit(type.getDim())
                                 .boxed()
                                 .collect(Collectors.toList())
                 );

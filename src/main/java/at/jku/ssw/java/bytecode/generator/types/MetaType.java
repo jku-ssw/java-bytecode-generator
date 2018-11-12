@@ -14,7 +14,24 @@ import java.util.Objects;
  * @param <T> The actual Java type that is described
  */
 public abstract class MetaType<T> {
+    //-------------------------------------------------------------------------
+    // region Constants
 
+    /**
+     * Identifier to specifying that a type is
+     * dimensionless (i.e. not an array type).
+     */
+    static final int DIMENSIONLESS = 0;
+
+    /**
+     * Identifier to specifying that a type has no inner type
+     * (i.e. is no array type).
+     */
+    static final MetaType<?> NO_INNER_TYPE = null;
+
+    static final BitSet[] UNRESTRICTED = null;
+
+    // endregion
     //-------------------------------------------------------------------------
     // region Inner classes / types
 
@@ -48,11 +65,6 @@ public abstract class MetaType<T> {
     public final Kind kind;
 
     /**
-     * Optional inner type descriptor for array types.
-     */
-    public final MetaType<?> inner;
-
-    /**
      * The Java {@link Class} instance corresponding to this type.
      */
     public final Class<T> clazz;
@@ -62,16 +74,6 @@ public abstract class MetaType<T> {
      */
     private final CtClass clazzType;
 
-    /**
-     * The number of dimensions for array types (otherwise {@code 0}).
-     */
-    public final int dim;
-
-    /**
-     * Restrictions on access for array types (otherwise {@code null}).
-     */
-    private final BitSet[] restrictions;
-
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
@@ -79,35 +81,18 @@ public abstract class MetaType<T> {
     /**
      * Generates a new type based on the given properties.
      *
-     * @param clazz        The actual Java class type instance corresponding to
-     *                     this {@link MetaType}.
-     * @param clazzType    The {@link CtClass} type that maps to this type
-     * @param kind         The kind descriptor to catgorize different types
-     * @param inner        Optional inner type reference for array types
-     * @param dim          Optional number of dimensions for array types
-     * @param restrictions Optional access restrictions for array types.
-     *                     Those can be specified for each dimension
-     *                     individually.
+     * @param clazz     The actual Java class type instance corresponding to
+     *                  this {@link MetaType}.
+     * @param clazzType The {@link CtClass} type that maps to this type
+     * @param kind      The kind descriptor to categorize different types
      */
     protected MetaType(Class<T> clazz,
                        CtClass clazzType,
-                       Kind kind,
-                       MetaType<?> inner,
-                       int dim,
-                       BitSet[] restrictions) {
-
-        // iff the type does not have dimensions, it must not be an array
-        // and not have an inner type
-        // if restrictions are given, it must be an array
-        assert (dim == 0) && (inner == null) && (kind != Kind.ARRAY) && (restrictions == null) ||
-                (dim > 0) && (inner != null) && (kind == Kind.ARRAY);
+                       Kind kind) {
 
         this.kind = kind;
-        this.inner = inner;
         this.clazz = clazz;
         this.clazzType = clazzType;
-        this.dim = dim;
-        this.restrictions = restrictions;
     }
 
     // endregion
@@ -119,14 +104,14 @@ public abstract class MetaType<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MetaType<?> that = (MetaType<?>) o;
-        return dim == that.dim &&
+        return getDim() == that.getDim() &&
                 kind == that.kind &&
                 Objects.equals(clazz, that.clazz);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(kind, clazz, dim);
+        return Objects.hash(kind, clazz, getDim());
     }
 
     @Override
@@ -183,49 +168,124 @@ public abstract class MetaType<T> {
 
     /**
      * Returns all types that are assignable to this type
-     * (e.g. all types are assignable from the {@link Object} type
+     * (e.g. all types are assignable from the {@link Object} type).
      *
-     * @return
+     * @return a list of assignable types
      */
     public abstract List<? extends MetaType<?>> getAssignableTypes();
 
+    /**
+     * Determines whether this type is assignable from the given type.
+     * When implementing this method and {@link #getAssignableTypes()},
+     * it must hold that this is only assignable from a type
+     * iff the given type is also returned as an assignable type in
+     * {@link #getAssignableTypes()}.
+     *
+     * @param type The type to check compatibility with
+     * @return {@code true} if this is assignable from the given type;
+     * {@code false} otherwise
+     */
     public abstract boolean isAssignableFrom(MetaType<?> type);
 
-    public boolean isAssignableTo(MetaType<?> type) {
+    /**
+     * Determines whether this type is assignable to the given type
+     * (e.g. if this is the {@link Object} type, it is only assignable to
+     * another {@link Object} type).
+     * This check is the complement of {@link #isAssignableFrom(MetaType)},
+     * i.e. {@code this.isAssignableFrom(type)} is equivalent to
+     * {@code type.isAssignableTo(this)}.
+     *
+     * @param type The type to check compatibility with
+     * @return {@code true} if this type is assignable to the given type;
+     * {@code false} otherwise
+     */
+    public final boolean isAssignableTo(MetaType<?> type) {
         assert type != null;
         return type.isAssignableFrom(this);
     }
 
     // endregion
     //-------------------------------------------------------------------------
+    // region Array type methods
+
+    /**
+     * Returns the {@link MetaType} that acts as a component type (if any)
+     * for this type.
+     * E.g. if this type describes an array {@code int[][]}, the
+     * inner type would be the {@link PrimitiveType} for {@code int}.
+     *
+     * @return the component type of this type or {@code null} if this type
+     * is no array type
+     */
+    public MetaType<?> getInner() {
+        return NO_INNER_TYPE;
+    }
+
+    /**
+     * Returns the number of dimensions that this type is equipped with.
+     * This number must not be negative.
+     *
+     * @return a strictly positive number of dimensions for array types;
+     * {@code 0} for non-array types
+     */
+    public int getDim() {
+        return DIMENSIONLESS;
+    }
+
+    /**
+     * Returns access restrictions that apply to this type.
+     * When overridden, the condition must hold that if {@link #getDim()}
+     * is greater than zero, it must be equal to the length of the
+     * array returned here.
+     *
+     * @return an array that describes the access restrictions for each
+     * dimension of an array type; {@code null} for non-array types
+     */
+    public BitSet[] getRestrictions() {
+        return UNRESTRICTED;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
     // region Getters / setters
 
-    public Kind getKind() {
+    /**
+     * Returns the kind associated with this type.
+     *
+     * @return the kind that categorizes this type
+     */
+    public final Kind getKind() {
         return kind;
     }
 
-    public MetaType<?> getInner() {
-        return inner;
-    }
-
-    public Class<T> getClazz() {
+    /**
+     * Returns the actual Java class that corresponds to this type.
+     *
+     * @return the Java class which is described by this type
+     */
+    public final Class<T> getClazz() {
         return clazz;
     }
 
-    public int getDim() {
-        return dim;
-    }
-
+    /**
+     * Returns the Javassist representation of the Java class given by
+     * {@link #getClazz()}.
+     *
+     * @return the Javassist pendant to the Java class
+     */
     public final CtClass getClazzType() {
         return clazzType;
     }
 
-    public final BitSet[] getRestrictions() {
-        return restrictions;
-    }
-
+    /**
+     * Determines whether this type implies access restrictions
+     * (e.g. access array only at index 1 in the first dimension).
+     *
+     * @return {@code true} if this type has restrictions;
+     * {@code false} otherwise
+     */
     public final boolean isRestricted() {
-        return restrictions != null;
+        return getRestrictions() != null;
     }
 
     // endregion

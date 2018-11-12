@@ -10,29 +10,68 @@ import java.util.List;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.inPar;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
 
-public final class PrimitiveType<T> extends MetaType<T> {
+/**
+ * Meta type that describes primitive types.
+ *
+ * @param <T> The Java primitive type class that is associated with this type
+ */
+public class PrimitiveType<T> extends MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Type constants
 
+    /**
+     * {@code byte} type constant.
+     */
     public static final PrimitiveType<Byte> BYTE = of(byte.class, CtClass.byteType, Kind.BYTE);
+
+
+    /**
+     * {@code short} type constant.
+     */
     public static final PrimitiveType<Short> SHORT = of(short.class, CtClass.shortType, Kind.SHORT);
+    /**
+     * {@code int} type constant.
+     */
     public static final PrimitiveType<Integer> INT = of(int.class, CtClass.intType, Kind.INT);
+    /**
+     * {@code long} type constant.
+     */
     public static final PrimitiveType<Long> LONG = of(long.class, CtClass.longType, Kind.LONG);
+    /**
+     * {@code float} type constant.
+     */
     public static final PrimitiveType<Float> FLOAT = of(float.class, CtClass.floatType, Kind.FLOAT);
+    /**
+     * {@code double} type constant.
+     */
     public static final PrimitiveType<Double> DOUBLE = of(double.class, CtClass.doubleType, Kind.DOUBLE);
+    /**
+     * {@code boolean} type constant.
+     */
     public static final PrimitiveType<Boolean> BOOLEAN = of(boolean.class, CtClass.booleanType, Kind.BOOLEAN);
+    /**
+     * {@code char} type constant.
+     */
     public static final PrimitiveType<Character> CHAR = of(char.class, CtClass.charType, Kind.CHAR);
 
     //-------------------------------------------------------------------------
     // region Type compatibility sets
 
+    /**
+     * Constant mapping of compatible types with {@code short}.
+     * I.e. {@code short.class.isAssignableFrom(type)} is {@code true}.
+     */
     private static final List<PrimitiveType<?>> COMP_WITH_SHORT = Arrays.asList(
             BYTE,
             SHORT,
             CHAR
     );
 
+    /**
+     * Constant mapping of compatible types with {@code int}.
+     * I.e. {@code int.class.isAssignableFrom(type)} is {@code true}.
+     */
     private static final List<PrimitiveType<?>> COMP_WITH_INT = Arrays.asList(
             BYTE,
             SHORT,
@@ -40,6 +79,10 @@ public final class PrimitiveType<T> extends MetaType<T> {
             INT
     );
 
+    /**
+     * Constant mapping of compatible types with {@code long}.
+     * I.e. {@code long.class.isAssignableFrom(type)} is {@code true}.
+     */
     private static final List<PrimitiveType<?>> COMP_WITH_LONG = Arrays.asList(
             BYTE,
             SHORT,
@@ -48,6 +91,10 @@ public final class PrimitiveType<T> extends MetaType<T> {
             LONG
     );
 
+    /**
+     * Constant mapping of compatible types with {@code double}.
+     * I.e. {@code double.class.isAssignableFrom(type)} is {@code true}.
+     */
     private static final List<PrimitiveType<?>> COMP_WITH_DOUBLE = Arrays.asList(
             FLOAT,
             DOUBLE
@@ -57,6 +104,11 @@ public final class PrimitiveType<T> extends MetaType<T> {
     //-------------------------------------------------------------------------
     // region Type accessors
 
+    /**
+     * Returns all primitive numeric types.
+     *
+     * @return a list of all available primitive numeric types
+     */
     public static List<PrimitiveType<?>> numeric() {
         return Arrays.asList(
                 BYTE,
@@ -96,8 +148,8 @@ public final class PrimitiveType<T> extends MetaType<T> {
      * @param clazzType The {@link CtClass} type that maps to this type
      * @param kind      The kind descriptor to catgorize different types
      */
-    protected PrimitiveType(Class<T> clazz, CtClass clazzType, Kind kind) {
-        super(clazz, clazzType, kind, null, 0, null);
+    private PrimitiveType(Class<T> clazz, CtClass clazzType, Kind kind) {
+        super(clazz, clazzType, kind);
     }
 
     // endregion
@@ -170,21 +222,33 @@ public final class PrimitiveType<T> extends MetaType<T> {
         throw new AssertionError("Unexpected primitive type " + this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isPrimitive() {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isRef() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isArray() {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isVoid() {
         return false;
