@@ -2,6 +2,10 @@ package at.jku.ssw.java.bytecode.generator.exceptions;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 
+/**
+ * {@link RuntimeException} type that indicates that a method's body code
+ * could not be compiled.
+ */
 public class MethodCompilationFailedException extends CompilationFailedException {
 
     private static final String MESSAGE_FORMAT = "Compilation of '%s' failed";
