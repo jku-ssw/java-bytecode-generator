@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.stream.IntStream.range;
+
 /**
  * Provides functions to randomize code generation.
  */
@@ -19,13 +21,14 @@ public final class Randomizer {
     }
 
     /**
-     * Executes the given number of suppliers in any order until a non-null
-     * result is found. Each supplier is thereby executed at most once.
+     * Executes the given number of suppliers in any order until a
+     * non-{@code null} result is found.
+     * Each supplier is thereby executed at most once.
      *
      * @param suppliers The functions that are executed
      * @param <T>       The expected return type
-     * @return The first result of the calls that is not null
-     * or {@link Optional#EMPTY} if all results are null
+     * @return The first result of the calls that is not {@code null}
+     * or {@link Optional#EMPTY} if all results are {@code null}
      */
     @SafeVarargs
     public final <T> Optional<T> oneNotNullOf(Supplier<T>... suppliers) {
@@ -55,7 +58,7 @@ public final class Randomizer {
 
     /**
      * Returns one of the given values.
-     * If the picked values is null, a {@link NullPointerException} is
+     * If the picked values is {@code null}, a {@link NullPointerException} is
      * thrown.
      *
      * @param values The values
@@ -116,8 +119,8 @@ public final class Randomizer {
      * options to calculate the probability.
      * If the defined number of options exceeds the actually passed arguments,
      * the last argument is repeated to increase its chances.
-     * If the defined number of options is lower than the passed arguments,
-     * only the given number of functions are considered.
+     * If the defined number of options is less than the number of passed
+     * arguments, only the given number of functions is considered.
      *
      * @param options The number of potential options
      * @param values  The selection of values
@@ -129,13 +132,43 @@ public final class Randomizer {
         if (values.length <= 0 || options <= 0)
             return Optional.empty();
 
-        T last = values[values.length - 1];
-
-        return IntStream.range(0, options - values.length)
-                .mapToObj(__ -> Stream.of(last))
+        return range(0, options - values.length)
+                .mapToObj(__ -> Stream.of(values[values.length - 1]))
                 .reduce(Arrays.stream(values), Stream::concat)
                 .limit(options)
                 .skip(rand.nextInt(options))
+                .findFirst();
+    }
+
+    /**
+     * Executes the given number of suppliers using the specified number of
+     * options but skipping over {@code null} values.
+     * If the number of options is less than the number of passed
+     * arguments, only the given number of options is considered.
+     * If the number of options exceeds the actually passed arguments,
+     * the last argument's chance is increased
+     * (e.g. {@code options == 3} for 2 actual parameters results in argument
+     * 1 having a chance of 1/3 and argument 2 having a chance of 2/3.
+     *
+     * @param options The number of potential options
+     * @param values  The selection of values
+     * @param <T>     The type of the values
+     * @return the first non-{@code null} result of one of the suppliers;
+     * returns nothing if no suppliers are given, the number of options is
+     * not strictly positive or if no supplier returns a non-{@code null} value
+     */
+    @SafeVarargs
+    public final <T> Optional<T> oneNotNullOfOptions(int options, Supplier<T>... values) {
+        if (values.length <= 0 || options <= 0)
+            return Optional.empty();
+
+        return shuffle(
+                range(0, options - values.length)
+                        .mapToObj(__ -> Stream.of(values[values.length - 1]))
+                        .reduce(Arrays.stream(values), Stream::concat)
+                        .limit(options))
+                .map(Supplier::get)
+                .filter(Objects::nonNull)
                 .findFirst();
     }
 

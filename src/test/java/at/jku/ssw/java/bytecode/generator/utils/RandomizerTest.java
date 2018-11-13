@@ -18,47 +18,53 @@ public class RandomizerTest {
 
     private static final int REPETITIONS = 20;
     private Random rand;
+    private Randomizer randomizer;
 
     @BeforeEach
     public void setUp() {
         rand = new Random();
+        randomizer = new Randomizer(rand);
     }
 
     @AfterEach
     public void tearDown() {
-        rand = new Random();
+        randomizer = null;
+        rand = null;
     }
 
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForNullSequences() {
-        assertThat(new Randomizer(rand).oneNotNullOf(ret(null)), is(empty()));
+        assertThat(randomizer.oneNotNullOf(none()), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForEmptySequences() {
-        assertThat(new Randomizer(rand).oneNotNullOf(), is(opt(null)));
+        assertThat(randomizer.oneNotNullOf(), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForNonNullValue() {
-        assertThat(new Randomizer(rand).oneNotNullOf(ret(0)), is(opt(0)));
+        assertThat(randomizer.oneNotNullOf(ret(0)), is(opt(0)));
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneNotNullOfForNonNullValues() {
-        assertThat(new Randomizer(rand).oneNotNullOf(ret(0), ret(1)), isOneOf(opt(0), opt(1)));
+        assertThat(
+                randomizer.oneNotNullOf(ret(0), ret(1)),
+                isOneOf(opt(0), opt(1))
+        );
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneNotNullOfForMixedValues() {
         assertThat(
-                new Randomizer(rand).<Object>oneNotNullOf(ret(0), ret(null)),
+                randomizer.<Object>oneNotNullOf(ret(0), none()),
                 is(opt(0))
         );
         assertThat(
-                new Randomizer(rand).<Object>oneNotNullOf(ret(null), ret(1), ret(null)),
+                randomizer.<Object>oneNotNullOf(none(), ret(1), none()),
                 is(opt(1))
         );
     }
@@ -68,7 +74,7 @@ public class RandomizerTest {
     public void testOneNotNullOfForStatefulFunctions() {
         Set<Integer> modifications = new HashSet<>();
 
-        assertThat(new Randomizer(rand).
+        assertThat(randomizer.
                         oneNotNullOf(getStatefulSuppliers(modifications)),
                 isOneOf(opt(0), opt(1), opt(2))
         );
@@ -77,49 +83,52 @@ public class RandomizerTest {
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNoValues() {
-        assertThat(new Randomizer(rand).oneOf(new Object[0]), is(empty()));
+        assertThat(randomizer.oneOf(new Object[0]), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNullValue() {
-        assertThat(new Randomizer(rand).oneOf(ret(null)), is(empty()));
+        assertThat(randomizer.oneOf(none()), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneOfForNotNullValues() {
-        assertThat(new Randomizer(rand).oneOf(0, 1, 2, 3), isOneOf(opt(0), opt(1), opt(2), opt(3)));
+        assertThat(
+                randomizer.oneOf(0, 1, 2, 3),
+                isOneOf(opt(0), opt(1), opt(2), opt(3))
+        );
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForStatefulProcedures() {
         Set<Integer> modifications = new HashSet<>();
 
-        new Randomizer(rand).oneOf(getStatefulRunnables(modifications));
+        randomizer.oneOf(getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(1));
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNullResults() {
-        assertThat(new Randomizer(rand).oneOf(ret(null)), is(empty()));
+        assertThat(randomizer.oneOf(none()), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneOfForNoFunctions() {
-        assertThat(new Randomizer(rand).oneOf(new Supplier[0]), is(empty()));
+        assertThat(randomizer.oneOf(new Supplier[0]), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     public void testOneOfForNonNullResult() {
-        assertThat(new Randomizer(rand).oneOf(ret(0)), is(opt(0)));
+        assertThat(randomizer.oneOf(ret(0)), is(opt(0)));
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneOfForNonNullResults() {
-        assertThat(new Randomizer(rand).oneOf(ret(0), ret(1)), isOneOf(opt(0), opt(1)));
+        assertThat(randomizer.oneOf(ret(0), ret(1)), isOneOf(opt(0), opt(1)));
     }
 
     @RepeatedTest(value = REPETITIONS)
@@ -128,7 +137,7 @@ public class RandomizerTest {
         Set<Integer> modifications = new HashSet<>();
 
         assertThat(
-                new Randomizer(rand).oneOf(getStatefulSuppliers(modifications)),
+                randomizer.oneOf(getStatefulSuppliers(modifications)),
                 isOneOf(opt(0), opt(1), opt(2), empty())
         );
         assertThat(modifications.size(), is(1));
@@ -138,7 +147,7 @@ public class RandomizerTest {
     public void testDoOneOfZeroOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        new Randomizer(rand).doOneOfOptions(0, getStatefulRunnables(modifications));
+        randomizer.doOneOfOptions(0, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(0));
     }
@@ -147,7 +156,7 @@ public class RandomizerTest {
     public void testDoOneOfTooManyOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        new Randomizer(rand).doOneOfOptions(10, getStatefulRunnables(modifications));
+        randomizer.doOneOfOptions(10, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(1));
     }
@@ -156,33 +165,139 @@ public class RandomizerTest {
     public void testDoOneOfTooFewOptions() {
         Set<Integer> modifications = new HashSet<>();
 
-        new Randomizer(rand).doOneOfOptions(2, getStatefulRunnables(modifications));
+        randomizer.doOneOfOptions(2, getStatefulRunnables(modifications));
 
         assertThat(modifications.size(), is(1));
         assertThat(modifications, either(contains(0)).or(contains(1)));
     }
 
     @RepeatedTest(value = REPETITIONS)
+    public void testOneOfNegativeOptions() {
+        assertThat(randomizer.oneOfOptions(-99, 1, 2, 3), is(empty()));
+    }
+
+    @RepeatedTest(value = REPETITIONS)
     public void testOneOfZeroOptions() {
-        assertThat(new Randomizer(rand).oneOfOptions(0, 1, 2, 3), is(empty()));
+        assertThat(randomizer.oneOfOptions(0, 1, 2, 3), is(empty()));
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneOfTooManyOptions() {
-        assertThat(new Randomizer(rand).oneOfOptions(10, 1, 2, 3), isOneOf(opt(1), opt(2), opt(3)));
+        assertThat(
+                randomizer.oneOfOptions(10, 1, 2, 3),
+                isOneOf(opt(1), opt(2), opt(3))
+        );
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testOneOfTooFewOptions() {
-        assertThat(new Randomizer(rand).oneOfOptions(2, 1, 2, 3), isOneOf(opt(1), opt(2)));
+        assertThat(
+                randomizer.oneOfOptions(2, 1, 2, 3),
+                isOneOf(opt(1), opt(2))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void tetOneNotNullOfZeroOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(0, ret(1), ret(2), ret(3)),
+                is(empty())
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void tetOneNotNullOfNegativeOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(-99, ret(1), ret(2), ret(3)),
+                is(empty())
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneNotNullOfTooManyOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(10, ret(1), ret(2), ret(3)),
+                isOneOf(opt(1), opt(2), opt(3))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneNotNullOfTooFewOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(2, ret(1), ret(2), ret(3)),
+                isOneOf(opt(1), opt(2))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneNotNullOfOnlyNullOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(1, none()),
+                is(empty())
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void testOneNotNullOfNoOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(1000),
+                is(empty())
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void testOneNotNullOfNonNullOption() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(2, ret(0)),
+                is(opt(0))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneNotNullOfNonNullOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(3, ret(0), ret(1)),
+                isOneOf(opt(0), opt(1))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    public void testOneNotNullOfMixedOptions() {
+        assertThat(
+                randomizer.oneNotNullOfOptions(5, ret(0), none()),
+                is(opt(0))
+        );
+        assertThat(
+                randomizer.oneNotNullOfOptions(3, none(), ret(1), none()),
+                is(opt(1))
+        );
+    }
+
+    @RepeatedTest(value = REPETITIONS)
+    @SuppressWarnings("unchecked")
+    public void testOneNotNullOfStatefulFunctions() {
+        Set<Integer> modifications = new HashSet<>();
+
+        assertThat(
+                randomizer.oneNotNullOfOptions(
+                        10,
+                        getStatefulSuppliers(modifications)
+                ),
+                isOneOf(opt(0), opt(1), opt(2))
+        );
+        assertThat(modifications.size(), isOneOf(1, 2, 3));
     }
 
     @SuppressWarnings("unchecked")
     @RepeatedTest(value = REPETITIONS)
     public void testWithProbabilities() {
-        assertThat(new Randomizer(rand).
+        assertThat(randomizer.
                         withProbabilities(new int[]{1, 2}, ret(1), ret(2)),
                 isOneOf(opt(1), opt(2))
         );
@@ -191,51 +306,64 @@ public class RandomizerTest {
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testWithProbabilitiesAndTooFewValues() {
-        assertThat(new Randomizer(rand).withProbabilities(new int[]{1, 2}, ret(1)), isOneOf(opt(1), empty()));
+        assertThat(
+                randomizer.withProbabilities(new int[]{1, 2}, ret(1)),
+                isOneOf(opt(1), empty())
+        );
     }
 
     @RepeatedTest(value = REPETITIONS)
     @SuppressWarnings("unchecked")
     public void testWithProbabilitiesAndTooManyValues() {
-        assertThat(new Randomizer(rand).
-                        withProbabilities(new int[]{1, 2, 3}, ret(1), ret(2), ret(3), ret(4)),
+        assertThat(
+                randomizer.withProbabilities(
+                        new int[]{1, 2, 3},
+                        ret(1), ret(2), ret(3), ret(4)
+                ),
                 isOneOf(opt(1), opt(2), opt(3))
         );
     }
 
     @SuppressWarnings("unchecked")
-    private Supplier<Object>[] getStatefulSuppliers(Set<Integer> modifications) {
+    private Supplier<Object>[] getStatefulSuppliers(Set<Integer> mods) {
         return new Supplier[]{
                 () -> {
-                    modifications.add(0);
+                    mods.add(0);
                     return 0;
                 },
                 () -> {
-                    modifications.add(1);
+                    mods.add(1);
                     return 1;
                 },
                 () -> {
-                    modifications.add(2);
+                    mods.add(2);
                     return 2;
                 },
                 () -> {
-                    modifications.add(3);
+                    mods.add(3);
                     return null;
                 },
                 () -> {
-                    modifications.add(4);
+                    mods.add(4);
                     return null;
                 }
         };
     }
 
-    private Runnable[] getStatefulRunnables(Set<Integer> modifications) {
+    private Runnable[] getStatefulRunnables(Set<Integer> mods) {
         return new Runnable[]{
-                () -> modifications.add(0),
-                () -> modifications.add(1),
-                () -> modifications.add(2),
-                () -> modifications.add(3)
+                () -> mods.add(0),
+                () -> mods.add(1),
+                () -> mods.add(2),
+                () -> mods.add(3)
         };
+    }
+
+    private static final Supplier<?> NONE = () -> null;
+
+    @SuppressWarnings("unchecked")
+    private <T> Supplier<T> none() {
+        return (Supplier<T>) NONE;
     }
 
     private <T> Supplier<T> ret(T value) {
