@@ -34,23 +34,6 @@ public class RefType<T> extends MetaType<T> {
      */
     public static final RefType<Date> DATE = RefType.of(Date.class);
 
-//    @SuppressWarnings("unused")
-//    public static final RefType<Byte> BYTE_BOXED = of(Byte.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Short> SHORT_BOXED = of(Short.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Integer> INT_BOXED = of(Integer.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Long> LONG_BOXED = of(Long.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Float> FLOAT_BOXED = of(Float.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Double> DOUBLE_BOXED = of(Double.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Boolean> BOOLEAN_BOXED = of(Boolean.class);
-//    @SuppressWarnings("unused")
-//    public static final RefType<Character> CHAR_BOXED = of(Character.class);
-
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
