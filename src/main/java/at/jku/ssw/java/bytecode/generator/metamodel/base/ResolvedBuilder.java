@@ -7,7 +7,7 @@ import java.util.List;
  * expressions that may be used to invoke it (e.g. constants, variable access
  * or other expressions).
  *
- * @param <T>
+ * @param <T> The actual Java class that this builder results in
  */
 public class ResolvedBuilder<T> {
     /**
