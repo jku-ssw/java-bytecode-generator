@@ -3,6 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import javassist.*;
@@ -23,10 +24,12 @@ abstract class Generator {
 
     final ClazzFileContainer clazzContainer;
     protected final Random rand;
+    protected final JavassistResolver resolver;
 
     public Generator(Random rand, ClazzFileContainer clazzContainer) {
         this.rand = rand;
         this.clazzContainer = clazzContainer;
+        this.resolver = new JavassistResolver();
     }
 
     public ClazzFileContainer getClazzContainer() {
