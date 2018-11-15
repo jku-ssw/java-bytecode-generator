@@ -30,7 +30,7 @@ class MathGenerator extends MethodCaller {
     private final Set<String> checkForDivByZero = new HashSet<>();
     private final Set<FieldVarLogger<?>> incDecrementOperands = new HashSet<>();
 
-    private static CtClass mathClazz;
+    private static final CtClass mathClazz;
 
     static {
         try {

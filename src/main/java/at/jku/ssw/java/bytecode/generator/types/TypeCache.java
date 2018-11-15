@@ -26,7 +26,7 @@ public enum TypeCache {
      * Since they are initialized on startup, this map remains constant
      * throughout the execution.
      */
-    private Map<Class<?>, PrimitiveType<?>> primitiveTypes = new HashMap<>();
+    private final Map<Class<?>, PrimitiveType<?>> primitiveTypes;
 
     /**
      * Captures all reference types.
@@ -35,7 +35,7 @@ public enum TypeCache {
      * by a meta type). This map may be modified when new types are registered
      * (e.g. a new class is generated).
      */
-    private Map<Class<?>, RefType<?>> refTypes = new HashMap<>();
+    private final Map<Class<?>, RefType<?>> refTypes;
 
     /**
      * Initializes the type maps.
@@ -44,6 +44,9 @@ public enum TypeCache {
      * access).
      */
     TypeCache() {
+        primitiveTypes = new HashMap<>();
+        refTypes = new HashMap<>();
+
         primitiveTypes.put(byte.class, BYTE);
         primitiveTypes.put(short.class, SHORT);
         primitiveTypes.put(int.class, INT);

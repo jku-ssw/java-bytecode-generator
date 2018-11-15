@@ -14,13 +14,13 @@ public class MethodLogger extends Logger {
     private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
 
     private final boolean inherited;
-    private String name;
-    private int modifiers;
-    private MetaType[] paramTypes;
-    private MetaType<?> returnType;
+    private final String name;
+    private final int modifiers;
+    private final MetaType[] paramTypes;
+    private final MetaType<?> returnType;
 
-    private Set<MethodLogger> methodsExcludedForCalling;
-    private Set<MethodLogger> calledByThisMethod;
+    private final Set<MethodLogger> methodsExcludedForCalling;
+    private final Set<MethodLogger> calledByThisMethod;
 
     public final String clazz;
 

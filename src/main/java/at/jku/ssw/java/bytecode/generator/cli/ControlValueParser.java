@@ -122,7 +122,7 @@ public class ControlValueParser {
         return options;
     }
 
-    private Map<String, Integer> defaultValues = initDefaultValues();
+    private final Map<String, Integer> defaultValues = initDefaultValues();
 
     private static Map<String, Integer> initDefaultValues() {
         Map<String, Integer> defaultValues = new HashMap<>();
