@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
@@ -24,7 +25,7 @@ public class AssignableFromCall implements Snippet {
         MetaType<?> t2 = randomSupplier.types()
                 .filter(t -> !t.equals(t1))
                 .findFirst()
-                .get();
+                .orElseThrow(ErrorUtils::shouldNotReachHere);
         String c1 = t1.clazz.getCanonicalName();
         String c2 = t2.clazz.getCanonicalName();
 
