@@ -145,7 +145,7 @@ public class ClazzLogger extends Logger {
                                 .map(paramType ->
                                         Stream.<Stream<? extends Expression<?>>>of(
                                                 getInitializedVarsUsableInMethod(context)
-                                        ).flatMap(Function.identity())
+                                        ).<Expression<?>>flatMap(e -> e)
                                                 .filter(v -> paramType.equals(v.type()))
                                                 .findFirst()
                                                 .orElseGet(() -> randomSupplier.constantOf(paramType)))
