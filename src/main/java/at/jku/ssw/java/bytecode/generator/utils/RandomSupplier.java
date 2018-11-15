@@ -1,8 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
-import at.jku.ssw.java.bytecode.generator.types.ArrayType;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
-import at.jku.ssw.java.bytecode.generator.types.TypeCache;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
+import at.jku.ssw.java.bytecode.generator.types.*;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -15,6 +14,7 @@ import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.BYTE;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.SHORT;
 import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+import static at.jku.ssw.java.bytecode.generator.utils.ErrorUtils.shouldNotReachHere;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;
@@ -37,7 +37,7 @@ public class RandomSupplier {
     private final Random rand;
     private final Randomizer randomizer;
 
-    static private final String STRING_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    static private final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int MAX_STRING_LENGTH = 20;
 
     private static final List<Integer> MODIFIERS = Arrays.asList(
@@ -174,15 +174,13 @@ public class RandomSupplier {
         ).orElseThrow(() -> new AssertionError("Could not fetch random return type"));
     }
 
+    // TODO remove
+    @Deprecated
     public String castedValue(MetaType<?> type) {
         switch (type.kind) {
             case INSTANCE:
             case ARRAY:
-                // 10% chance for objects to be initialized with null
                 if (rand.nextInt(10) == 0) {
-                    // add cast to signal to prevent ambiguous method calls
-                    // e.g. `foo(null)` could invoke
-                    // `foo(java.lang.String)` or `foo(java.lang.Object)`
                     return cast(NULL).to(type.clazz);
                 }
         }
@@ -190,6 +188,62 @@ public class RandomSupplier {
         return castedValueNotNull(type);
     }
 
+    /**
+     * Returns a random constant that corresponds to the given type.
+     * If the type describes a reference type (or array), a
+     * {@link NullConstant} is returned.
+     *
+     * @param type The meta type
+     * @param <T>  The actual Java class
+     * @return a constant expression of the given type
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Constant<T> constantOf(MetaType<T> type) {
+        switch (type.kind) {
+            case BYTE:
+                return (Constant<T>) new ByteConstant((byte) rand.nextInt());
+            case SHORT:
+                return (Constant<T>) new ShortConstant((short) rand.nextInt());
+            case INT:
+                return (Constant<T>) new IntConstant(rand.nextInt());
+            case LONG:
+                return (Constant<T>) new LongConstant(rand.nextLong());
+            case FLOAT:
+                return (Constant<T>) new FloatConstant(rand.nextFloat());
+            case DOUBLE:
+                return (Constant<T>) new DoubleConstant(rand.nextDouble());
+            case BOOLEAN:
+                return (Constant<T>) new BooleanConstant(rand.nextBoolean());
+            case CHAR:
+                return (Constant<T>) new CharConstant(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length())));
+            case RINT:
+                RestrictedIntType rInt = (RestrictedIntType) type;
+
+                IntRange range = rInt.getRange();
+
+                IntStream values = range != null
+                        ? rand.ints(0, Integer.min(range.max, maxArrayDimSize + 1))
+                        .map(i -> i + range.min)
+                        : rInt.getInclusions().stream()
+                        .mapToInt(Integer::intValue)
+                        .skip(rand.nextInt(rInt.getInclusions().size()));
+
+                return (Constant<T>) new IntConstant(
+                        values
+                                .filter(rInt::isValid)
+                                .findFirst()
+                                .orElseThrow(() ->
+                                        shouldNotReachHere("Could not find integer constant for restricted type " + type)));
+            case INSTANCE:
+            case ARRAY:
+                return new NullConstant<>((RefType<T>) type);
+        }
+
+        throw shouldNotReachHere("Unexpected constant request for type " + type);
+    }
+
+    // TODO remove
+    @Deprecated
     public String castedValueNotNull(MetaType<?> type) {
         switch (type.kind) {
             case BYTE:
@@ -207,7 +261,7 @@ public class RandomSupplier {
             case BOOLEAN:
                 return String.valueOf(rand.nextBoolean());
             case CHAR:
-                return asChar(STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())));
+                return asChar(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length())));
             case INSTANCE:
                 if (type.clazz.equals(String.class)) {
                     return asStr(getString());
@@ -222,8 +276,8 @@ public class RandomSupplier {
                 return NewArray(
                         type.clazz,
                         rand.ints(0, maxArrayDimSize + 1)
-                                .map(i -> i + MIN_ARRAY_DIM_LENGTH)
                                 .limit(type.getDim())
+                                .map(i -> i + MIN_ARRAY_DIM_LENGTH)
                                 .boxed()
                                 .collect(Collectors.toList())
                 );
@@ -270,7 +324,7 @@ public class RandomSupplier {
                     return "" + d + "d";
                 }
             case CHAR:
-                char c = STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length()));
+                char c = CHARACTERS.charAt(rand.nextInt(CHARACTERS.length()));
                 if (notZero) {
                     return "\'" + (c != 0 ? c : ++c) + "\'";
                 } else {
@@ -289,7 +343,7 @@ public class RandomSupplier {
     public String getStringOfLength(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(STRING_CANDIDATES.charAt(rand.nextInt(STRING_CANDIDATES.length())));
+            sb.append(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length())));
         }
         return sb.toString();
     }

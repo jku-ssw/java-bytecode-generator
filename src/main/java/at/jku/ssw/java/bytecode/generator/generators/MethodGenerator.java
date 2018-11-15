@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
@@ -68,7 +69,7 @@ class MethodGenerator extends MethodCaller {
         if (returnType.kind == MetaType.Kind.VOID) {
             returnStatement = "";
         } else {
-            returnStatement = "return " + getRandomSupplier().castedValue(returnType) + ";";
+            returnStatement = "return " + new JavassistResolver().resolve(getClazzLogger().valueOf(returnType, ml)) + ";";
         }
         this.getClazzLogger().logMethod(ml);
         CtMethod newMethod;
@@ -125,7 +126,7 @@ class MethodGenerator extends MethodCaller {
             }
         } else {
 
-            new Randomizer(rand).oneNotNullOf(
+            new Randomizer(rand).<FieldVarLogger<?>>oneNotNullOf(
                     () -> getClazzLogger().getInitializedLocalVarOfType(method, returnType),
                     () -> getClazzLogger().getInitializedFieldOfTypeUsableInMethod(method, returnType)
             ).ifPresent(
@@ -178,7 +179,7 @@ class MethodGenerator extends MethodCaller {
         this.insertIntoMethodBody(method, src);
     }
 
-    private String setVariableToReturnValue(FieldVarLogger fieldVar, MethodLogger method) {
+    private String setVariableToReturnValue(FieldVarLogger<?> fieldVar, MethodLogger method) {
         List<? extends MetaType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
 
         MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
@@ -192,7 +193,7 @@ class MethodGenerator extends MethodCaller {
 
     public String srcSetFieldToReturnValue(MethodLogger method) {
         if (this.getClazzLogger().hasVariables()) {
-            FieldVarLogger fieldVar = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
+            FieldVarLogger<?> fieldVar = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
             if (fieldVar == null) {
                 return null;
             } else {
@@ -211,7 +212,7 @@ class MethodGenerator extends MethodCaller {
     public String srcSetLocalVarToReturnValue(MethodLogger method) {
 
         if (method.hasVariables()) {
-            FieldVarLogger fieldVar = method.getVariableWithPredicate(v -> !v.isFinal());
+            FieldVarLogger<?> fieldVar = method.getVariableWithPredicate(v -> !v.isFinal());
             if (fieldVar != null)
                 return setVariableToReturnValue(fieldVar, method);
         }
@@ -238,13 +239,13 @@ class MethodGenerator extends MethodCaller {
      * @param variable The variable (field, local variable)
      * @return a string describing how to get a hash value from this value
      */
-    public String getHashComputation(FieldVarLogger variable) {
+    public <T> String getHashComputation(FieldVarLogger<T> variable) {
         return Statement(pAssign(cast(variable.getType().getHashCode(variable)).to(long.class)).to("hashValue"));
     }
 
     public void generateHashMethod() {
         StringBuilder src = new StringBuilder("long hashValue = 0; ");
-        List<FieldVarLogger> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
+        List<FieldVarLogger<?>> initGlobals = this.getClazzLogger().getVariablesWithPredicate(FieldVarLogger::isInitialized);
         if (this.getClazzLogger().hasVariables()) {
             src.append(
                     initGlobals.stream()

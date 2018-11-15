@@ -1,6 +1,11 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.ResolvedBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
@@ -121,6 +126,35 @@ public class ClazzLogger extends Logger {
     }
 
     /**
+     * Generates an expression that corresponds to the given type.
+     * The given context provides access to the current local variables.
+     *
+     * @param type    The required type that the expression should evaluate to
+     * @param context The context in which this expression is placed
+     * @param <T>     The actual Java class
+     * @return an expression that evaluates to the given meta type
+     */
+    public <T> Expression<T> valueOf(MetaType<T> type, MethodLogger context) {
+        // TODO enable invocation of methods, casts etc.
+        List<Builder<T>> builders = type.builders();
+
+        return randomizer.oneOf(builders.stream()
+                .map(b -> new ResolvedBuilder<>(
+                        b,
+                        b.requires().stream()
+                                .map(paramType ->
+                                        Stream.<Stream<? extends Expression<?>>>of(
+                                                getInitializedVarsUsableInMethod(context)
+                                        ).flatMap(Function.identity())
+                                                .filter(v -> paramType.equals(v.type()))//paramType.isAssignableFrom(v.type()))
+                                                .findFirst()
+                                                .orElseGet(() -> randomSupplier.constantOf(paramType)))
+                                .collect(Collectors.toList()))))
+                .map(b -> b.builder.build(b.params))
+                .orElseThrow(() -> ErrorUtils.shouldNotReachHere("Could not resolve value for type " + type));
+    }
+
+    /**
      * Returns a stream that contains parameter values that map to the given
      * stream of expected parameter types.
      *
@@ -136,79 +170,85 @@ public class ClazzLogger extends Logger {
                                 // try to find a suitable local variable, field or constant
                                 getInitializedVarsUsableInMethod(method)
                                         .filter(v -> t.isAssignableFrom(v.getType()))
-                                        .map((Function<FieldVarLogger, ParamWrapper<?>>) ParamWrapper::new))
+                                        .map((Function<FieldVarLogger<?>, ParamWrapper<?>>) ParamWrapper::new))
                                 // or assign a constant value
                                 .orElseGet(
-                                        () -> new ParamWrapper<>(randomSupplier.castedValue(t))
+                                        () -> new ParamWrapper<>(new JavassistResolver().resolve(valueOf(t, method)))
                                 )
                 );
     }
 
 
-    public FieldVarLogger getNonFinalFieldUsableInMethod(MethodLogger method) {
+    public FieldVarLogger<?> getNonFinalFieldUsableInMethod(MethodLogger method) {
         if (method.isStatic())
             return getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
         else
             return getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, MetaType<?> type) {
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, MetaType<T> type) {
         if (method.isStatic())
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<T>) getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() &&
                             type.isAssignableFrom(v.getType()));
         else
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<T>) getVariableWithPredicate(v ->
                     !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, MetaType<?> type) {
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, MetaType<T> type) {
         if (method.isStatic())
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isStatic() && v.isInitialized() && !v.isFinal() &&
                             type.isAssignableFrom(v.getType()));
         else
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     !v.isFinal() && v.isInitialized() &&
                             type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getInitializedLocalVarOfType(MethodLogger method, MetaType<?> type) {
-        return method.getVariableWithPredicate(v ->
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getInitializedLocalVarOfType(MethodLogger method, MetaType<T> type) {
+        return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getInitializedCompatibleLocalVar(MethodLogger method, MetaType<?> type) {
-        return method.getVariableWithPredicate(v ->
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getInitializedCompatibleLocalVar(MethodLogger method, MetaType<T> type) {
+        return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 v.isInitialized() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getNonFinalLocalVar(MethodLogger method) {
+    public FieldVarLogger<?> getNonFinalLocalVar(MethodLogger method) {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
-    public FieldVarLogger getNonFinalCompatibleLocalVar(MethodLogger method, MetaType<?> type) {
-        return method.getVariableWithPredicate(v ->
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleLocalVar(MethodLogger method, MetaType<T> type) {
+        return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger getInitializedFieldOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getInitializedFieldOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
         if (method.isStatic())
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isInitialized() && v.isStatic() && v.getType() == type);
         else
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isInitialized() && v.getType() == type);
     }
 
-    public FieldVarLogger getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
-        return randomizer.oneNotNullOf(
+    public <T> FieldVarLogger<? extends T> getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
+        return randomizer.<FieldVarLogger<? extends T>>oneNotNullOf(
                 () -> getInitializedLocalVarOfType(method, type),
                 () -> getInitializedFieldOfTypeUsableInMethod(method, type)
         ).orElse(null);
     }
 
-    public Stream<FieldVarLogger> getNonFinalVarsUsableInMethod(MethodLogger method) {
+    public Stream<FieldVarLogger<?>> getNonFinalVarsUsableInMethod(MethodLogger method) {
         return Stream.concat(
                 method.streamVariables(),
                 streamVariables()
@@ -216,7 +256,7 @@ public class ClazzLogger extends Logger {
         ).filter(v -> !v.isFinal());
     }
 
-    public Stream<FieldVarLogger> getInitializedVarsUsableInMethod(MethodLogger method) {
+    public Stream<FieldVarLogger<?>> getInitializedVarsUsableInMethod(MethodLogger method) {
         return Stream.concat(
                 method.streamVariables(),
                 streamVariables()
@@ -224,17 +264,19 @@ public class ClazzLogger extends Logger {
         ).filter(FieldVarLogger::isInitialized);
     }
 
-    public FieldVarLogger getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, MetaType<?> type) {
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
         if (method.isStatic())
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() && v.getType() == type);
         else
-            return getVariableWithPredicate(v ->
+            return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     !v.isFinal() && v.getType() == type);
     }
 
-    public FieldVarLogger getNonFinalLocalVarOfType(MethodLogger method, MetaType<?> type) {
-        return method.getVariableWithPredicate(v ->
+    @SuppressWarnings("unchecked")
+    public <T> FieldVarLogger<? extends T> getNonFinalLocalVarOfType(MethodLogger method, MetaType<T> type) {
+        return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 !v.isFinal() && v.getType() == type);
     }
 
