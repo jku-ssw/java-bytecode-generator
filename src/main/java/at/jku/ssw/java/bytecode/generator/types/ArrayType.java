@@ -1,17 +1,24 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.ArrayInit;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.utils.IntRange.rangeFrom;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.field;
@@ -215,7 +222,7 @@ public final class ArrayType<T> extends RefType<T> {
      * @param nParams The number of dimensions
      * @return the type that this array access results in
      */
-    public static MetaType<?> resultingTypeOf(FieldVarLogger array, int nParams) {
+    public static MetaType<?> resultingTypeOf(FieldVarLogger<?> array, int nParams) {
         assert array != null;
         assert nParams > 0;
 
@@ -252,7 +259,7 @@ public final class ArrayType<T> extends RefType<T> {
      * {@inheritDoc}
      */
     @Override
-    public final String getHashCode(FieldVarLogger variable) {
+    public final String getHashCode(FieldVarLogger<T> variable) {
         String name = variable.access();
 
         return ternary(
@@ -310,6 +317,43 @@ public final class ArrayType<T> extends RefType<T> {
     public BitSet[] getRestrictions() {
         return restrictions;
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Builder methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Builder<T>> builders() {
+        ArrayType<T> self = this;
+
+        return Arrays.asList(
+                new NullBuilder<>(this),
+                new Builder<T>() {
+                    @Override
+                    public List<? extends PrimitiveType<Integer>> requires() {
+                        return Stream.generate(() ->
+                                RestrictedIntType.of(
+                                        rangeFrom(MIN_ARRAY_DIM_LENGTH)))
+                                .limit(dim)
+                                .collect(Collectors.toList());
+                    }
+
+                    @Override
+                    public Expression<T> build(List<Expression<?>> params) {
+                        return new ArrayInit<>(self, params);
+                    }
+
+                    @Override
+                    public MetaType<T> returns() {
+                        return self;
+                    }
+                }
+        );
+    }
+
 
     // endregion
     //-------------------------------------------------------------------------

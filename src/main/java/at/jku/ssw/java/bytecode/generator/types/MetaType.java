@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Instantiable;
 import javassist.CtClass;
 
 import java.util.BitSet;
@@ -13,7 +14,7 @@ import java.util.Objects;
  *
  * @param <T> The actual Java type that is described
  */
-public abstract class MetaType<T> {
+public abstract class MetaType<T> implements Instantiable<T> {
     //-------------------------------------------------------------------------
     // region Constants
 
@@ -43,6 +44,7 @@ public abstract class MetaType<T> {
     public enum Kind {
         BYTE,
         SHORT,
+        RINT,
         INT,
         LONG,
         FLOAT,
@@ -131,7 +133,7 @@ public abstract class MetaType<T> {
      * @param variable The variable holding this value
      * @return a hash code that identifies this value
      */
-    public abstract String getHashCode(FieldVarLogger variable);
+    public abstract String getHashCode(FieldVarLogger<T> variable);
 
     /**
      * Determines whether this type describes a primitive type.

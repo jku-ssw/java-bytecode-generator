@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import javassist.CtClass;
 
 import java.util.Collections;
@@ -34,7 +35,7 @@ public final class VoidType extends MetaType<VoidType.Void> {
      * {@inheritDoc}
      */
     @Override
-    public String getHashCode(FieldVarLogger variable) {
+    public String getHashCode(FieldVarLogger<Void> variable) {
         throw new UnsupportedOperationException();
     }
 
@@ -85,6 +86,15 @@ public final class VoidType extends MetaType<VoidType.Void> {
     @Override
     public boolean isAssignableFrom(MetaType<?> __) {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Builder<Void>> builders() {
+        // Void should not be built
+        return Collections.emptyList();
     }
 
 }

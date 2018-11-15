@@ -1,9 +1,14 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,14 +30,9 @@ public class RefType<T> extends MetaType<T> {
     // region Type constants
 
     /**
-     * {@link String} type constant.
-     */
-    static final RefType<String> STRING = RefType.of(String.class);
-
-    /**
      * {@link Date} type constant.
      */
-    static final RefType<Date> DATE = RefType.of(Date.class);
+    public static final RefType<Date> DATE = RefType.of(Date.class);
 
 //    @SuppressWarnings("unused")
 //    public static final RefType<Byte> BYTE_BOXED = of(Byte.class);
@@ -63,24 +63,20 @@ public class RefType<T> extends MetaType<T> {
      */
     public static <T> RefType<T> of(Class<T> clazz) {
         assert !clazz.isPrimitive();
-        return new RefType<>(clazz, JavassistUtils.toCtClass(clazz));
+        return new RefType<>(clazz);
     }
 
     /**
      * Generates a new reference type based on the given properties.
      *
-     * @param clazz     The actual Java class type instance corresponding to
-     *                  this {@link MetaType}.
-     * @param clazzType The {@link CtClass} type that maps to this type
+     * @param clazz The actual Java class type instance corresponding to
+     *              this {@link MetaType}.
      */
-    private RefType(Class<T> clazz, CtClass clazzType) {
-        super(clazz, clazzType, INSTANCE);
+    RefType(Class<T> clazz) {
+        super(clazz, JavassistUtils.toCtClass(clazz), INSTANCE);
     }
 
-    RefType(Class<T> clazz,
-            CtClass clazzType,
-            Kind kind) {
-
+    RefType(Class<T> clazz, CtClass clazzType, Kind kind) {
         super(clazz, clazzType, kind);
     }
 
@@ -92,7 +88,7 @@ public class RefType<T> extends MetaType<T> {
      * {@inheritDoc}
      */
     @Override
-    public String getHashCode(FieldVarLogger variable) {
+    public String getHashCode(FieldVarLogger<T> variable) {
         String name = variable.access();
 
         if (clazz.equals(String.class)) {
@@ -131,7 +127,7 @@ public class RefType<T> extends MetaType<T> {
     @Override
     public List<? extends RefType<?>> getAssignableTypes() {
         return TypeCache.INSTANCE.refTypes()
-                .filter(t -> clazz.isAssignableFrom(t.clazz))
+                .filter(this::isAssignableFrom)
                 .collect(Collectors.toList());
     }
 
@@ -165,6 +161,35 @@ public class RefType<T> extends MetaType<T> {
     @Override
     public boolean isVoid() {
         return false;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Builder methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Builder<T>> builders() {
+        RefType<T> self = this;
+
+        // TODO dynamically determine (via reflection?)!
+        return Arrays.asList(
+                new NullBuilder<>(this),
+                new Builder.NoArgs<T>() {
+
+                    @Override
+                    public RefType<T> returns() {
+                        return self;
+                    }
+
+                    @Override
+                    public Expression<T> build() {
+                        return new ConstructorCall<>(self);
+                    }
+                }
+        );
     }
 
     // endregion
