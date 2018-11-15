@@ -51,6 +51,7 @@ class MethodGenerator extends MethodCaller {
 
     //============================================Method Generation=====================================================
 
+    @SuppressWarnings("unchecked")
     private MethodLogger generateMethod(String name, MetaType<?> returnType, MetaType[] paramTypes, int modifiers) {
         MethodLogger ml = new MethodLogger(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
