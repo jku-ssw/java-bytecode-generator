@@ -18,6 +18,7 @@ import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.INT;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.LONG;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.SHORT;
 import static at.jku.ssw.java.bytecode.generator.types.RefType.*;
+import static at.jku.ssw.java.bytecode.generator.types.StringType.STRING;
 import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -60,8 +61,8 @@ public class ArrayTypeTest {
     //-------------------------------------------------------------------------
     // region Test utilities
 
-    private static FieldVarLogger arrayOf(Class<?> type, MetaType<?> componentType) {
-        return new FieldVarLogger("", "", 0, arrayType(type, componentType), false, false);
+    private static FieldVarLogger<?> arrayOf(Class<?> type, MetaType<?> componentType) {
+        return new FieldVarLogger<>("", "", 0, arrayType(type, componentType), false, false);
     }
 
     private static <T> RefType<T> refType(Class<T> type) {

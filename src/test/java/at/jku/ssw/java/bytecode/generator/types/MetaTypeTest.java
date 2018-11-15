@@ -6,10 +6,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.BOOLEAN;
 import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.INT;
-import static at.jku.ssw.java.bytecode.generator.types.RefType.*;
-import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.RefType.DATE;
+import static at.jku.ssw.java.bytecode.generator.types.StringType.STRING;
 import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
