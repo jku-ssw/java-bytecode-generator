@@ -95,6 +95,7 @@ public class StatementDSL {
         public static final String ARRAY = "[%s]";
         public static final String FIELD_ACCESS = "%s.%s";
         public static final String METHOD_CALL_NO_ARGS = "%s.%s()";
+        public static final String VOID = "void";
     }
 
     public static class Blocks {
@@ -222,4 +223,5 @@ public class StatementDSL {
     public static String variable(String owner, String v) {
         return owner.equals("") ? v : field(owner, v);
     }
+
 }
