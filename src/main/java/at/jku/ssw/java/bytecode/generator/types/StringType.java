@@ -51,11 +51,11 @@ public class StringType extends RefType<String> {
 
         StringType self = this;
 
+        // direct initialization (i.e. String str = "...")
         builders.add(
                 new Builder<String>() {
                     @Override
                     public List<? extends MetaType<?>> requires() {
-                        // TODO add constructor invocation
                         return Collections.singletonList(STRING);
                     }
 
