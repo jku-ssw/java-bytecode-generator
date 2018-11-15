@@ -21,9 +21,28 @@ public enum TypeCache {
 
     public static final Logger logger = LogManager.getLogger();
 
+    /**
+     * Captures all primitive types.
+     * Since they are initialized on startup, this map remains constant
+     * throughout the execution.
+     */
     private Map<Class<?>, PrimitiveType<?>> primitiveTypes = new HashMap<>();
+
+    /**
+     * Captures all reference types.
+     * Since "array types" are created on demand, this map only stores
+     * common reference types (including those that are explicitly covered
+     * by a meta type). This map may be modified when new types are registered
+     * (e.g. a new class is generated).
+     */
     private Map<Class<?>, RefType<?>> refTypes = new HashMap<>();
 
+    /**
+     * Initializes the type maps.
+     * It is done in the constructor as to prevent issues when the classes are
+     * loaded (e.g. cross-references, null pointers on pre-initialization
+     * access).
+     */
     TypeCache() {
         primitiveTypes.put(byte.class, BYTE);
         primitiveTypes.put(short.class, SHORT);
@@ -36,9 +55,16 @@ public enum TypeCache {
 
         refTypes.put(Object.class, ObjectType.OBJECT);
         refTypes.put(Date.class, RefType.DATE);
-        refTypes.put(String.class, RefType.STRING);
+        refTypes.put(String.class, StringType.STRING);
     }
 
+    /**
+     * Registers a new reference type.
+     *
+     * @param newType The reference type that should be made available.
+     * @param <T>     The actual Java type
+     * @return the reference type that was registered (the same as the input)
+     */
     @SuppressWarnings("unchecked")
     public final <T> RefType<T> register(RefType<T> newType) {
         logger.error("Registering type " + newType);
@@ -48,16 +74,29 @@ public enum TypeCache {
         return newType;
     }
 
+    /**
+     * Looks up the registered meta type for the given Java class.
+     *
+     * @param clazz The class that is looked up
+     * @param <T>   The parameter identifying the type
+     * @return the mapped meta type for the given class or nothing if the
+     * class is not registered yet
+     */
     @SuppressWarnings("unchecked")
     public final <T> Optional<? extends MetaType<T>> find(Class<T> clazz) {
-        MetaType<T> type =
-                (MetaType<T>) primitiveTypes.get(clazz);
+        MetaType<T> type = (MetaType<T>) primitiveTypes.get(clazz);
 
         return type == null
                 ? Optional.ofNullable((MetaType<T>) refTypes.get(clazz))
                 : Optional.of(type);
     }
 
+    /**
+     * Concatenates all registered primitive and reference types
+     * and returns them as a {@link Stream}.
+     *
+     * @return a stream of all available (registered) meta types
+     */
     public final Stream<? extends MetaType<?>> types() {
         return Stream
                 .of(primitiveTypes, refTypes)
@@ -65,10 +104,20 @@ public enum TypeCache {
                 .flatMap(Collection::stream);
     }
 
+    /**
+     * Returns all registered reference types
+     *
+     * @return a stream of reference types
+     */
     public final Stream<RefType<?>> refTypes() {
         return refTypes.values().stream();
     }
 
+    /**
+     * Returns all registered primitive types.
+     *
+     * @return a stream of primitive types
+     */
     public final Stream<PrimitiveType<?>> primitiveTypes() {
         return primitiveTypes.values().stream();
     }
