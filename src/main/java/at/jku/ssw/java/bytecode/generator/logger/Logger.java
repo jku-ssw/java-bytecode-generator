@@ -17,10 +17,10 @@ abstract class Logger {
         this.rand = rand;
     }
 
-    Map<String, FieldVarLogger> variables;
+    Map<String, FieldVarLogger<?>> variables;
 
-    public void logVariable(String name, String clazz, MetaType<?> type, int modifiers, boolean initialized, boolean isField) {
-        FieldVarLogger f = new FieldVarLogger(name, clazz, modifiers, type, initialized, isField);
+    public <T> void logVariable(String name, String clazz, MetaType<T> type, int modifiers, boolean initialized, boolean isField) {
+        FieldVarLogger<T> f = new FieldVarLogger<>(name, clazz, modifiers, type, initialized, isField);
         variables.put(name, f);
     }
 
@@ -28,23 +28,23 @@ abstract class Logger {
         return !variables.isEmpty();
     }
 
-    public FieldVarLogger getVariableWithPredicate(Predicate<FieldVarLogger> predicate) {
+    public FieldVarLogger<?> getVariableWithPredicate(Predicate<FieldVarLogger<?>> predicate) {
         if (!hasVariables()) {
             return null;
         }
-        List<FieldVarLogger> predicateVars = getVariablesWithPredicate(predicate);
+        List<FieldVarLogger<?>> predicateVars = getVariablesWithPredicate(predicate);
         if (predicateVars.isEmpty()) {
             return null;
         }
         return predicateVars.get(rand.nextInt(predicateVars.size()));
     }
 
-    public List<FieldVarLogger> getVariablesWithPredicate(Predicate<FieldVarLogger> predicate) {
+    public List<FieldVarLogger<?>> getVariablesWithPredicate(Predicate<FieldVarLogger<?>> predicate) {
         return variables.values().stream().filter(
                 predicate).collect(Collectors.toList());
     }
 
-    public Stream<FieldVarLogger> streamVariables() {
+    public Stream<FieldVarLogger<?>> streamVariables() {
         return variables.values().stream();
     }
 }

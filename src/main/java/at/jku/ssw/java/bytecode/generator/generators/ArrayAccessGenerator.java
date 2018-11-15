@@ -39,7 +39,7 @@ public class ArrayAccessGenerator extends MethodCaller {
      * @param dims The number of dimensions to access
      * @return a string representation of a the array access
      */
-    private String srcAccessArray(FieldVarLogger a, int dims) {
+    private String srcAccessArray(FieldVarLogger<?> a, int dims) {
         assert dims > 0;
 
         BitSet[] restrictions = a.getType().getRestrictions();

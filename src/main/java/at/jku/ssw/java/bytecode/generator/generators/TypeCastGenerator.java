@@ -27,7 +27,7 @@ public class TypeCastGenerator extends Generator {
     public void generatePrimitiveTypeCast(MethodLogger method) {
         ClazzLogger cl = getClazzLogger();
 
-        Predicate<FieldVarLogger> isPrimitiveCastable = v ->
+        Predicate<FieldVarLogger<?>> isPrimitiveCastable = v ->
                 v.getType().kind != MetaType.Kind.BOOLEAN &&
                         v.getType().kind != MetaType.Kind.INSTANCE &&
                         v.getType().kind != MetaType.Kind.VOID &&

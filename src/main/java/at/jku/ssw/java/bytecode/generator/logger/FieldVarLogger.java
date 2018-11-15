@@ -1,20 +1,21 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.types.MetaType;
 
 import java.lang.reflect.Modifier;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.variable;
 
-public class FieldVarLogger {
+public class FieldVarLogger<T> implements Expression<T> {
     public final String name;
     private final int modifiers;
-    private final MetaType<?> type;
+    private final MetaType<T> type;
     private boolean initialized;
     public final boolean isField;
     public final String clazz;
 
-    public FieldVarLogger(String name, String clazz, int modifiers, MetaType<?> type, boolean initialized, boolean isField) {
+    public FieldVarLogger(String name, String clazz, int modifiers, MetaType<T> type, boolean initialized, boolean isField) {
         this.type = type;
         this.name = name;
         this.modifiers = modifiers;
@@ -25,6 +26,18 @@ public class FieldVarLogger {
 
     public String access() {
         return variable(getCaller(), name);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isField() {
+        return isField;
+    }
+
+    public String getClazz() {
+        return clazz;
     }
 
     public boolean isInitialized() {
@@ -39,7 +52,7 @@ public class FieldVarLogger {
         return modifiers;
     }
 
-    public MetaType<?> getType() {
+    public MetaType<T> getType() {
         return type;
     }
 
@@ -66,5 +79,10 @@ public class FieldVarLogger {
     @Override
     public String toString() {
         return access();
+    }
+
+    @Override
+    public MetaType<T> type() {
+        return type;
     }
 }
