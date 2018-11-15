@@ -6,6 +6,7 @@ import at.jku.ssw.java.bytecode.generator.generators.snippets.Snippet;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -38,8 +39,8 @@ public class SnippetGenerator extends Generator {
         snippets = GENERATORS.stream()
                 .map(c -> {
                     try {
-                        return c.newInstance();
-                    } catch (InstantiationException | IllegalAccessException e) {
+                        return c.getDeclaredConstructor().newInstance();
+                    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                         e.printStackTrace();
                         return null;
                     }
