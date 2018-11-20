@@ -59,7 +59,7 @@ public class ArrayAccessGenerator extends MethodCaller {
         );
     }
 
-    public String scrGenerateArrayReadAccess(MethodLogger<?> method) {
+    public String srcGenerateArrayReadAccess(MethodLogger<?> method) {
         return new Randomizer(rand).shuffle(
                 getClazzLogger()
                         .getInitializedVarsUsableInMethod(method)
@@ -91,8 +91,39 @@ public class ArrayAccessGenerator extends MethodCaller {
                 .orElse("");
     }
 
-    private String srcGenerateArrayWriteAccess(MethodLogger<?> method) {
-        /* TODO */
-        return null;
+    /**
+     * Generates a source code string that describes a randomly generated
+     * array write operation within the given method.
+     *
+     * @param method The method context
+     * @return a string that contains the source code of the expression
+     */
+    public String srcGenerateArrayWriteAccess(MethodLogger<?> method) {
+        return new Randomizer(rand).shuffle(
+                getClazzLogger()
+                        .getNonFinalVarsUsableInMethod(method)
+                        .filter(v -> v.getType().kind() == ARRAY)
+                        .filter(FieldVarLogger::isInitialized)
+                        .flatMap(a -> {
+                            // fetch random number of dimensions (at least,
+                            // with a maximum of the dimensions of a)
+                            int nParams = rand.nextInt(a.getType().getDim()) + 1;
+
+                            MetaType<?> type = ArrayType.resultingTypeOf(a, nParams);
+
+                            return getClazzLogger()
+                                    .getInitializedVarsUsableInMethod(method)
+                                    .filter(v -> type.isAssignableFrom(v.getType()))
+                                    .map(v -> (Supplier<String>) () ->
+                                            If(notNull(a.toString())) +
+                                                    Statement(assign(v.access())
+                                                            .to(srcAccessArray(a, nParams))
+                                                    ) +
+                                                    BlockEnd
+                                    );
+                        })
+        ).findFirst()
+                .map(Supplier::get)
+                .orElse("");
     }
 }

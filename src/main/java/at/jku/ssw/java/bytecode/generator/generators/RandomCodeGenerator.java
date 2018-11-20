@@ -180,7 +180,8 @@ public class RandomCodeGenerator {
 
             if (context != CONTROL_CONTEXT && r <= controller.getArrayAccessProbability()) {
                 new Randomizer(rand).oneOf(
-                        () -> arrayAccessGenerator.scrGenerateArrayReadAccess(context.contextMethod))
+                        () -> arrayAccessGenerator.srcGenerateArrayReadAccess(context.contextMethod),
+                        () -> arrayAccessGenerator.srcGenerateArrayWriteAccess(context.contextMethod))
                         .ifPresent(src ->
                                 arrayAccessGenerator.insertIntoMethodBody(context.contextMethod, src));//, Arrays.asList(ArrayIndexOutOfBoundsException.class, NullPointerException.class)));
             }
