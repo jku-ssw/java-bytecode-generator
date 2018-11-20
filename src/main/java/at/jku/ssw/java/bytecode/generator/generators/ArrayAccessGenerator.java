@@ -59,6 +59,13 @@ public class ArrayAccessGenerator extends MethodCaller {
         );
     }
 
+    /**
+     * Generates a source code string that describes a randomly generated
+     * array read operation within the given method.
+     *
+     * @param method The method context
+     * @return a string that contains the source code of the expression
+     */
     public String srcGenerateArrayReadAccess(MethodLogger<?> method) {
         return new Randomizer(rand).shuffle(
                 getClazzLogger()
