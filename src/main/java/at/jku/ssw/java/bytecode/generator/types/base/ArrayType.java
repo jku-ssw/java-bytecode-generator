@@ -31,7 +31,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
  * @param <T> The actual Java class corresponding to the array type (including
  *            dimension indicator) - e.g. {@code int[][].class}
  */
-public final class ArrayType<T> extends RefType<T> {
+public final class ArrayType<T> implements RefType<T> {
 
     //-------------------------------------------------------------------------
     // region Constants
@@ -49,14 +49,19 @@ public final class ArrayType<T> extends RefType<T> {
     // region Properties
 
     /**
+     * The described Java array {@link Class}.
+     */
+    private final Class<T> clazz;
+
+    /**
      * Optional inner type descriptor for array types.
      */
-    final MetaType<?> inner;
+    private final MetaType<?> inner;
 
     /**
      * The number of dimensions for array types (otherwise {@code 0}).
      */
-    final int dim;
+    private final int dim;
 
     /**
      * Restrictions on access for array types (otherwise {@code null}).
@@ -187,13 +192,11 @@ public final class ArrayType<T> extends RefType<T> {
                       MetaType<?> inner,
                       int dim,
                       BitSet[] restrictions) {
-        super(clazz, ARRAY);
+        assert clazz != null;
+        assert inner != null;
+        assert dim > 0;
 
-        // iff the type does not have dimensions, it must not be an array
-        // and not have an inner type
-        // if restrictions are given, it must be an array
-        assert dim == 0 && inner == null && kind() != Kind.ARRAY && restrictions == null ||
-                dim > 0 && inner != null && kind() == Kind.ARRAY;
+        this.clazz = clazz;
 
         // the restrictions must cover all dimensions (if any)
         // and provide empty sets for unrestricted dimensions
@@ -255,6 +258,29 @@ public final class ArrayType<T> extends RefType<T> {
      * {@inheritDoc}
      */
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return clazz == ((ArrayType<?>) o).clazz;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return clazz.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return descriptor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public final String getHashCode(FieldVarLogger<T> variable) {
         String name = variable.access();
 
@@ -282,6 +308,18 @@ public final class ArrayType<T> extends RefType<T> {
         return Collections.singletonList(this);
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Property accessors
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<T> clazz() {
+        return clazz;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -306,6 +344,14 @@ public final class ArrayType<T> extends RefType<T> {
         return restrictions;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Kind kind() {
+        return ARRAY;
+    }
+
     // endregion
     //-------------------------------------------------------------------------
     // region Builder methods
@@ -315,8 +361,6 @@ public final class ArrayType<T> extends RefType<T> {
      */
     @Override
     public List<Builder<T>> builders() {
-        ArrayType<T> self = this;
-
         return Arrays.asList(
                 new NullBuilder<>(this),
                 new Builder<T>() {
@@ -331,12 +375,12 @@ public final class ArrayType<T> extends RefType<T> {
 
                     @Override
                     public Expression<T> build(List<Expression<?>> params) {
-                        return new ArrayInit<>(self, params);
+                        return new ArrayInit<>(ArrayType.this, params);
                     }
 
                     @Override
                     public MetaType<T> returns() {
-                        return self;
+                        return ArrayType.this;
                     }
                 }
         );

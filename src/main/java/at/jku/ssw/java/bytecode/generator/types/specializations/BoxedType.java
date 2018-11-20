@@ -1,8 +1,10 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
+import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
@@ -10,7 +12,12 @@ import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
 import java.util.List;
+import java.util.Objects;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 /**
@@ -18,13 +25,7 @@ import static java.util.Collections.singletonList;
  *
  * @param <T> The actual Java class
  */
-public class BoxedType<T> extends RefType<T> {
-
-    /**
-     * The boxed primitive type.
-     */
-    private final Class<?> boxed;
-
+public class BoxedType<T> implements RefType<T> {
     //-------------------------------------------------------------------------
     // region Type constants
 
@@ -70,6 +71,21 @@ public class BoxedType<T> extends RefType<T> {
 
     // endregion
     //-------------------------------------------------------------------------
+    // region Properties
+
+    /**
+     * The mapped Java class.
+     */
+    private final Class<T> clazz;
+
+    /**
+     * The boxed primitive type.
+     */
+    private final Class<?> boxed;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
 
     /**
      * Creates a new boxed type using the given Java class type.
@@ -78,20 +94,62 @@ public class BoxedType<T> extends RefType<T> {
      * @param boxed The boxed primitive type
      */
     private BoxedType(Class<T> clazz, Class<?> boxed) {
-        super(clazz);
         assert !clazz.isArray();
         assert boxed.isPrimitive();
+        this.clazz = clazz;
         this.boxed = boxed;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Overridden methods
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BoxedType<?> boxedType = (BoxedType<?>) o;
+        return Objects.equals(clazz, boxedType.clazz) &&
+                Objects.equals(boxed, boxedType.boxed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz, boxed);
+    }
+
+    @Override
+    public String toString() {
+        return descriptor();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Builder<T>> builders() {
-        BoxedType<T> self = this;
+    public final String getHashCode(FieldVarLogger<T> variable) {
+        String name = variable.access();
 
-        return singletonList(
+        // simply call Type#hashCode (which returns the primitive value)
+        return ternary(
+                notNull(name),
+                method(name, "hashCode"),
+                "0L"
+        );
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Builder methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Builder<T>> builders() {
+        return asList(
+                new NullBuilder<>(this),
                 new Builder<T>() {
                     @SuppressWarnings("unchecked")
                     @Override
@@ -106,14 +164,29 @@ public class BoxedType<T> extends RefType<T> {
                     @Override
                     public Expression<T> build(List<Expression<?>> params) {
                         assert params.size() == 1;
-                        return new ConstructorCall<>(self, params);
+                        return new ConstructorCall<>(BoxedType.this, params);
                     }
 
                     @Override
                     public MetaType<T> returns() {
-                        return self;
+                        return BoxedType.this;
                     }
                 }
         );
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Property accessors
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<T> clazz() {
+        return clazz;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

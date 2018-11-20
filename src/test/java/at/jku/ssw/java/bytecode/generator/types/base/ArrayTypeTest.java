@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.types.specializations.DynamicRefType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,7 +60,7 @@ public class ArrayTypeTest {
     }
 
     private static <T> RefType<T> refType(Class<T> type) {
-        return new RefType<>(type);
+        return new DynamicRefType<>(type);
     }
 
     private static <T> MetaType<T> arrayType(Class<T> type, MetaType<?> componentType) {

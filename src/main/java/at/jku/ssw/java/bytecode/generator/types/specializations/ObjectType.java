@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
+import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -7,22 +8,31 @@ import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
+
 /**
  * Specialized {@link Object} meta type.
  */
-public final class ObjectType extends RefType<Object> {
+public enum ObjectType implements RefType<Object> {
 
     /**
-     * {@link Object} type constant.
+     * Singleton.
      */
-    public static final ObjectType OBJECT = new ObjectType();
+    OBJECT;
 
     /**
-     * Creates a new object type.
-     * Must not be invoked outside of this class.
+     * {@inheritDoc}
      */
-    private ObjectType() {
-        super(Object.class);
+    @Override
+    public Class<Object> clazz() {
+        return Object.class;
+    }
+
+    @Override
+    public String toString() {
+        return descriptor();
     }
 
     /**
@@ -31,6 +41,20 @@ public final class ObjectType extends RefType<Object> {
     @Override
     public boolean isAssignableFrom(MetaType<?> other) {
         return other instanceof RefType<?>;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getHashCode(FieldVarLogger<Object> variable) {
+        String name = variable.access();
+
+        return ternary(
+                notNull(name),
+                method(method(method(name, "getClass"), "getSimpleName"), "hashCode"),
+                "0L"
+        );
     }
 
     /**

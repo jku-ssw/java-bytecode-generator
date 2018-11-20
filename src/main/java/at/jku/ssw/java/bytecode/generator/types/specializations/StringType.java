@@ -1,30 +1,58 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
+import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.DefaultConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
+import static java.util.Arrays.asList;
 
 /**
  * Specialized {@link String} meta type.
  */
-public class StringType extends RefType<String> {
+public enum StringType implements RefType<String> {
 
     /**
      * {@link String} type constant.
      */
-    public static final RefType<String> STRING = new StringType();
+    STRING;
 
     /**
-     * Creates a new string type.
-     * Is only invoked from within the class to initialize the singleton.
+     * {@inheritDoc}
      */
-    private StringType() {
-        super(String.class);
+    @Override
+    public Class<String> clazz() {
+        return String.class;
+    }
+
+    @Override
+    public String toString() {
+        return descriptor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getHashCode(FieldVarLogger<String> variable) {
+        assert variable != null;
+
+        String name = variable.access();
+
+        return ternary(
+                notNull(name),
+                method(name, "hashCode"),
+                "0L"
+        );
     }
 
     /**
@@ -49,12 +77,10 @@ public class StringType extends RefType<String> {
      */
     @Override
     public List<Builder<String>> builders() {
-        List<Builder<String>> builders = new ArrayList<>(super.builders());
-
-        StringType self = this;
-
-        // direct initialization (i.e. String str = "...")
-        builders.add(
+        return asList(
+                new NullBuilder<>(this),
+                new DefaultConstructorBuilder<>(this),
+                // direct initialization (i.e. String str = "...")
                 new Builder<String>() {
                     @Override
                     public List<? extends MetaType<?>> requires() {
@@ -70,11 +96,9 @@ public class StringType extends RefType<String> {
 
                     @Override
                     public StringType returns() {
-                        return self;
+                        return StringType.this;
                     }
                 }
         );
-
-        return builders;
     }
 }

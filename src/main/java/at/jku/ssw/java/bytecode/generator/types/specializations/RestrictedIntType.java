@@ -5,10 +5,7 @@ import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.IntRange;
 import javassist.CtClass;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a restricted version of an integer.
@@ -30,6 +27,8 @@ import java.util.Set;
  * then -100, 100, 1, 2, 99 are valid, while {@code -1, 0, 101} are excluded.
  */
 public class RestrictedIntType extends PrimitiveType<Integer> {
+    //-------------------------------------------------------------------------
+    // region Type constants
 
     /**
      * "Restricted" integer that is actually comparable to integer.
@@ -37,6 +36,10 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
     public static final RestrictedIntType INT = RestrictedIntType.of(
             IntRange.rangeIncl(Integer.MIN_VALUE, Integer.MAX_VALUE)
     );
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
 
     /**
      * Optional value range.
@@ -52,6 +55,10 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
      * Optional specific inclusions
      */
     private final Set<Integer> inclusions;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
 
     /**
      * Generates a new restricted int type based on the given properties.
@@ -121,6 +128,32 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
         return new RestrictedIntType(range, exclusions, inclusions);
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Object methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RestrictedIntType that = (RestrictedIntType) o;
+        return Objects.equals(range, that.range) &&
+                Objects.equals(exclusions, that.exclusions) &&
+                Objects.equals(inclusions, that.inclusions);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), range, exclusions, inclusions);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -132,6 +165,10 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
                 "inclusions=" + inclusions +
                 "}";
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region MetaType methods
 
     /**
      * {@inheritDoc}
@@ -167,6 +204,10 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
         return Collections.singletonList(this);
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Utilities
+
     /**
      * Determines whether this integer is valid for this restricted type
      * (i.e. if it is either especially selected as an option or not
@@ -180,6 +221,10 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
         return inclusions.contains(i) ||
                 range != null && range.contains(i) && !exclusions.contains(i);
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Property accessors
 
     /**
      * Returns the value range (if any)
@@ -209,4 +254,7 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
     public Set<Integer> getInclusions() {
         return new HashSet<>(inclusions);
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

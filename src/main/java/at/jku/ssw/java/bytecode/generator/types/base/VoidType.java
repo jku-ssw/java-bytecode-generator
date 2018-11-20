@@ -47,7 +47,7 @@ public enum VoidType implements MetaType<Void> {
      * {@inheritDoc}
      */
     @Override
-    public CtClass javassistClazz() {
+    public CtClass javassistClass() {
         return CtClass.voidType;
     }
 

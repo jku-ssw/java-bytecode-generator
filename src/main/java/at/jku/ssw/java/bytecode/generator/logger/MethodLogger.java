@@ -79,7 +79,7 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
 
     public CtClass[] getCtParamTypes() {
         if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(MetaType::javassistClazz).toArray(CtClass[]::new);
+        return Arrays.stream(paramTypes).map(MetaType::javassistClass).toArray(CtClass[]::new);
     }
 
     public MetaType<T> getReturnType() {

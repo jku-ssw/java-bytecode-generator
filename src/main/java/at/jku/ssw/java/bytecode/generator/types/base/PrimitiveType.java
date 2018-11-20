@@ -124,7 +124,7 @@ public class PrimitiveType<T> implements MetaType<T> {
      * {@inheritDoc}
      */
     @Override
-    public CtClass javassistClazz() {
+    public CtClass javassistClass() {
         return javassistClass;
     }
 
@@ -162,7 +162,7 @@ public class PrimitiveType<T> implements MetaType<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        return equals((PrimitiveType<?>) o);
+        return clazz == ((PrimitiveType<?>) o).clazz;
     }
 
     /**
@@ -170,7 +170,7 @@ public class PrimitiveType<T> implements MetaType<T> {
      */
     @Override
     public int hashCode() {
-        return hash();
+        return clazz.hashCode();
     }
 
     /**
@@ -178,7 +178,7 @@ public class PrimitiveType<T> implements MetaType<T> {
      */
     @Override
     public String toString() {
-        return name();
+        return descriptor();
     }
 
     /**
@@ -271,13 +271,11 @@ public class PrimitiveType<T> implements MetaType<T> {
      */
     @Override
     public List<Builder<T>> builders() {
-        PrimitiveType<T> self = this;
-
         return singletonList(
                 new Builder<T>() {
                     @Override
                     public List<PrimitiveType<?>> requires() {
-                        return singletonList(self);
+                        return singletonList(PrimitiveType.this);
                     }
 
                     @SuppressWarnings("unchecked")
@@ -290,7 +288,7 @@ public class PrimitiveType<T> implements MetaType<T> {
 
                     @Override
                     public MetaType<T> returns() {
-                        return self;
+                        return PrimitiveType.this;
                     }
                 }
         );

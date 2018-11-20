@@ -2,11 +2,11 @@ package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Instantiable;
+import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
 import java.util.BitSet;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Describe types that occur in a generated program such as primitive
@@ -30,6 +30,9 @@ public interface MetaType<T> extends Instantiable<T> {
      */
     MetaType<?> NO_INNER_TYPE = null;
 
+    /**
+     * Constant to specify that a type is unrestricted.
+     */
     BitSet[] UNRESTRICTED = null;
 
     // endregion
@@ -78,12 +81,24 @@ public interface MetaType<T> extends Instantiable<T> {
     Class<T> clazz();
 
     /**
+     * Returns the descriptor of this type.
+     *
+     * @return the string representation of this type
+     * @see Object#toString()
+     */
+    default String descriptor() {
+        return clazz().getCanonicalName();
+    }
+
+    /**
      * Returns the Javassist {@link CtClass} representation of the Java class
      * given by {@link #clazz()}.
      *
      * @return the Javassist pendant to the Java class
      */
-    CtClass javassistClazz();
+    default CtClass javassistClass() {
+        return JavassistUtils.toCtClass(clazz());
+    }
 
     /**
      * Determines whether this type implies access restrictions
@@ -94,44 +109,6 @@ public interface MetaType<T> extends Instantiable<T> {
      */
     default boolean isRestricted() {
         return getRestrictions() != null;
-    }
-
-    // endregion
-    //-------------------------------------------------------------------------
-    // region Object method replacements
-
-    /**
-     * Compares this instance to another type.
-     *
-     * @param o The other type
-     * @return {@code true} if the type kinds, the mapped classes and the
-     * dimensions match; {@code false} otherwise
-     * @see Object#equals(Object)
-     */
-    default boolean equals(MetaType<?> o) {
-        return getDim() == o.getDim() &&
-                kind() == o.kind() &&
-                Objects.equals(clazz(), o.clazz());
-    }
-
-    /**
-     * Generates a hash code that corresponds to this instance.
-     *
-     * @return a hash value that uniquely identifies this instance.
-     * @see Object#hashCode()
-     */
-    default int hash() {
-        return Objects.hash(kind(), clazz(), getDim());
-    }
-
-    /**
-     * Returns the descriptor of this type.
-     *
-     * @return the string representation of this type
-     * @see Object#toString()
-     */
-    default String name() {
-        return clazz().getCanonicalName();
     }
 
     // endregion
