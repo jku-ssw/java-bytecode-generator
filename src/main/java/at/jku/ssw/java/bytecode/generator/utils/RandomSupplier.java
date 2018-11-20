@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
-import at.jku.ssw.java.bytecode.generator.types.*;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -19,9 +19,6 @@ import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.BYTE;
 import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.SHORT;
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 import static at.jku.ssw.java.bytecode.generator.utils.ErrorUtils.shouldNotReachHere;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;
 
 public class RandomSupplier {
 
@@ -178,20 +175,6 @@ public class RandomSupplier {
         ).orElseThrow(() -> new AssertionError("Could not fetch random return type"));
     }
 
-    // TODO remove
-    @Deprecated
-    public String castedValue(MetaType<?> type) {
-        switch (type.kind) {
-            case INSTANCE:
-            case ARRAY:
-                if (rand.nextInt(10) == 0) {
-                    return cast(NULL).to(type.clazz);
-                }
-        }
-
-        return castedValueNotNull(type);
-    }
-
     /**
      * Returns a random constant that corresponds to the given type.
      * If the type describes a reference type (or array), a
@@ -244,50 +227,6 @@ public class RandomSupplier {
         }
 
         throw shouldNotReachHere("Unexpected constant request for type " + type);
-    }
-
-    // TODO remove
-    @Deprecated
-    public String castedValueNotNull(MetaType<?> type) {
-        switch (type.kind) {
-            case BYTE:
-                return cast((byte) rand.nextInt()).to(byte.class);
-            case SHORT:
-                return cast((short) rand.nextInt()).to(short.class);
-            case INT:
-                return String.valueOf(rand.nextInt());
-            case LONG:
-                return rand.nextLong() + "L";
-            case FLOAT:
-                return rand.nextFloat() + "f";
-            case DOUBLE:
-                return rand.nextDouble() + "d";
-            case BOOLEAN:
-                return String.valueOf(rand.nextBoolean());
-            case CHAR:
-                return asChar(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length())));
-            case INSTANCE:
-                if (type.clazz.equals(String.class)) {
-                    return asStr(getString());
-                } else if (type.clazz.equals(Date.class)) {
-                    return New(Date.class, rand.nextLong() + "L");
-                } else if (type.clazz.equals(Object.class)) {
-                    return New(Object.class);
-                } else {
-                    throw new AssertionError();
-                }
-            case ARRAY:
-                return NewArray(
-                        type.clazz,
-                        rand.ints(0, maxArrayDimSize + 1)
-                                .limit(type.getDim())
-                                .map(i -> i + MIN_ARRAY_DIM_LENGTH)
-                                .boxed()
-                                .collect(Collectors.toList())
-                );
-            default:
-                throw new AssertionError("Unexpected type " + type);
-        }
     }
 
     public String getRandomNumericValue(MetaType<?> type, boolean notZero) {
