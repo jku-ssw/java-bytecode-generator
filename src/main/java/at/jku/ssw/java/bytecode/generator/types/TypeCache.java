@@ -105,11 +105,11 @@ public enum TypeCache {
      * class is not registered yet
      */
     @SuppressWarnings("unchecked")
-    public final <T> Optional<? extends MetaType<T>> find(Class<T> clazz) {
-        MetaType<T> type = (MetaType<T>) primitiveTypes.get(clazz);
+    public final <T> Optional<? extends MetaType<? extends T>> find(Class<T> clazz) {
+        MetaType<? extends T> type = (MetaType<? extends T>) primitiveTypes.get(clazz);
 
         return type == null
-                ? Optional.ofNullable((MetaType<T>) refTypes.get(clazz))
+                ? Optional.ofNullable((MetaType<? extends T>) refTypes.get(clazz))
                 : Optional.of(type);
     }
 

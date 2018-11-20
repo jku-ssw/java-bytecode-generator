@@ -3,7 +3,6 @@ package at.jku.ssw.java.bytecode.generator.utils;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
-import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import javassist.*;
 import javassist.bytecode.ClassFilePrinter;
 
@@ -11,8 +10,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Random;
-
-import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
 
 public class ClazzFileContainer {
@@ -44,8 +41,11 @@ public class ClazzFileContainer {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger<Void> main = new MethodLogger<>(rand, fileName, "main", Modifier.STATIC, VOID);
-        this.clazzLogger = new ClazzLogger(rand, fileName, main, randomSupplier);
+        this.clazzLogger = ClazzLogger.generate(
+                rand,
+                fileName,
+                randomSupplier
+        );
     }
 
     public CtClass getClazzFile() {

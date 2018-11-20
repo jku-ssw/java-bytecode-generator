@@ -15,113 +15,183 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// TODO make subclass of reference type
-public class ClazzLogger extends Logger {
+/**
+ * Describes the generated Java class.
+ * In order to enable future extensions that generate multiple classes and
+ * allow for dynamic invocation, the class is defined abstract
+ * to generate dynamic overloads on demand.
+ */
+// TODO make subclass of DynamicRefType
+public abstract class ClazzLogger extends Logger {
+    //-------------------------------------------------------------------------
+    // region Properties
 
-    public final String name;
+    /**
+     * The name of the generated class.
+     */
+    private final String name;
+
+    /**
+     * The fields that are available within this class.
+     */
+    private final List<FieldVarLogger<?>> fields;
+
+    /**
+     * The methods that are available within this class.
+     */
     private final List<MethodLogger<?>> methods;
+
+    /**
+     * The main method.
+     */
     private final MethodLogger<Void> main;
+
+    /**
+     * The run method.
+     * This method is used to ensure that instance methods and fields
+     * are always callable from at least one method.
+     */
     private MethodLogger<Void> run;
-    private final RandomSupplier randomSupplier;
+
+    /**
+     * Generator that provides random access to types and constants.
+     */
+    private final RandomSupplier supplier;
+
+    /**
+     * Randomizer instance for random selection of variants.
+     */
     private final Randomizer randomizer;
 
-    public ClazzLogger(Random rand, String name, MethodLogger<Void> main, RandomSupplier randomSupplier) {
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
+
+    /**
+     * Generates a new anonymous subclass of {@link ClazzLogger} that is
+     * uniquely identifiable by its {@link Class} type and therefore
+     * distinguishable from other generated classes.
+     *
+     * @param rand     The random instance
+     * @param name     The (fully qualified) class name
+     * @param supplier The supplier
+     * @return a new {@link ClazzLogger} for the given class
+     */
+    public static ClazzLogger generate(final Random rand,
+                                       final String name,
+                                       final RandomSupplier supplier) {
+        return new ClazzLogger(rand, name, supplier) {
+            /* nothing */
+        };
+        // TODO register in type cache
+    }
+
+    /**
+     * Initializes a new clazz logger with the given properties
+     *
+     * @param rand     The random instance
+     * @param name     The (fully qualified) class name
+     * @param supplier The supplier
+     */
+    private ClazzLogger(Random rand, String name, RandomSupplier supplier) {
         super(rand);
+
+        assert rand != null;
+        assert name != null;
+        assert !name.isEmpty();
+        assert supplier != null;
+
         this.name = name;
+        this.supplier = supplier;
+
+        this.fields = new ArrayList<>();
         this.methods = new ArrayList<>();
+        this.variables = new HashMap<>();
+        this.randomizer = new Randomizer(rand);
+
+        // generate the main method
+        this.main = MethodLogger.generateMainMethod(rand, this);
+        this.run = MethodLogger.generateRunMethod(rand, this);
+
         // only use these if result should be non-deterministic
         // this.methods.add(new MethodLogger("hashCode", name, Modifier.PUBLIC, INT, true));
         // this.methods.add(new MethodLogger("toString", name, Modifier.PUBLIC, STRING, true));
-        this.variables = new HashMap<>();
-        this.main = main;
-        this.randomSupplier = randomSupplier;
-        this.randomizer = new Randomizer(rand);
     }
 
-    public MethodLogger<Void> getMain() {
-        return main;
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Object methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClazzLogger that = (ClazzLogger) o;
+        return Objects.equals(name, that.name);
     }
 
-    public void setRun(MethodLogger<Void> run) {
-        if (this.run == null) {
-            this.run = run;
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final int hashCode() {
+        return Objects.hash(name);
     }
 
-    public List<MethodLogger<?>> getMethods() {
-        return methods;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final String toString() {
+        return name;
     }
 
-    public MethodLogger<Void> getRun() {
-        return this.run;
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Registration methods
+
+    /**
+     * Registers the given method in this scope.
+     *
+     * @param method The method to register
+     * @param <T>    The return type of the method
+     * @return this context
+     */
+    public final <T> ClazzLogger register(MethodLogger<T> method) {
+        methods.add(method);
+        return this;
     }
 
-    public void logMethod(MethodLogger<?> ml) {
-        methods.add(ml);
+    /**
+     * Registers the given field in this scope.
+     *
+     * @param field The field to register
+     * @param <T>   The field type
+     * @return this context
+     */
+    public final <T> ClazzLogger register(FieldVarLogger<T> field) {
+        fields.add(field);
+        return this;
     }
 
-    public List<MethodLogger<?>> getOverloadedMethods(String name) {
-        return methods.stream()
-                .filter(m -> m.getName().equals(name))
-                .collect(Collectors.toList());
-    }
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Random access
 
-    public MethodLogger<?> getRandomMethod() {
-        if (hasMethods()) return methods.get(rand.nextInt(methods.size()));
-        else return null;
-    }
-
-    public MethodLogger<?> getRandomCallableMethod(MethodLogger<?> callingMethod) {
-        return randomizer
-                .oneOf(getCallableMethods(callingMethod))
-                .orElse(null);
-    }
-
-    private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
-        List<MethodLogger<?>> callableMethods =
-                callingMethod.isStatic()
-                        ? getStaticMethods()
-                        : new ArrayList<>(methods);
-
-        callableMethods.remove(callingMethod);
-
-        removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
-
-        return callableMethods;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> MethodLogger<T> getRandomCallableMethodOfType(MethodLogger<?> callingMethod, MetaType<T> metaType) {
-        return (MethodLogger<T>) randomizer
-                .oneOf(getCallableMethods(callingMethod).stream()
-                        .filter(m -> m.getReturnType() == metaType))
-                .orElse(null);
-    }
-
-    private void removeAllExcludedForCalling(List<MethodLogger<?>> callableMethods, Set<MethodLogger<?>> excludedForCalling) {
-        if (excludedForCalling.isEmpty())
-            return;
-
-        callableMethods.removeAll(excludedForCalling);
-
-        excludedForCalling.forEach(m ->
-                removeAllExcludedForCalling(
-                        callableMethods,
-                        m.getMethodsExcludedForCalling()
-                )
-        );
-    }
-
-    private List<MethodLogger<?>> getStaticMethods() {
-        return methods.stream()
-                .filter(MethodLogger::isStatic)
-                .collect(Collectors.toList());
-    }
-
-    public boolean hasMethods() {
-        return !methods.isEmpty();
-    }
-
+    /**
+     * Generates an array of randomly selected parameter values that
+     * correspond to the given type array. The values (e.g. fields, constants)
+     * are selected from the given method's scope.
+     *
+     * @param paramTypes The required parameter types
+     * @param method     The method context
+     * @return an array of parameter mappings where the type of the value at
+     * each position corresponds to the type at the position in the parameter
+     * type array
+     */
     public ParamWrapper[] randomParameterValues(MetaType<?>[] paramTypes, MethodLogger<?> method) {
         return randomParameterValues(Arrays.stream(paramTypes), method)
                 .toArray(ParamWrapper[]::new);
@@ -150,7 +220,7 @@ public class ClazzLogger extends Logger {
                                         ).<Expression<?>>flatMap(e -> e)
                                                 .filter(v -> paramType.equals(v.type()))
                                                 .findFirst()
-                                                .orElseGet(() -> randomSupplier.constantOf(paramType)))
+                                                .orElseGet(() -> supplier.constantOf(paramType)))
                                 .collect(Collectors.toList()))))
                 .map(b -> b.builder.build(b.params))
                 .orElseThrow(() -> ErrorUtils.shouldNotReachHere("Could not resolve value for type " + type));
@@ -180,6 +250,9 @@ public class ClazzLogger extends Logger {
                 );
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Random field access
 
     public FieldVarLogger<?> getNonFinalFieldUsableInMethod(MethodLogger<?> method) {
         if (method.isStatic())
@@ -282,4 +355,144 @@ public class ClazzLogger extends Logger {
                 !v.isFinal() && v.getType() == type);
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Random method access
+
+    public List<MethodLogger<?>> getOverloadedMethods(String name) {
+        return methods.stream()
+                .filter(m -> m.getName().equals(name))
+                .collect(Collectors.toList());
+    }
+
+    public MethodLogger<?> getRandomMethod() {
+        if (hasMethods()) return methods.get(rand.nextInt(methods.size()));
+        else return null;
+    }
+
+    public MethodLogger<?> getRandomCallableMethod(MethodLogger<?> callingMethod) {
+        return randomizer
+                .oneOf(getCallableMethods(callingMethod))
+                .orElse(null);
+    }
+
+    private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
+        List<MethodLogger<?>> callableMethods =
+                callingMethod.isStatic()
+                        ? getStaticMethods()
+                        : new ArrayList<>(methods);
+
+        callableMethods.remove(callingMethod);
+
+        removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
+
+        return callableMethods;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> MethodLogger<T> getRandomCallableMethodOfType(MethodLogger<?> callingMethod, MetaType<T> metaType) {
+        return (MethodLogger<T>) randomizer
+                .oneOf(getCallableMethods(callingMethod).stream()
+                        .filter(m -> m.getReturnType() == metaType))
+                .orElse(null);
+    }
+
+    private void removeAllExcludedForCalling(List<MethodLogger<?>> callableMethods, Set<MethodLogger<?>> excludedForCalling) {
+        if (excludedForCalling.isEmpty())
+            return;
+
+        callableMethods.removeAll(excludedForCalling);
+
+        excludedForCalling.forEach(m ->
+                removeAllExcludedForCalling(
+                        callableMethods,
+                        m.getMethodsExcludedForCalling()
+                )
+        );
+    }
+
+    private List<MethodLogger<?>> getStaticMethods() {
+        return methods.stream()
+                .filter(MethodLogger::isStatic)
+                .collect(Collectors.toList());
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Property accessors
+
+    /**
+     * Returns the name of this class.
+     *
+     * @return a string describing the canonical name of this class
+     */
+    public final String name() {
+        return name;
+    }
+
+    /**
+     * The supplier that enable random access to types, constants
+     * and generator properties.
+     *
+     * @return the random supplier
+     */
+    public final RandomSupplier supplier() {
+        return supplier;
+    }
+
+    /**
+     * Returns the main method.
+     *
+     * @return the {@link MethodLogger} that represents the main method
+     */
+    public final MethodLogger<Void> main() {
+        return main;
+    }
+
+    /**
+     * Returns the run method.
+     *
+     * @return the {@link MethodLogger} that represents the run method
+     */
+    public final MethodLogger<Void> run() {
+        return run;
+    }
+
+    /**
+     * Returns the fields of this class.
+     *
+     * @return a list of all fields that are registered for this class.
+     */
+    public final List<FieldVarLogger<?>> fields() {
+        return fields;
+    }
+
+    /**
+     * Returns the methods of this class.
+     * TODO include / exclude main / run?
+     *
+     * @return a list of all methods that are registered for this class.
+     * (excluding the {@link #main} and {@link #run} methods
+     */
+    public final List<MethodLogger<?>> methods() {
+        return methods;
+    }
+
+    /**
+     * Checks whether this class has methods.
+     *
+     * @return {@code true} if this context has at least one method;
+     * {@code false} otherwise
+     * @deprecated since this method is only used to check the capacity
+     * before querying the methods, it may be replaced by a better method
+     * access API (e.g. return optional, prevent null pointers for empty
+     * method list etc.).
+     */
+    @Deprecated
+    public final boolean hasMethods() {
+        return !methods.isEmpty();
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

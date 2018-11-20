@@ -1,6 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
+import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
@@ -10,8 +12,17 @@ import java.util.stream.Collectors;
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
 public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
+    //-------------------------------------------------------------------------
+    // region Constants
+
+    public static final String MAIN_NAME = "main";
+    public static final String RUN_NAME = "run";
 
     private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
 
     private final boolean inherited;
     private final String name;
@@ -31,6 +42,10 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
 
     public final String clazz;
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
+
     public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, /*MetaType<T> container, */MetaType<?>... paramTypes) {
         this(rand, clazz, name, modifiers, returnType, false, /*container, */paramTypes);
     }
@@ -49,46 +64,54 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
         this.inherited = inherited;
     }
 
-    public void addToExcludedForCalling(Set<MethodLogger<?>> excludedForCalling) {
-        methodsExcludedForCalling.addAll(excludedForCalling);
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Static utilities
+
+    /**
+     * Creates the main method.
+     *
+     * @param rand      The global random instance
+     * @param container The containing class
+     * @return a new {@link MethodLogger} that describes the main method
+     */
+    public static MethodLogger<Void> generateMainMethod(
+            Random rand,
+            ClazzLogger container) {
+
+        return new MethodLogger<>(
+                rand,
+                container.name(),
+                MAIN_NAME,
+                Modifier.STATIC,
+                VOID,
+                ArrayType.of(StringType.STRING, 1)
+        );
     }
 
-    public void addMethodToCalledByThisMethod(Set<MethodLogger<?>> calledByThisMethod) {
-        this.calledByThisMethod.addAll(calledByThisMethod);
+    /**
+     * Creates the run method.
+     *
+     * @param rand      The global random instance
+     * @param container The containing class
+     * @return a new {@link MethodLogger} that describes the run method
+     */
+    public static MethodLogger<Void> generateRunMethod(
+            Random rand,
+            ClazzLogger container) {
+
+        return new MethodLogger<>(
+                rand,
+                container.name(),
+                RUN_NAME,
+                Modifier.PRIVATE,
+                VOID
+        );
     }
 
-    public Set<MethodLogger<?>> getMethodsExcludedForCalling() {
-        return new HashSet<>(methodsExcludedForCalling);
-    }
-
-    public Set<MethodLogger<?>> getMethodsCalledByThisMethod() {
-        return new HashSet<>(calledByThisMethod);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isStatic() {
-        return Modifier.isStatic(modifiers);
-    }
-
-    public MetaType[] getParamTypes() {
-        return paramTypes;
-    }
-
-    public CtClass[] getCtParamTypes() {
-        if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(MetaType::javassistClass).toArray(CtClass[]::new);
-    }
-
-    public MetaType<T> getReturnType() {
-        return returnType;
-    }
-
-    public boolean isVoid() {
-        return returnType == VOID;
-    }
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Object overrides
 
     @Override
     public boolean equals(Object o) {
@@ -124,8 +147,53 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
                         .collect(Collectors.joining(", ")));
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Property accessors
+
+    public void addToExcludedForCalling(Set<MethodLogger<?>> excludedForCalling) {
+        methodsExcludedForCalling.addAll(excludedForCalling);
+    }
+
+    public void addMethodToCalledByThisMethod(Set<MethodLogger<?>> calledByThisMethod) {
+        this.calledByThisMethod.addAll(calledByThisMethod);
+    }
+
+    public Set<MethodLogger<?>> getMethodsExcludedForCalling() {
+        return new HashSet<>(methodsExcludedForCalling);
+    }
+
+    public Set<MethodLogger<?>> getMethodsCalledByThisMethod() {
+        return new HashSet<>(calledByThisMethod);
+    }
+
+    public CtClass[] getCtParamTypes() {
+        if (paramTypes == null) return new CtClass[0];
+        return Arrays.stream(paramTypes).map(MetaType::javassistClass).toArray(CtClass[]::new);
+    }
+
     public boolean isInherited() {
         return inherited;
+    }
+
+    public boolean isVoid() {
+        return returnType == VOID;
+    }
+
+    public MetaType<T> getReturnType() {
+        return returnType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isStatic() {
+        return Modifier.isStatic(modifiers);
+    }
+
+    public MetaType[] getParamTypes() {
+        return paramTypes;
     }
 
 //    @Override
@@ -145,4 +213,7 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
 //    public MetaType<T> returns() {
 //        return returnType;
 //    }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

@@ -53,7 +53,7 @@ class MethodGenerator extends MethodCaller {
 
     @SuppressWarnings("unchecked")
     private <T> MethodLogger<T> generateMethod(String name, MetaType<T> returnType, MetaType[] paramTypes, int modifiers) {
-        MethodLogger<T> ml = new MethodLogger<>(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
+        MethodLogger<T> ml = new MethodLogger<>(rand, getClazzLogger().name(), name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
@@ -72,7 +72,7 @@ class MethodGenerator extends MethodCaller {
         } else {
             returnStatement = "return " + new JavassistResolver().resolve(getClazzLogger().valueOf(returnType, ml)) + ";";
         }
-        this.getClazzLogger().logMethod(ml);
+        getClazzLogger().register(ml);
         CtMethod newMethod;
         String methodStr = java.lang.reflect.Modifier.toString(modifiers) + " " +
                 returnType + " " + name + "(" + paramsStr.toString() + ") {" + returnStatement +
@@ -222,7 +222,7 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    MethodLogger<Void> generateRunMethod() {
+    void generateRunMethod() {
         try {
             this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
             CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
@@ -230,9 +230,6 @@ class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger<Void> runLogger = new MethodLogger<>(rand, getClazzLogger().name, "run", Modifier.PRIVATE, VOID);
-        this.getClazzLogger().setRun(runLogger);
-        return runLogger;
     }
 
     /**
@@ -281,7 +278,7 @@ class MethodGenerator extends MethodCaller {
 
     public void callRunAndHashMethods(int xRuns) {
         String fileName = this.getClazzContainer().getFileName();
-        CtMethod main = this.getCtMethod(this.getClazzLogger().getMain());
+        CtMethod main = this.getCtMethod(this.getClazzLogger().main());
         try {
             if (xRuns <= 1) {
                 main.insertAfter(fileName + " " + fileName.toLowerCase() + " = new " + fileName + "();"

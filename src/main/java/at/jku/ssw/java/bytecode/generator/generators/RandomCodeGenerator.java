@@ -83,9 +83,9 @@ public class RandomCodeGenerator {
         this.controlFlowGenerator = new ControlFlowGenerator(rand, this, mathGenerator);
         this.arrayAccessGenerator = new ArrayAccessGenerator(rand, container);
 
-        MethodLogger<Void> run = this.methodGenerator.generateRunMethod();
+        this.methodGenerator.generateRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
-        Context.PROGRAM_CONTEXT.contextMethod = run;
+        Context.PROGRAM_CONTEXT.contextMethod = getClazzLogger().run();
         METHOD_CONTEXT.lengthWeighting = controller.getMethodLengthWeighting();
         CONTROL_CONTEXT.lengthWeighting = controller.getControlLengthWeighting();
     }
@@ -110,7 +110,7 @@ public class RandomCodeGenerator {
             //generate method-bodies
             if (this.getClazzLogger().hasMethods()) {
                 // do not attempt to modify inherited methods
-                getClazzLogger().getMethods().stream()
+                getClazzLogger().methods().stream()
                         .filter(m -> !m.isInherited())
                         .forEach(methodGenerator::generateMethodBody);
             }
