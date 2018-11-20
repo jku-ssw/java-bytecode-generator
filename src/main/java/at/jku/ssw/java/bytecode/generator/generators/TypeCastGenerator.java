@@ -24,7 +24,7 @@ public class TypeCastGenerator extends Generator {
         this.randomizer = new Randomizer(rand);
     }
 
-    public void generatePrimitiveTypeCast(MethodLogger method) {
+    public void generatePrimitiveTypeCast(MethodLogger<?> method) {
         ClazzLogger cl = getClazzLogger();
 
         Predicate<FieldVarLogger<?>> isPrimitiveCastable = v ->

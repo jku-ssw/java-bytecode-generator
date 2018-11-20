@@ -53,7 +53,7 @@ public class SnippetGenerator extends Generator {
      *
      * @param method The method to which the snippet is added
      */
-    public void generate(MethodLogger method) {
+    public void generate(MethodLogger<?> method) {
         new Randomizer(rand)
                 .shuffle(snippets.stream())
                 .filter(s -> s.isPossible(method))

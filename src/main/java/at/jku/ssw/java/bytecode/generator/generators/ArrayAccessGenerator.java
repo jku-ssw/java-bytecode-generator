@@ -59,7 +59,7 @@ public class ArrayAccessGenerator extends MethodCaller {
         );
     }
 
-    public String scrGenerateArrayReadAccess(MethodLogger method) {
+    public String scrGenerateArrayReadAccess(MethodLogger<?> method) {
         return new Randomizer(rand).shuffle(
                 getClazzLogger()
                         .getInitializedVarsUsableInMethod(method)
@@ -91,7 +91,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                 .orElse("");
     }
 
-    private String srcGenerateArrayWriteAccess(MethodLogger method) {
+    private String srcGenerateArrayWriteAccess(MethodLogger<?> method) {
         /* TODO */
         return null;
     }

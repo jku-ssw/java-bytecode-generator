@@ -68,7 +68,7 @@ abstract class Generator {
         return this.clazzContainer.getClazzLogger();
     }
 
-    public CtMethod getCtMethod(MethodLogger method) {
+    public CtMethod getCtMethod(MethodLogger<?> method) {
         try {
             if (method.getName().equals("main")) {
                 return this.getClazzFile().getDeclaredMethod(method.getName());
@@ -84,7 +84,7 @@ abstract class Generator {
         return getClazzContainer().getRandomSupplier();
     }
 
-    void insertIntoMethodBody(MethodLogger method, String src) {
+    void insertIntoMethodBody(MethodLogger<?> method, String src) {
         if (src == null) {
             return;
         }

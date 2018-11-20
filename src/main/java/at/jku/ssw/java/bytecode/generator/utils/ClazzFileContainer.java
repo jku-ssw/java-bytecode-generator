@@ -44,7 +44,7 @@ public class ClazzFileContainer {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger main = new MethodLogger(rand, fileName, "main", Modifier.STATIC, VOID);
+        MethodLogger<Void> main = new MethodLogger<>(rand, fileName, "main", Modifier.STATIC, VOID);
         this.clazzLogger = new ClazzLogger(rand, fileName, main, randomSupplier);
     }
 

@@ -77,12 +77,12 @@ class MathGenerator extends MethodCaller {
 
     //===============================================CALL MATH METHODS==================================================
 
-    public void generateMathMethodCall(MethodLogger method) {
+    public void generateMathMethodCall(MethodLogger<?> method) {
         String callString = srcGenerateMathMethodCall(method);
         insertIntoMethodBody(method, callString);
     }
 
-    public String srcGenerateMathMethodCall(MethodLogger method) {
+    public String srcGenerateMathMethodCall(MethodLogger<?> method) {
         CtMethod mathMethod = getMathMethod();
         String methodName = mathMethod.getName();
         String signature = mathMethod.getSignature();
@@ -100,12 +100,12 @@ class MathGenerator extends MethodCaller {
         }
     }
 
-    public void setFieldToMathReturnValue(MethodLogger method) {
+    public void setFieldToMathReturnValue(MethodLogger<?> method) {
         String src = srcSetFieldToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetFieldToMathReturnValue(MethodLogger method) {
+    public String srcSetFieldToMathReturnValue(MethodLogger<?> method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
         PrimitiveType<?> returnType = getType(signature.charAt(signature.length() - 1));
@@ -120,7 +120,7 @@ class MathGenerator extends MethodCaller {
         }
     }
 
-    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger method, FieldVarLogger<?> fieldVar) {
+    private String srcSetVariableToMathReturnValue(CtMethod mathMethod, MethodLogger<?> method, FieldVarLogger<?> fieldVar) {
         PrimitiveType[] paramTypes = getParamTypes(mathMethod.getSignature());
         ParamWrapper[] paramValues = getClazzLogger().randomParameterValues(paramTypes, method);
         if (OVERFLOW_METHODS.containsKey(mathMethod.getLongName()) && noOverflow) {
@@ -133,12 +133,12 @@ class MathGenerator extends MethodCaller {
                     generateMethodCallString(mathMethod.getName(), paramTypes, paramValues);
     }
 
-    public void setLocalVarToMathReturnValue(MethodLogger method) {
+    public void setLocalVarToMathReturnValue(MethodLogger<?> method) {
         String src = srcSetLocalVarToMathReturnValue(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcSetLocalVarToMathReturnValue(MethodLogger method) {
+    public String srcSetLocalVarToMathReturnValue(MethodLogger<?> method) {
         CtMethod mathMethod = getMathMethod();
         String signature = mathMethod.getSignature();
         PrimitiveType<?> returnType = getType(signature.charAt(signature.length() - 1));
@@ -155,18 +155,18 @@ class MathGenerator extends MethodCaller {
 
     //=============================================OPERATOR STATEMENTS==================================================
 
-    public void generateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public void generateOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         String src = srcGenerateOperatorStatement(method, maxOperations, opStatKind, false);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcGenerateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public String srcGenerateOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         return srcGenerateOperatorStatement(method, maxOperations, opStatKind, false);
     }
 
-    public String srcGenerateOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind, boolean useNoVars) {
+    public String srcGenerateOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind, boolean useNoVars) {
         int numberOfOperands = 2 + ((maxOperations > 1) ? rand.nextInt(maxOperations - 1) : 0);
         StringBuilder src = new StringBuilder();
         switch (opStatKind) {
@@ -195,14 +195,14 @@ class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void setLocalVarToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public void setLocalVarToOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         String src = srcSetLocalVarToOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcSetLocalVarToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public String srcSetLocalVarToOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger<?> f = fetchLocalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
@@ -217,14 +217,14 @@ class MathGenerator extends MethodCaller {
         return src.toString();
     }
 
-    public void setFieldToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public void setFieldToOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         String src = srcSetFieldToOperatorStatement(method, maxOperations, opStatKind);
         if (src != null) {
             insertIntoMethodBody(method, src);
         }
     }
 
-    public String srcSetFieldToOperatorStatement(MethodLogger method, int maxOperations, OpStatKind opStatKind) {
+    public String srcSetFieldToOperatorStatement(MethodLogger<?> method, int maxOperations, OpStatKind opStatKind) {
         FieldVarLogger<?> f = fetchGlobalAssignVarForOperandStatement(method, opStatKind);
         if (f == null) {
             return null;
@@ -315,12 +315,12 @@ class MathGenerator extends MethodCaller {
     }
 
 
-    private FieldVarLogger<?> fetchLocalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
+    private FieldVarLogger<?> fetchLocalAssignVarForOperandStatement(MethodLogger<?> method, OpStatKind opStatKind) {
         PrimitiveType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalLocalVarOfType(method, type);
     }
 
-    private FieldVarLogger<?> fetchGlobalAssignVarForOperandStatement(MethodLogger method, OpStatKind opStatKind) {
+    private FieldVarLogger<?> fetchGlobalAssignVarForOperandStatement(MethodLogger<?> method, OpStatKind opStatKind) {
         PrimitiveType<?> type = fetchAssignVarTypeForOperandStatement(opStatKind);
         return this.getClazzLogger().getNonFinalFieldOfTypeUsableInMethod(method, type);
     }
@@ -343,7 +343,7 @@ class MathGenerator extends MethodCaller {
         return types.get(rand.nextInt(types.size()));
     }
 
-    private StringBuilder arithmeticBitwiseStatement(MethodLogger method, int numberOfOperands, boolean useNoVars) {
+    private StringBuilder arithmeticBitwiseStatement(MethodLogger<?> method, int numberOfOperands, boolean useNoVars) {
         StringBuilder src = new StringBuilder();
         int maxPartitionSize = numberOfOperands / 2;
         Operator operator = null;
@@ -371,7 +371,7 @@ class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder combinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger method, int numberOfOperands, boolean useNoVars) {
+    private StringBuilder combinedWithLogicalStatement(OpStatKind bitAndOrArithmetic, MethodLogger<?> method, int numberOfOperands, boolean useNoVars) {
         StringBuilder src = new StringBuilder();
         List<Operator> relOperators = Operator.getOperatorsOfKind(RELATIONAL);
         int maxPartitionSize = numberOfOperands / 2;
@@ -413,7 +413,7 @@ class MathGenerator extends MethodCaller {
         return src;
     }
 
-    private StringBuilder srcGenerateOperatorStatementOfKind(MethodLogger method, int nbrOfOperands, OpStatKind opStatKind, boolean useNoVars) {
+    private StringBuilder srcGenerateOperatorStatementOfKind(MethodLogger<?> method, int nbrOfOperands, OpStatKind opStatKind, boolean useNoVars) {
         Operator operator = null;
         StringBuilder operatorStatement = new StringBuilder();
         boolean useNonUnary;
@@ -525,7 +525,7 @@ class MathGenerator extends MethodCaller {
         return types.get(rand.nextInt(types.size()));
     }
 
-    private FieldVarLogger<?> fetchOperand(MethodLogger method, OpStatKind opStatKind) {
+    private FieldVarLogger<?> fetchOperand(MethodLogger<?> method, OpStatKind opStatKind) {
         PrimitiveType<?> type = getOperandType(opStatKind);
         return this.getClazzLogger().getGlobalOrLocalVarInitializedOfTypeUsableInMethod(method, type);
     }

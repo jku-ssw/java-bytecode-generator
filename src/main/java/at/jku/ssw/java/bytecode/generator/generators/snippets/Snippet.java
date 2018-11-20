@@ -13,10 +13,11 @@ public interface Snippet {
      * Checks whether this snippet is applicable for this method.
      *
      * @param method The method for which this snippet may be generated
+     * @param <T>    the returned type of the method
      * @return {@code true} if this snippet may be generated for this method;
      * {@code false} otherwise
      */
-    boolean isPossible(MethodLogger method);
+    <T> boolean isPossible(MethodLogger<T> method);
 
     /**
      * Creates the snippet code.

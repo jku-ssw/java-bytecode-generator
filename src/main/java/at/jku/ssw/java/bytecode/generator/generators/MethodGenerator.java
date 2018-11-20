@@ -52,8 +52,8 @@ class MethodGenerator extends MethodCaller {
     //============================================Method Generation=====================================================
 
     @SuppressWarnings("unchecked")
-    private MethodLogger generateMethod(String name, MetaType<?> returnType, MetaType[] paramTypes, int modifiers) {
-        MethodLogger ml = new MethodLogger(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
+    private <T> MethodLogger<T> generateMethod(String name, MetaType<T> returnType, MetaType[] paramTypes, int modifiers) {
+        MethodLogger<T> ml = new MethodLogger<>(rand, getClazzLogger().name, name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
@@ -87,25 +87,25 @@ class MethodGenerator extends MethodCaller {
         }
     }
 
-    public void generateMethodBody(MethodLogger method) {
+    public void generateMethodBody(MethodLogger<?> method) {
         RandomCodeGenerator.Context.METHOD_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.METHOD_CONTEXT);
         this.insertReturn(method);
     }
 
-    public MethodLogger generateMethod(int maximumParameters) {
+    public MethodLogger<?> generateMethod(int maximumParameters) {
         String methodName = getRandomSupplier().getMethodName();
         return this.generateMethod(methodName, getRandomSupplier().returnType(),
                 getParameterTypes(maximumParameters), getRandomSupplier().getMethodModifiers());
     }
 
-    public MethodLogger overloadMethod(int maximumParameters) {
-        MethodLogger methodToOverload = getClazzLogger().getRandomMethod();
+    public MethodLogger<?> overloadMethod(int maximumParameters) {
+        MethodLogger<?> methodToOverload = getClazzLogger().getRandomMethod();
         if (methodToOverload == null) {
             return null;
         }
 
-        List<MethodLogger> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
+        List<MethodLogger<?>> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
         MetaType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
@@ -115,9 +115,9 @@ class MethodGenerator extends MethodCaller {
                 getRandomSupplier().returnType(), paramTypes, getRandomSupplier().getMethodModifiers());
     }
 
-    public void insertReturn(MethodLogger method) {
+    public <T> void insertReturn(MethodLogger<T> method) {
         CtMethod ctMethod = getCtMethod(method);
-        MetaType<?> returnType = method.getReturnType();
+        MetaType<T> returnType = method.getReturnType();
 
         if (returnType == VOID) {
             try {
@@ -144,13 +144,13 @@ class MethodGenerator extends MethodCaller {
 
     //===============================================Method Calling=====================================================
 
-    private String srcCallMethod(MethodLogger calledMethod, MethodLogger method) {
+    private String srcCallMethod(MethodLogger<?> calledMethod, MethodLogger<?> method) {
         MetaType[] paramTypes = calledMethod.getParamsTypes();
         ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
-        Set<MethodLogger> excludedForCalling = method.getMethodsExcludedForCalling();
+        Set<MethodLogger<?>> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
         calledMethod.addToExcludedForCalling(excludedForCalling);
-        Set<MethodLogger> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
+        Set<MethodLogger<?>> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
         calledByThisMethod.add(calledMethod);
         method.addMethodToCalledByThisMethod(calledByThisMethod);
         String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
@@ -158,14 +158,14 @@ class MethodGenerator extends MethodCaller {
         return caller + "." + generateMethodCallString(calledMethod.getName(), paramTypes, values);
     }
 
-    public void generateMethodCall(MethodLogger method) {
+    public void generateMethodCall(MethodLogger<?> method) {
         String src = srcGenerateMethodCall(method);
         insertIntoMethodBody(method, src);
     }
 
-    public String srcGenerateMethodCall(MethodLogger method) {
+    public String srcGenerateMethodCall(MethodLogger<?> method) {
         if (this.getClazzLogger().hasMethods()) {
-            MethodLogger calledMethod = getClazzLogger().getRandomCallableMethod(method);
+            MethodLogger<?> calledMethod = getClazzLogger().getRandomCallableMethod(method);
             if (calledMethod == null) {
                 return null;
             }
@@ -175,15 +175,16 @@ class MethodGenerator extends MethodCaller {
         }
     }
 
-    public void setFieldToReturnValue(MethodLogger method) {
+    public void setFieldToReturnValue(MethodLogger<?> method) {
         String src = srcSetFieldToReturnValue(method);
         this.insertIntoMethodBody(method, src);
     }
 
-    private String setVariableToReturnValue(FieldVarLogger<?> fieldVar, MethodLogger method) {
+    @SuppressWarnings("unchecked")
+    private <T> String setVariableToReturnValue(FieldVarLogger<T> fieldVar, MethodLogger<?> method) {
         List<? extends MetaType<?>> compatibleTypes = fieldVar.getType().getAssignableTypes();
 
-        MethodLogger calledMethod = this.getClazzLogger().getRandomCallableMethodOfType(
+        MethodLogger<T> calledMethod = (MethodLogger<T>) this.getClazzLogger().getRandomCallableMethodOfType(
                 method, compatibleTypes.get(rand.nextInt(compatibleTypes.size())));
         if (calledMethod == null) {
             return null;
@@ -192,7 +193,7 @@ class MethodGenerator extends MethodCaller {
         return fieldVar.access() + " = (" + fieldVar.getType() + ") " + srcCallMethod(calledMethod, method);
     }
 
-    public String srcSetFieldToReturnValue(MethodLogger method) {
+    public String srcSetFieldToReturnValue(MethodLogger<?> method) {
         if (this.getClazzLogger().hasVariables()) {
             FieldVarLogger<?> fieldVar = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
             if (fieldVar == null) {
@@ -205,12 +206,12 @@ class MethodGenerator extends MethodCaller {
         }
     }
 
-    public void setLocalVarToReturnValue(MethodLogger method) {
+    public void setLocalVarToReturnValue(MethodLogger<?> method) {
         String src = srcSetLocalVarToReturnValue(method);
         this.insertIntoMethodBody(method, src);
     }
 
-    public String srcSetLocalVarToReturnValue(MethodLogger method) {
+    public String srcSetLocalVarToReturnValue(MethodLogger<?> method) {
 
         if (method.hasVariables()) {
             FieldVarLogger<?> fieldVar = method.getVariableWithPredicate(v -> !v.isFinal());
@@ -221,7 +222,7 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    MethodLogger generateRunMethod() {
+    MethodLogger<Void> generateRunMethod() {
         try {
             this.getClazzFile().addMethod(CtNewMethod.make("private void run() {}", this.getClazzFile()));
             CtConstructor constructor = CtNewConstructor.defaultConstructor(this.getClazzFile());
@@ -229,7 +230,7 @@ class MethodGenerator extends MethodCaller {
         } catch (CannotCompileException e) {
             throw new CompilationFailedException(e);
         }
-        MethodLogger runLogger = new MethodLogger(rand, getClazzLogger().name, "run", Modifier.PRIVATE, VOID);
+        MethodLogger<Void> runLogger = new MethodLogger<>(rand, getClazzLogger().name, "run", Modifier.PRIVATE, VOID);
         this.getClazzLogger().setRun(runLogger);
         return runLogger;
     }
@@ -299,10 +300,10 @@ class MethodGenerator extends MethodCaller {
 
     //=================================================Utility==========================================================
 
-    private MetaType[] getDifferentParamTypes(List<MethodLogger> overloadedMethods, int maximumNumberOfParams) {
+    private MetaType[] getDifferentParamTypes(List<MethodLogger<?>> overloadedMethods, int maximumNumberOfParams) {
         for (int i = 0; i < overloadedMethods.size(); i++) {
             MetaType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
-            Stream<MethodLogger> equalNumberOfParamMethods = overloadedMethods.stream().filter(
+            Stream<MethodLogger<?>> equalNumberOfParamMethods = overloadedMethods.stream().filter(
                     m -> m.getParamsTypes().length == parameterTypes.length);
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 return parameterTypes;
@@ -311,7 +312,7 @@ class MethodGenerator extends MethodCaller {
         return null;
     }
 
-    private boolean equalOverloadedParamTypesExists(Stream<MethodLogger> equalNumberOfParamMethods, MetaType[] parameterTypes) {
+    private boolean equalOverloadedParamTypesExists(Stream<MethodLogger<?>> equalNumberOfParamMethods, MetaType[] parameterTypes) {
         return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamsTypes()));
     }
 

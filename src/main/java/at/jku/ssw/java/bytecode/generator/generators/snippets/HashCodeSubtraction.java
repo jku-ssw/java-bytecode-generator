@@ -7,7 +7,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 
 public class HashCodeSubtraction implements Snippet {
     @Override
-    public boolean isPossible(MethodLogger method) {
+    public <T> boolean isPossible(MethodLogger<T> method) {
         return !method.isStatic();
     }
 

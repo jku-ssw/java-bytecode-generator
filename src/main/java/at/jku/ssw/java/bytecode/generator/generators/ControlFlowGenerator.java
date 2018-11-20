@@ -57,7 +57,7 @@ class ControlFlowGenerator extends Generator {
         this.randomizer = new Randomizer(rand);
     }
 
-    private void generateIfClause(MethodLogger method) {
+    private void generateIfClause(MethodLogger<?> method) {
         controlSrc.append(If(getIfCondition(method)));
         contexts.add(Context.If());
         generateBody(method);
@@ -67,7 +67,7 @@ class ControlFlowGenerator extends Generator {
             insertControlSrcIntoMethod(method);
     }
 
-    private void generateElseClause(MethodLogger method) {
+    private void generateElseClause(MethodLogger<?> method) {
         Context context = contexts.peek();
 
         if (!context.isLoop && !context.hasElse) {
@@ -77,7 +77,7 @@ class ControlFlowGenerator extends Generator {
         }
     }
 
-    private void generateElseIfClause(MethodLogger method) {
+    private void generateElseIfClause(MethodLogger<?> method) {
         Context context = contexts.peek();
 
         if (!context.isLoop && !context.hasElse && context.branches < ifBranchingFactor) {
@@ -89,7 +89,7 @@ class ControlFlowGenerator extends Generator {
 
     //==========================================IF ELSEIF ELSE==========================================================
 
-    public void generateIfElseStatement(MethodLogger method) {
+    public void generateIfElseStatement(MethodLogger<?> method) {
         if (contexts.empty()) {
             generateIfClause(method);
         } else {
@@ -101,7 +101,7 @@ class ControlFlowGenerator extends Generator {
         }
     }
 
-    private String getIfCondition(MethodLogger method) {
+    private String getIfCondition(MethodLogger<?> method) {
         return randomizer.oneOf(
                 LOGICAL,
                 ARITHMETIC_LOGICAL,
@@ -120,7 +120,7 @@ class ControlFlowGenerator extends Generator {
 
     //=================================================DO WHILE=========================================================
 
-    public void generateDoWhileStatement(MethodLogger method) {
+    public void generateDoWhileStatement(MethodLogger<?> method) {
         String varName = getClazzContainer().getRandomSupplier().getVarName();
 
         randomizer.oneOf(
@@ -150,7 +150,7 @@ class ControlFlowGenerator extends Generator {
 
     //==================================================FOR/WHILE=======================================================
 
-    public void generateWhileStatement(MethodLogger method) {
+    public void generateWhileStatement(MethodLogger<?> method) {
         String varName = getClazzContainer().getRandomSupplier().getVarName();
         randomizer.oneOf(
                 () -> controlSrc
@@ -170,7 +170,7 @@ class ControlFlowGenerator extends Generator {
             insertControlSrcIntoMethod(method);
     }
 
-    public void generateForStatement(MethodLogger method) {
+    public void generateForStatement(MethodLogger<?> method) {
         RandomSupplier supplier = this.getClazzContainer().getRandomSupplier();
         String varName = supplier.getVarName();
         int it = randomLoopIterations();
@@ -199,12 +199,12 @@ class ControlFlowGenerator extends Generator {
 
     //==================================================COMMON==========================================================
 
-    private void generateBody(MethodLogger method) {
+    private void generateBody(MethodLogger<?> method) {
         RandomCodeGenerator.Context.CONTROL_CONTEXT.setContextMethod(method);
         randomCodeGenerator.generate(RandomCodeGenerator.Context.CONTROL_CONTEXT);
     }
 
-    private void insertControlSrcIntoMethod(MethodLogger method) {
+    private void insertControlSrcIntoMethod(MethodLogger<?> method) {
         CtMethod ctMethod = getCtMethod(method);
         try {
             ctMethod.insertAfter(controlSrc.toString());

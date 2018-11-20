@@ -14,7 +14,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
 public class AssignableFromCall implements Snippet {
 
     @Override
-    public boolean isPossible(MethodLogger method) {
+    public <T> boolean isPossible(MethodLogger<T> method) {
         // can be placed anywhere since the types are static
         return true;
     }

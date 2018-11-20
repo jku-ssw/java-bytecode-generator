@@ -29,9 +29,9 @@ public class RandomCodeGenerator {
         CONTROL_CONTEXT;
 
         private int lengthWeighting;
-        private MethodLogger contextMethod;
+        private MethodLogger<?> contextMethod;
 
-        public void setContextMethod(MethodLogger contextMethod) {
+        public void setContextMethod(MethodLogger<?> contextMethod) {
             this.contextMethod = contextMethod;
         }
     }
@@ -83,7 +83,7 @@ public class RandomCodeGenerator {
         this.controlFlowGenerator = new ControlFlowGenerator(rand, this, mathGenerator);
         this.arrayAccessGenerator = new ArrayAccessGenerator(rand, container);
 
-        MethodLogger run = this.methodGenerator.generateRunMethod();
+        MethodLogger<Void> run = this.methodGenerator.generateRunMethod();
         Context.PROGRAM_CONTEXT.lengthWeighting = controller.getProgramLengthWeighting();
         Context.PROGRAM_CONTEXT.contextMethod = run;
         METHOD_CONTEXT.lengthWeighting = controller.getMethodLengthWeighting();

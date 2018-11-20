@@ -10,19 +10,12 @@ import java.util.List;
 /**
  * Specialized {@link MetaType} for {@code void}.
  */
-public final class VoidType extends MetaType<VoidType.Void> {
+public final class VoidType extends MetaType<Void> {
 
     /**
      * Singleton instance.
      */
     public static final VoidType VOID = new VoidType();
-
-    /**
-     * Dummy type.
-     */
-    static final class Void {
-        /* empty */
-    }
 
     /**
      * Creates the {@code void} type.

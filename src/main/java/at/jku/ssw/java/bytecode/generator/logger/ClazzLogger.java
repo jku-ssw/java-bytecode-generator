@@ -18,13 +18,13 @@ import java.util.stream.Stream;
 public class ClazzLogger extends Logger {
 
     public final String name;
-    private final List<MethodLogger> methods;
-    private final MethodLogger main;
-    private MethodLogger run;
+    private final List<MethodLogger<?>> methods;
+    private final MethodLogger<Void> main;
+    private MethodLogger<Void> run;
     private final RandomSupplier randomSupplier;
     private final Randomizer randomizer;
 
-    public ClazzLogger(Random rand, String name, MethodLogger main, RandomSupplier randomSupplier) {
+    public ClazzLogger(Random rand, String name, MethodLogger<Void> main, RandomSupplier randomSupplier) {
         super(rand);
         this.name = name;
         this.methods = new ArrayList<>();
@@ -37,47 +37,47 @@ public class ClazzLogger extends Logger {
         this.randomizer = new Randomizer(rand);
     }
 
-    public MethodLogger getMain() {
+    public MethodLogger<Void> getMain() {
         return main;
     }
 
-    public void setRun(MethodLogger run) {
+    public void setRun(MethodLogger<Void> run) {
         if (this.run == null) {
             this.run = run;
         }
     }
 
-    public List<MethodLogger> getMethods() {
+    public List<MethodLogger<?>> getMethods() {
         return methods;
     }
 
-    public MethodLogger getRun() {
+    public MethodLogger<Void> getRun() {
         return this.run;
     }
 
-    public void logMethod(MethodLogger ml) {
+    public void logMethod(MethodLogger<?> ml) {
         methods.add(ml);
     }
 
-    public List<MethodLogger> getOverloadedMethods(String name) {
+    public List<MethodLogger<?>> getOverloadedMethods(String name) {
         return methods.stream()
                 .filter(m -> m.getName().equals(name))
                 .collect(Collectors.toList());
     }
 
-    public MethodLogger getRandomMethod() {
+    public MethodLogger<?> getRandomMethod() {
         if (hasMethods()) return methods.get(rand.nextInt(methods.size()));
         else return null;
     }
 
-    public MethodLogger getRandomCallableMethod(MethodLogger callingMethod) {
+    public MethodLogger<?> getRandomCallableMethod(MethodLogger<?> callingMethod) {
         return randomizer
                 .oneOf(getCallableMethods(callingMethod))
                 .orElse(null);
     }
 
-    private List<MethodLogger> getCallableMethods(MethodLogger callingMethod) {
-        List<MethodLogger> callableMethods =
+    private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
+        List<MethodLogger<?>> callableMethods =
                 callingMethod.isStatic()
                         ? getStaticMethods()
                         : new ArrayList<>(methods);
@@ -89,14 +89,15 @@ public class ClazzLogger extends Logger {
         return callableMethods;
     }
 
-    public MethodLogger getRandomCallableMethodOfType(MethodLogger callingMethod, MetaType<?> metaType) {
-        return randomizer
+    @SuppressWarnings("unchecked")
+    public <T> MethodLogger<T> getRandomCallableMethodOfType(MethodLogger<?> callingMethod, MetaType<T> metaType) {
+        return (MethodLogger<T>) randomizer
                 .oneOf(getCallableMethods(callingMethod).stream()
                         .filter(m -> m.getReturnType() == metaType))
                 .orElse(null);
     }
 
-    private void removeAllExcludedForCalling(List<MethodLogger> callableMethods, Set<MethodLogger> excludedForCalling) {
+    private void removeAllExcludedForCalling(List<MethodLogger<?>> callableMethods, Set<MethodLogger<?>> excludedForCalling) {
         if (excludedForCalling.isEmpty())
             return;
 
@@ -110,7 +111,7 @@ public class ClazzLogger extends Logger {
         );
     }
 
-    private List<MethodLogger> getStaticMethods() {
+    private List<MethodLogger<?>> getStaticMethods() {
         return methods.stream()
                 .filter(MethodLogger::isStatic)
                 .collect(Collectors.toList());
@@ -120,7 +121,7 @@ public class ClazzLogger extends Logger {
         return !methods.isEmpty();
     }
 
-    public ParamWrapper[] randomParameterValues(MetaType<?>[] paramTypes, MethodLogger method) {
+    public ParamWrapper[] randomParameterValues(MetaType<?>[] paramTypes, MethodLogger<?> method) {
         return randomParameterValues(Arrays.stream(paramTypes), method)
                 .toArray(ParamWrapper[]::new);
     }
@@ -134,7 +135,7 @@ public class ClazzLogger extends Logger {
      * @param <T>     The actual Java class
      * @return an expression that evaluates to the given meta type
      */
-    public <T> Expression<T> valueOf(MetaType<T> type, MethodLogger context) {
+    public <T> Expression<T> valueOf(MetaType<T> type, MethodLogger<?> context) {
         // TODO enable invocation of methods, casts etc.
         List<Builder<T>> builders = type.builders();
 
@@ -163,7 +164,7 @@ public class ClazzLogger extends Logger {
      * @return a stream of randomly picked parameter values - either variables
      * or constant values
      */
-    public Stream<ParamWrapper<?>> randomParameterValues(Stream<MetaType<?>> paramTypes, MethodLogger method) {
+    public Stream<ParamWrapper<?>> randomParameterValues(Stream<MetaType<?>> paramTypes, MethodLogger<?> method) {
         return paramTypes
                 .map(t ->
                         randomizer.oneOf(
@@ -179,7 +180,7 @@ public class ClazzLogger extends Logger {
     }
 
 
-    public FieldVarLogger<?> getNonFinalFieldUsableInMethod(MethodLogger method) {
+    public FieldVarLogger<?> getNonFinalFieldUsableInMethod(MethodLogger<?> method) {
         if (method.isStatic())
             return getVariableWithPredicate(v -> v.isStatic() && !v.isFinal());
         else
@@ -187,7 +188,7 @@ public class ClazzLogger extends Logger {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleFieldUsableInMethod(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleFieldUsableInMethod(MethodLogger<?> method, MetaType<T> type) {
         if (method.isStatic())
             return (FieldVarLogger<T>) getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() &&
@@ -198,7 +199,7 @@ public class ClazzLogger extends Logger {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getNonFinalInitializedCompatibleFieldUsableInMethod(MethodLogger<?> method, MetaType<T> type) {
         if (method.isStatic())
             return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isStatic() && v.isInitialized() && !v.isFinal() &&
@@ -210,29 +211,29 @@ public class ClazzLogger extends Logger {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getInitializedLocalVarOfType(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getInitializedLocalVarOfType(MethodLogger<?> method, MetaType<T> type) {
         return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 v.isInitialized() && v.getType() == type);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getInitializedCompatibleLocalVar(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getInitializedCompatibleLocalVar(MethodLogger<?> method, MetaType<T> type) {
         return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 v.isInitialized() && type.isAssignableFrom(v.getType()));
     }
 
-    public FieldVarLogger<?> getNonFinalLocalVar(MethodLogger method) {
+    public FieldVarLogger<?> getNonFinalLocalVar(MethodLogger<?> method) {
         return method.getVariableWithPredicate(v -> !v.isFinal());
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleLocalVar(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getNonFinalCompatibleLocalVar(MethodLogger<?> method, MetaType<T> type) {
         return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 !v.isFinal() && type.isAssignableFrom(v.getType()));
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getInitializedFieldOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getInitializedFieldOfTypeUsableInMethod(MethodLogger<?> method, MetaType<T> type) {
         if (method.isStatic())
             return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isInitialized() && v.isStatic() && v.getType() == type);
@@ -241,14 +242,14 @@ public class ClazzLogger extends Logger {
                     v.isInitialized() && v.getType() == type);
     }
 
-    public <T> FieldVarLogger<? extends T> getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getGlobalOrLocalVarInitializedOfTypeUsableInMethod(MethodLogger<?> method, MetaType<T> type) {
         return randomizer.<FieldVarLogger<? extends T>>oneNotNullOf(
                 () -> getInitializedLocalVarOfType(method, type),
                 () -> getInitializedFieldOfTypeUsableInMethod(method, type)
         ).orElse(null);
     }
 
-    public Stream<FieldVarLogger<?>> getNonFinalVarsUsableInMethod(MethodLogger method) {
+    public Stream<FieldVarLogger<?>> getNonFinalVarsUsableInMethod(MethodLogger<?> method) {
         return Stream.concat(
                 method.streamVariables(),
                 streamVariables()
@@ -256,7 +257,7 @@ public class ClazzLogger extends Logger {
         ).filter(v -> !v.isFinal());
     }
 
-    public Stream<FieldVarLogger<?>> getInitializedVarsUsableInMethod(MethodLogger method) {
+    public Stream<FieldVarLogger<?>> getInitializedVarsUsableInMethod(MethodLogger<?> method) {
         return Stream.concat(
                 method.streamVariables(),
                 streamVariables()
@@ -265,7 +266,7 @@ public class ClazzLogger extends Logger {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getNonFinalFieldOfTypeUsableInMethod(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getNonFinalFieldOfTypeUsableInMethod(MethodLogger<?> method, MetaType<T> type) {
         if (method.isStatic())
             return (FieldVarLogger<? extends T>) getVariableWithPredicate(v ->
                     v.isStatic() && !v.isFinal() && v.getType() == type);
@@ -275,7 +276,7 @@ public class ClazzLogger extends Logger {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> FieldVarLogger<? extends T> getNonFinalLocalVarOfType(MethodLogger method, MetaType<T> type) {
+    public <T> FieldVarLogger<? extends T> getNonFinalLocalVarOfType(MethodLogger<?> method, MetaType<T> type) {
         return (FieldVarLogger<? extends T>) method.getVariableWithPredicate(v ->
                 !v.isFinal() && v.getType() == type);
     }

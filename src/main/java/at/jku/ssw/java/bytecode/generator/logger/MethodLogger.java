@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
-public class MethodLogger extends Logger {
+public class MethodLogger<T> extends Logger {
 
     private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
 
@@ -17,18 +17,18 @@ public class MethodLogger extends Logger {
     private final String name;
     private final int modifiers;
     private final MetaType[] paramTypes;
-    private final MetaType<?> returnType;
+    private final MetaType<T> returnType;
 
-    private final Set<MethodLogger> methodsExcludedForCalling;
-    private final Set<MethodLogger> calledByThisMethod;
+    private final Set<MethodLogger<?>> methodsExcludedForCalling;
+    private final Set<MethodLogger<?>> calledByThisMethod;
 
     public final String clazz;
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<?> returnType, MetaType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, MetaType... paramTypes) {
         this(rand, clazz, name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<?> returnType, boolean inherited, MetaType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, boolean inherited, MetaType... paramTypes) {
         super(rand);
         this.clazz = clazz;
         this.name = name;
@@ -41,19 +41,19 @@ public class MethodLogger extends Logger {
         this.inherited = inherited;
     }
 
-    public void addToExcludedForCalling(Set<MethodLogger> excludedForCalling) {
+    public void addToExcludedForCalling(Set<MethodLogger<?>> excludedForCalling) {
         methodsExcludedForCalling.addAll(excludedForCalling);
     }
 
-    public void addMethodToCalledByThisMethod(Set<MethodLogger> calledByThisMethod) {
+    public void addMethodToCalledByThisMethod(Set<MethodLogger<?>> calledByThisMethod) {
         this.calledByThisMethod.addAll(calledByThisMethod);
     }
 
-    public Set<MethodLogger> getMethodsExcludedForCalling() {
+    public Set<MethodLogger<?>> getMethodsExcludedForCalling() {
         return new HashSet<>(methodsExcludedForCalling);
     }
 
-    public Set<MethodLogger> getMethodsCalledByThisMethod() {
+    public Set<MethodLogger<?>> getMethodsCalledByThisMethod() {
         return new HashSet<>(calledByThisMethod);
     }
 
@@ -74,7 +74,7 @@ public class MethodLogger extends Logger {
         return Arrays.stream(paramTypes).map(MetaType::getClazzType).toArray(CtClass[]::new);
     }
 
-    public MetaType<?> getReturnType() {
+    public MetaType<T> getReturnType() {
         return returnType;
     }
 
@@ -86,7 +86,7 @@ public class MethodLogger extends Logger {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MethodLogger that = (MethodLogger) o;
+        MethodLogger<?> that = (MethodLogger<?>) o;
         return Objects.equals(name, that.name) &&
                 Arrays.equals(paramTypes, that.paramTypes);
     }
