@@ -1,9 +1,6 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
-import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
-import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -12,17 +9,10 @@ import java.util.Date;
 import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.ArrayType.resultingTypeOf;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.BOOLEAN;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.BYTE;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.CHAR;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.DOUBLE;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.FLOAT;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.INT;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.LONG;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.SHORT;
-import static at.jku.ssw.java.bytecode.generator.types.base.RefType.*;
-import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.DateType.DATE;
 import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;

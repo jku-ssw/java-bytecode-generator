@@ -2,8 +2,7 @@ package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.DefaultConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
@@ -26,16 +25,6 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
  * @param <T> The actual Java class associated with this type
  */
 public class RefType<T> extends MetaType<T> {
-
-    //-------------------------------------------------------------------------
-    // region Type constants
-
-    /**
-     * {@link Date} type constant.
-     */
-    public static final RefType<Date> DATE = RefType.of(Date.class);
-
-    // endregion
     //-------------------------------------------------------------------------
     // region Initialization
 
@@ -127,7 +116,7 @@ public class RefType<T> extends MetaType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isPrimitive() {
+    public final boolean isPrimitive() {
         return false;
     }
 
@@ -135,7 +124,7 @@ public class RefType<T> extends MetaType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isRef() {
+    public final boolean isRef() {
         return true;
     }
 
@@ -151,7 +140,7 @@ public class RefType<T> extends MetaType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isVoid() {
+    public final boolean isVoid() {
         return false;
     }
 
@@ -164,23 +153,10 @@ public class RefType<T> extends MetaType<T> {
      */
     @Override
     public List<Builder<T>> builders() {
-        RefType<T> self = this;
-
         // TODO dynamically determine (via reflection?)!
         return Arrays.asList(
                 new NullBuilder<>(this),
-                new Builder.NoArgs<T>() {
-
-                    @Override
-                    public RefType<T> returns() {
-                        return self;
-                    }
-
-                    @Override
-                    public Expression<T> build() {
-                        return new ConstructorCall<>(self);
-                    }
-                }
+                new DefaultConstructorBuilder<>(this)
         );
     }
 

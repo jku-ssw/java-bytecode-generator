@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,14 +7,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.base.RefType.DATE;
-import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
-import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class RefTypeTest {
+public class PrimitiveTypeTest {
 
     //-------------------------------------------------------------------------
     // region Test cases
@@ -37,21 +35,26 @@ public class RefTypeTest {
 
     private static Stream<Arguments> compatibleTypesProvider() {
         return Stream.of(
-                arguments(STRING, STRING),
-                arguments(DATE, DATE),
-                arguments(OBJECT, DATE),
-                arguments(OBJECT, STRING),
-                arguments(OBJECT, OBJECT)
+                arguments(BYTE, BYTE),
+                arguments(SHORT, BYTE),
+                arguments(SHORT, SHORT),
+                arguments(INT, BYTE),
+                arguments(INT, SHORT),
+                arguments(INT, INT),
+                arguments(LONG, INT),
+                arguments(DOUBLE, FLOAT)
         );
     }
 
     private static Stream<Arguments> incompatibleTypesProvider() {
         return Stream.of(
-                arguments(STRING, DATE),
-                arguments(STRING, OBJECT),
-                arguments(DATE, STRING)
+                arguments(BYTE, SHORT),
+                arguments(SHORT, INT),
+                arguments(FLOAT, DOUBLE),
+                arguments(DOUBLE, INT)
         );
     }
+
 
     // endregion
     //-------------------------------------------------------------------------

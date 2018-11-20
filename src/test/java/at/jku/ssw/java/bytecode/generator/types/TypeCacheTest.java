@@ -1,14 +1,15 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
+import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType.OBJECT;
-import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
-import static at.jku.ssw.java.bytecode.generator.types.base.RefType.DATE;
-import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
 import static at.jku.ssw.java.bytecode.generator.types.TypeCache.INSTANCE;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.DateType.DATE;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,7 +33,15 @@ public class TypeCacheTest {
                         BOOLEAN,
                         STRING,
                         DATE,
-                        OBJECT
+                        OBJECT,
+                        BoxedType.BYTE,
+                        BoxedType.SHORT,
+                        BoxedType.INT,
+                        BoxedType.LONG,
+                        BoxedType.FLOAT,
+                        BoxedType.DOUBLE,
+                        BoxedType.BOOLEAN,
+                        BoxedType.CHAR
                 )
         );
     }
@@ -45,7 +54,15 @@ public class TypeCacheTest {
                 containsInAnyOrder(
                         OBJECT,
                         DATE,
-                        STRING
+                        STRING,
+                        BoxedType.BYTE,
+                        BoxedType.SHORT,
+                        BoxedType.INT,
+                        BoxedType.LONG,
+                        BoxedType.FLOAT,
+                        BoxedType.DOUBLE,
+                        BoxedType.BOOLEAN,
+                        BoxedType.CHAR
                 )
         );
     }

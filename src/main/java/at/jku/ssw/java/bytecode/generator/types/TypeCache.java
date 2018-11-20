@@ -3,6 +3,8 @@ package at.jku.ssw.java.bytecode.generator.types;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.DateType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
 import org.apache.logging.log4j.LogManager;
@@ -52,18 +54,30 @@ public enum TypeCache {
         primitiveTypes = new HashMap<>();
         refTypes = new HashMap<>();
 
-        primitiveTypes.put(byte.class, BYTE);
-        primitiveTypes.put(short.class, SHORT);
-        primitiveTypes.put(int.class, INT);
-        primitiveTypes.put(long.class, LONG);
-        primitiveTypes.put(float.class, FLOAT);
-        primitiveTypes.put(double.class, DOUBLE);
-        primitiveTypes.put(boolean.class, BOOLEAN);
-        primitiveTypes.put(char.class, CHAR);
+        // register primitive types
+        primitiveTypes.put(Byte.TYPE, BYTE);
+        primitiveTypes.put(Short.TYPE, SHORT);
+        primitiveTypes.put(Integer.TYPE, INT);
+        primitiveTypes.put(Long.TYPE, LONG);
+        primitiveTypes.put(Float.TYPE, FLOAT);
+        primitiveTypes.put(Double.TYPE, DOUBLE);
+        primitiveTypes.put(Boolean.TYPE, BOOLEAN);
+        primitiveTypes.put(Character.TYPE, CHAR);
 
+        // register reference types
         refTypes.put(Object.class, ObjectType.OBJECT);
-        refTypes.put(Date.class, RefType.DATE);
+        refTypes.put(Date.class, DateType.DATE);
         refTypes.put(String.class, StringType.STRING);
+
+        // register boxed types
+        refTypes.put(Byte.class, BoxedType.BYTE);
+        refTypes.put(Short.class, BoxedType.SHORT);
+        refTypes.put(Integer.class, BoxedType.INT);
+        refTypes.put(Long.class, BoxedType.LONG);
+        refTypes.put(Float.class, BoxedType.FLOAT);
+        refTypes.put(Double.class, BoxedType.DOUBLE);
+        refTypes.put(Boolean.class, BoxedType.BOOLEAN);
+        refTypes.put(Character.class, BoxedType.CHAR);
     }
 
     /**
