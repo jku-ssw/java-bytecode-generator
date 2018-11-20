@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 
 import java.util.Optional;

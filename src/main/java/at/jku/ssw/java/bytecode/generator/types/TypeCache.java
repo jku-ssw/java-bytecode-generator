@@ -1,12 +1,17 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
 
 /**
  * Container that keeps track of all registered and available types in the

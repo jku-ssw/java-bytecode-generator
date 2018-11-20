@@ -4,7 +4,7 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ResolvedBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;

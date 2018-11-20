@@ -3,7 +3,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
-import at.jku.ssw.java.bytecode.generator.types.PrimitiveType;
+import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
@@ -11,7 +11,7 @@ import javassist.*;
 
 import java.util.*;
 
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.*;
 import static at.jku.ssw.java.bytecode.generator.utils.Operator.OpStatKind.*;
 

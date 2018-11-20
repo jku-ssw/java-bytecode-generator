@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base.constants;
 
-import at.jku.ssw.java.bytecode.generator.types.PrimitiveType;
+import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 
 /**
  * Primitive {@code float} type constant.

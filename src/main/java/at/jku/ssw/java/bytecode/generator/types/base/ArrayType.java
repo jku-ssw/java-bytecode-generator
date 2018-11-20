@@ -1,10 +1,11 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ArrayInit;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.ARRAY;
+import static at.jku.ssw.java.bytecode.generator.types.base.MetaType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.utils.IntRange.rangeFrom;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;

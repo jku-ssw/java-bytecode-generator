@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
 import java.util.List;
 import java.util.Map;

@@ -1,7 +1,9 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 import java.util.ArrayList;
 import java.util.Collections;

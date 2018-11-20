@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base.constants;
 
-import at.jku.ssw.java.bytecode.generator.types.RefType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 /**
  * Null constant.

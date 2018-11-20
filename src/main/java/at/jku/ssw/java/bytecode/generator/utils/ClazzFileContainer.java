@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Random;
 
-import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
 
 public class ClazzFileContainer {

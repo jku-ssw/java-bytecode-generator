@@ -1,10 +1,11 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
@@ -13,7 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind.INSTANCE;
+import static at.jku.ssw.java.bytecode.generator.types.base.MetaType.Kind.INSTANCE;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
@@ -50,16 +51,24 @@ public class RefType<T> extends MetaType<T> {
     }
 
     /**
-     * Generates a new reference type based on the given properties.
+     * Generates a new reference type by inferring the remaining properties
+     * from the given class type.
      *
      * @param clazz The actual Java class type instance corresponding to
      *              this {@link MetaType}.
      */
-    RefType(Class<T> clazz) {
+    protected RefType(Class<T> clazz) {
         super(clazz, JavassistUtils.toCtClass(clazz), INSTANCE);
     }
 
-    RefType(Class<T> clazz, CtClass clazzType, Kind kind) {
+    /**
+     * Creates a new reference type with the given properties.
+     *
+     * @param clazz     The actual Java class type instance.
+     * @param clazzType The Javassist equivalent
+     * @param kind      The kind of the type
+     */
+    protected RefType(Class<T> clazz, CtClass clazzType, Kind kind) {
         super(clazz, clazzType, kind);
     }
 

@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
 import java.util.Arrays;
 import java.util.Collections;

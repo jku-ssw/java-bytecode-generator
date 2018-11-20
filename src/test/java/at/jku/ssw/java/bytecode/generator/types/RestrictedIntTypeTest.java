@@ -1,5 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -8,7 +10,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
 import static at.jku.ssw.java.bytecode.generator.utils.IntRange.rangeIncl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

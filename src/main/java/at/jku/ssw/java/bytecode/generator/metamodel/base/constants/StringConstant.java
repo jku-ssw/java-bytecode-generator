@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base.constants;
 
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
-import at.jku.ssw.java.bytecode.generator.types.StringType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
 
 /**
  * A constant expression of type {@link String}.

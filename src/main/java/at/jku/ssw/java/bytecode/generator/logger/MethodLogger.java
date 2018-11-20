@@ -1,13 +1,13 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
 public class MethodLogger extends Logger {
 

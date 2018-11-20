@@ -6,7 +6,7 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.TypeIdentifier;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
 import java.util.stream.Collectors;
 

@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
 /**
  * Describes an expression that eventually evaluates to some result type.

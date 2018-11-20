@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.NullConstant;
-import at.jku.ssw.java.bytecode.generator.types.RefType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 /**
  * Null builder that is reusable for all instance types.

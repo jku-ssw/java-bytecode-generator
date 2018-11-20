@@ -1,8 +1,9 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import javassist.CtClass;
 

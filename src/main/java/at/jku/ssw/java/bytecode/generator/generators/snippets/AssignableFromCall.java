@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 

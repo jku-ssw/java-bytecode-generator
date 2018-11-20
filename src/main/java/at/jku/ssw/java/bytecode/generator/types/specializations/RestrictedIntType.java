@@ -1,5 +1,7 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.specializations;
 
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.IntRange;
 import javassist.CtClass;
 

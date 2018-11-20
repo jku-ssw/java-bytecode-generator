@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static at.jku.ssw.java.bytecode.generator.types.ObjectType.OBJECT;
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.*;
-import static at.jku.ssw.java.bytecode.generator.types.RefType.DATE;
-import static at.jku.ssw.java.bytecode.generator.types.StringType.STRING;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType.OBJECT;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
+import static at.jku.ssw.java.bytecode.generator.types.base.RefType.DATE;
+import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
 import static at.jku.ssw.java.bytecode.generator.types.TypeCache.INSTANCE;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;

@@ -2,6 +2,10 @@ package at.jku.ssw.java.bytecode.generator.utils;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
 import at.jku.ssw.java.bytecode.generator.types.*;
+import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -9,11 +13,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.ArrayType.MIN_ARRAY_DIM_LENGTH;
-import static at.jku.ssw.java.bytecode.generator.types.MetaType.Kind;
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.BYTE;
-import static at.jku.ssw.java.bytecode.generator.types.PrimitiveType.SHORT;
-import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+import static at.jku.ssw.java.bytecode.generator.types.base.ArrayType.MIN_ARRAY_DIM_LENGTH;
+import static at.jku.ssw.java.bytecode.generator.types.base.MetaType.Kind;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.BYTE;
+import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.SHORT;
+import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 import static at.jku.ssw.java.bytecode.generator.utils.ErrorUtils.shouldNotReachHere;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;

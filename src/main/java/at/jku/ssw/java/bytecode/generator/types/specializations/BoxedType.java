@@ -1,8 +1,12 @@
-package at.jku.ssw.java.bytecode.generator.types;
+package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
 import java.util.List;
@@ -14,7 +18,7 @@ import static java.util.Collections.singletonList;
  *
  * @param <T> The actual Java class
  */
-public final class BoxedType<T> extends RefType<T> {
+public class BoxedType<T> extends RefType<T> {
 
     private final Class<?> boxed;
 
@@ -30,26 +34,32 @@ public final class BoxedType<T> extends RefType<T> {
      * {@code short} type constant.
      */
     public static final BoxedType<Short> SHORT = new BoxedType<>(Short.class, short.class);
+
     /**
      * {@code int} type constant.
      */
     public static final BoxedType<Integer> INT = new BoxedType<>(Integer.class, int.class);
+
     /**
      * {@code long} type constant.
      */
     public static final BoxedType<Long> LONG = new BoxedType<>(Long.class, long.class);
+
     /**
      * {@code float} type constant.
      */
     public static final BoxedType<Float> FLOAT = new BoxedType<>(Float.class, float.class);
+
     /**
      * {@code double} type constant.
      */
     public static final BoxedType<Double> DOUBLE = new BoxedType<>(Double.class, double.class);
+
     /**
      * {@code boolean} type constant.
      */
     public static final BoxedType<Boolean> BOOLEAN = new BoxedType<>(Boolean.class, boolean.class);
+
     /**
      * {@code char} type constant.
      */
@@ -58,11 +68,21 @@ public final class BoxedType<T> extends RefType<T> {
     // endregion
     //-------------------------------------------------------------------------
 
+    /**
+     * Creates a new boxed type using the given Java class type.
+     *
+     * @param clazz The Java class type
+     * @param boxed The boxed primitive type
+     */
     private BoxedType(Class<T> clazz, Class<?> boxed) {
         super(clazz);
+        assert !clazz.isArray();
         this.boxed = boxed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Builder<T>> builders() {
         BoxedType<T> self = this;

@@ -5,7 +5,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedExce
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
-import at.jku.ssw.java.bytecode.generator.types.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import javassist.*;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.VoidType.VOID;
+import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.pAssign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
