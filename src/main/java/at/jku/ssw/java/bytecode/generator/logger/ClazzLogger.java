@@ -5,6 +5,7 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ResolvedBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
@@ -15,14 +16,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
+
 /**
  * Describes the generated Java class.
  * In order to enable future extensions that generate multiple classes and
  * allow for dynamic invocation, the class is defined abstract
  * to generate dynamic overloads on demand.
  */
-// TODO make subclass of DynamicRefType
-public abstract class ClazzLogger extends Logger {
+public abstract class ClazzLogger
+        extends Logger
+        implements RefType<ClazzLogger> {
+
     //-------------------------------------------------------------------------
     // region Properties
 
@@ -148,6 +155,33 @@ public abstract class ClazzLogger extends Logger {
     public final String toString() {
         return name;
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region MetaType methods
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<? extends ClazzLogger> clazz() {
+        return getClass();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getHashCode(FieldVarLogger<ClazzLogger> variable) {
+        String name = variable.access();
+
+        return ternary(
+                notNull(name),
+                method(method(method(name, "getClass"), "getSimpleName"), "hashCode"),
+                "0L"
+        );
+    }
+
 
     // endregion
     //-------------------------------------------------------------------------

@@ -78,7 +78,7 @@ public interface MetaType<T> extends Instantiable<T> {
      *
      * @return the Java class which is described by this type
      */
-    Class<T> clazz();
+    Class<? extends T> clazz();
 
     /**
      * Returns the descriptor of this type.
@@ -121,6 +121,7 @@ public interface MetaType<T> extends Instantiable<T> {
      * @param variable The variable holding this value
      * @return a hash code that identifies this value
      */
+    // TODO migrate return type to expression
     String getHashCode(FieldVarLogger<T> variable);
 
     // endregion

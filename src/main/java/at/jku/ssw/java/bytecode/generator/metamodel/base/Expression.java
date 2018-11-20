@@ -24,7 +24,7 @@ public interface Expression<T> {
      *
      * @return the Java class to which this expression evaluates
      */
-    default Class<T> clazz() {
+    default Class<? extends T> clazz() {
         return type().clazz();
     }
 }
