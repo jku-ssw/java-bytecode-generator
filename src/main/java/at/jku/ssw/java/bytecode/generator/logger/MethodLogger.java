@@ -24,11 +24,11 @@ public class MethodLogger<T> extends Logger {
 
     public final String clazz;
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, MetaType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, MetaType<?>... paramTypes) {
         this(rand, clazz, name, modifiers, returnType, false, paramTypes);
     }
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, boolean inherited, MetaType... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, boolean inherited, MetaType<?>... paramTypes) {
         super(rand);
         this.clazz = clazz;
         this.name = name;
@@ -65,7 +65,7 @@ public class MethodLogger<T> extends Logger {
         return (modifiers & Modifier.STATIC) != 0;
     }
 
-    public MetaType[] getParamsTypes() {
+    public MetaType[] getParamTypes() {
         return paramTypes;
     }
 

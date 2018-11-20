@@ -145,7 +145,7 @@ class MethodGenerator extends MethodCaller {
     //===============================================Method Calling=====================================================
 
     private String srcCallMethod(MethodLogger<?> calledMethod, MethodLogger<?> method) {
-        MetaType[] paramTypes = calledMethod.getParamsTypes();
+        MetaType[] paramTypes = calledMethod.getParamTypes();
         ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
         Set<MethodLogger<?>> excludedForCalling = method.getMethodsExcludedForCalling();
         excludedForCalling.add(method);
@@ -304,7 +304,7 @@ class MethodGenerator extends MethodCaller {
         for (int i = 0; i < overloadedMethods.size(); i++) {
             MetaType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
             Stream<MethodLogger<?>> equalNumberOfParamMethods = overloadedMethods.stream().filter(
-                    m -> m.getParamsTypes().length == parameterTypes.length);
+                    m -> m.getParamTypes().length == parameterTypes.length);
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 return parameterTypes;
             }
@@ -313,7 +313,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     private boolean equalOverloadedParamTypesExists(Stream<MethodLogger<?>> equalNumberOfParamMethods, MetaType[] parameterTypes) {
-        return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamsTypes()));
+        return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamTypes()));
     }
 
     private static boolean equalParameterTypes(MetaType[] types1, MetaType[] types2) {
