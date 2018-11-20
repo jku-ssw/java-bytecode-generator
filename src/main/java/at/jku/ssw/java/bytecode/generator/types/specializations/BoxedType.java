@@ -20,6 +20,9 @@ import static java.util.Collections.singletonList;
  */
 public class BoxedType<T> extends RefType<T> {
 
+    /**
+     * The boxed primitive type.
+     */
     private final Class<?> boxed;
 
     //-------------------------------------------------------------------------
@@ -77,6 +80,7 @@ public class BoxedType<T> extends RefType<T> {
     private BoxedType(Class<T> clazz, Class<?> boxed) {
         super(clazz);
         assert !clazz.isArray();
+        assert boxed.isPrimitive();
         this.boxed = boxed;
     }
 
