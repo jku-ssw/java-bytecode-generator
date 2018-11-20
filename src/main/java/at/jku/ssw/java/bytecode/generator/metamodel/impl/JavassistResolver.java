@@ -110,7 +110,7 @@ public class JavassistResolver implements Resolver<String> {
     }
 
     @Override
-    public <U> String resolve(CharConstant constant) {
+    public String resolve(CharConstant constant) {
         return asChar(constant.raw());
     }
 

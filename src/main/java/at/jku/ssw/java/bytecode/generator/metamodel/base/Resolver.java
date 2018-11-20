@@ -66,11 +66,11 @@ public interface Resolver<T> {
 
     T resolve(BooleanConstant constant);
 
+    T resolve(CharConstant constant);
+
     T resolve(StringConstant constant);
 
     <U> T resolve(NullConstant<U> constant);
-
-    <U> T resolve(CharConstant constant);
 
     <U> T resolve(TypeIdentifier<U> typeIdentifier);
 
