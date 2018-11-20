@@ -90,7 +90,7 @@ public enum TypeCache {
     @SuppressWarnings("unchecked")
     public final <T> RefType<T> register(RefType<T> newType) {
         logger.error("Registering type " + newType);
-        final T oldType = (T) refTypes.putIfAbsent(newType.getClazz(), newType);
+        final T oldType = (T) refTypes.putIfAbsent(newType.clazz(), newType);
 
         assert oldType == null : "Type '" + oldType + "' already registered";
         return newType;

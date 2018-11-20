@@ -59,7 +59,7 @@ public class ArrayTypeTest {
     }
 
     private static <T> RefType<T> refType(Class<T> type) {
-        return RefType.of(type);
+        return new RefType<>(type);
     }
 
     private static <T> MetaType<T> arrayType(Class<T> type, MetaType<?> componentType) {

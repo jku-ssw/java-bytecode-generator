@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators;
 
-import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
 
 import java.util.Optional;
@@ -24,7 +24,7 @@ abstract class MethodCaller extends Generator {
                 .map(v -> IntStream.range(0, paramTypes.length)
                         .mapToObj(i ->
                                 cast(paramValues[i].getParamValue())
-                                        .to(paramTypes[i].clazz))
+                                        .to(paramTypes[i].clazz()))
                         .collect(Collectors.joining(", ")))
                 .orElse("");
         return Statement(call(methodName, params));

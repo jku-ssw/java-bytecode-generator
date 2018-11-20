@@ -28,10 +28,10 @@ public class TypeCastGenerator extends Generator {
         ClazzLogger cl = getClazzLogger();
 
         Predicate<FieldVarLogger<?>> isPrimitiveCastable = v ->
-                v.getType().kind != MetaType.Kind.BOOLEAN &&
-                        v.getType().kind != MetaType.Kind.INSTANCE &&
-                        v.getType().kind != MetaType.Kind.VOID &&
-                        v.getType().kind != MetaType.Kind.ARRAY;
+                v.getType().kind() != MetaType.Kind.BOOLEAN &&
+                        v.getType().kind() != MetaType.Kind.INSTANCE &&
+                        v.getType().kind() != MetaType.Kind.VOID &&
+                        v.getType().kind() != MetaType.Kind.ARRAY;
 
         randomizer.shuffle(
                 cl.getNonFinalVarsUsableInMethod(method)
@@ -43,7 +43,7 @@ public class TypeCastGenerator extends Generator {
                                         .filter(v -> !dest.getType().equals(v.getType()))
                                         .map(v -> (Supplier<String>) () -> {
                                             dest.setInitialized();
-                                            return Statement(assign(cast(v.access()).to(dest.getType().clazz)).to(dest.access()));
+                                            return Statement(assign(cast(v.access()).to(dest.getType().clazz())).to(dest.access()));
                                         }))
         ).findFirst()
                 .map(Supplier::get)

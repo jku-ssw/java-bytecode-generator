@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
-public class MethodLogger<T> extends Logger {
+public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
 
     private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
 
@@ -19,21 +19,29 @@ public class MethodLogger<T> extends Logger {
     private final MetaType[] paramTypes;
     private final MetaType<T> returnType;
 
+    /**
+     * The type of the container (i.e. the class in which this method
+     * is defined).
+     */
+    // TODO use
+//    private final MetaType<T> container;
+
     private final Set<MethodLogger<?>> methodsExcludedForCalling;
     private final Set<MethodLogger<?>> calledByThisMethod;
 
     public final String clazz;
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, MetaType<?>... paramTypes) {
-        this(rand, clazz, name, modifiers, returnType, false, paramTypes);
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, /*MetaType<T> container, */MetaType<?>... paramTypes) {
+        this(rand, clazz, name, modifiers, returnType, false, /*container, */paramTypes);
     }
 
-    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, boolean inherited, MetaType<?>... paramTypes) {
+    public MethodLogger(Random rand, String clazz, String name, int modifiers, MetaType<T> returnType, boolean inherited, /*MetaType<T> container, */MetaType<?>... paramTypes) {
         super(rand);
         this.clazz = clazz;
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;
+//        this.container = container;
         this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
         this.methodsExcludedForCalling = new HashSet<>();
@@ -62,7 +70,7 @@ public class MethodLogger<T> extends Logger {
     }
 
     public boolean isStatic() {
-        return (modifiers & Modifier.STATIC) != 0;
+        return Modifier.isStatic(modifiers);
     }
 
     public MetaType[] getParamTypes() {
@@ -71,7 +79,7 @@ public class MethodLogger<T> extends Logger {
 
     public CtClass[] getCtParamTypes() {
         if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(MetaType::getClazzType).toArray(CtClass[]::new);
+        return Arrays.stream(paramTypes).map(MetaType::javassistClazz).toArray(CtClass[]::new);
     }
 
     public MetaType<T> getReturnType() {
@@ -98,16 +106,20 @@ public class MethodLogger<T> extends Logger {
         return result;
     }
 
+    /**
+     * Returns a string representation of this object.
+     * Parses the actual method signature and returns it.
+     */
     @Override
     public String toString() {
         return String.format(
                 TO_STRING_FORMAT,
                 (inherited ? "@Inherited " : ""),
                 Modifier.toString(modifiers),
-                returnType.clazz.getCanonicalName(),
+                returnType.clazz().getCanonicalName(),
                 name,
                 Arrays.stream(paramTypes)
-                        .map(ft -> ft.clazz)
+                        .map(MetaType::clazz)
                         .map(Class::getCanonicalName)
                         .collect(Collectors.joining(", ")));
     }
@@ -115,4 +127,22 @@ public class MethodLogger<T> extends Logger {
     public boolean isInherited() {
         return inherited;
     }
+
+//    @Override
+//    public List<? extends MetaType<?>> requires() {
+//        return isStatic() ?
+//                Arrays.asList(paramTypes) :
+//                Stream.concat(Stream.of())
+//                ;
+//    }
+//
+//    @Override
+//    public Expression<T> build(List<Expression<?>> params) {
+//        return null;
+//    }
+//
+//    @Override
+//    public MetaType<T> returns() {
+//        return returnType;
+//    }
 }

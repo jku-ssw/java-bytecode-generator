@@ -64,7 +64,7 @@ public class ArrayAccessGenerator extends MethodCaller {
                 getClazzLogger()
                         .getInitializedVarsUsableInMethod(method)
                         // only array variables
-                        .filter(v -> v.getType().kind == ARRAY)
+                        .filter(v -> v.getType().kind() == ARRAY)
                         // only initialized arrays
                         .filter(FieldVarLogger::isInitialized)
                         .flatMap(a -> {

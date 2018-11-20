@@ -7,10 +7,12 @@ import javassist.CtClass;
 import java.util.Collections;
 import java.util.List;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns;
+
 /**
  * Specialized {@link MetaType} for {@code void}.
  */
-public final class VoidType extends MetaType<Void> {
+public final class VoidType implements MetaType<Void> {
 
     /**
      * Singleton instance.
@@ -21,7 +23,56 @@ public final class VoidType extends MetaType<Void> {
      * Creates the {@code void} type.
      */
     private VoidType() {
-        super(Void.class, CtClass.voidType, Kind.VOID);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return hash();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return equals((VoidType) o);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return Patterns.VOID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Kind kind() {
+        return Kind.VOID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<Void> clazz() {
+        return Void.class;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CtClass javassistClazz() {
+        return CtClass.voidType;
     }
 
     /**

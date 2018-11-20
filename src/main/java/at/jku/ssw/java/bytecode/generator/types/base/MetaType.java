@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * @param <T> The actual Java type that is described
  */
-public abstract class MetaType<T> implements Instantiable<T> {
+public interface MetaType<T> extends Instantiable<T> {
     //-------------------------------------------------------------------------
     // region Constants
 
@@ -22,15 +22,15 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * Identifier to specifying that a type is
      * dimensionless (i.e. not an array type).
      */
-    static final int DIMENSIONLESS = 0;
+    int DIMENSIONLESS = 0;
 
     /**
      * Identifier to specifying that a type has no inner type
      * (i.e. is no array type).
      */
-    static final MetaType<?> NO_INNER_TYPE = null;
+    MetaType<?> NO_INNER_TYPE = null;
 
-    static final BitSet[] UNRESTRICTED = null;
+    BitSet[] UNRESTRICTED = null;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -41,7 +41,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * in case of primitive values or identify instance and array types.
      * Also, the void type is available.
      */
-    public enum Kind {
+    enum Kind {
         BYTE,
         SHORT,
         RINT,
@@ -61,66 +61,77 @@ public abstract class MetaType<T> implements Instantiable<T> {
     // region Properties
 
     /**
-     * Type category to distinguish between different primitive types,
-     * reference types and arrays.
-     */
-    public final Kind kind;
-
-    /**
-     * The Java {@link Class} instance corresponding to this type.
-     */
-    public final Class<T> clazz;
-
-    /**
-     * The Javassist {@link CtClass} that maps to this type.
-     */
-    private final CtClass clazzType;
-
-    // endregion
-    //-------------------------------------------------------------------------
-    // region Initialization
-
-    /**
-     * Generates a new type based on the given properties.
+     * Returns the kind associated with this type.
+     * This kind represents the type category to distinguish between
+     * different primitive types, reference types and arrays.
      *
-     * @param clazz     The actual Java class type instance corresponding to
-     *                  this {@link MetaType}.
-     * @param clazzType The {@link CtClass} type that maps to this type
-     * @param kind      The kind descriptor to categorize different types
+     * @return the kind that categorizes this type
      */
-    protected MetaType(Class<T> clazz,
-                       CtClass clazzType,
-                       Kind kind) {
+    Kind kind();
 
-        this.kind = kind;
-        this.clazz = clazz;
-        this.clazzType = clazzType;
+    /**
+     * Returns the actual Java {@link Class} instance that corresponds to
+     * this type.
+     *
+     * @return the Java class which is described by this type
+     */
+    Class<T> clazz();
+
+    /**
+     * Returns the Javassist {@link CtClass} representation of the Java class
+     * given by {@link #clazz()}.
+     *
+     * @return the Javassist pendant to the Java class
+     */
+    CtClass javassistClazz();
+
+    /**
+     * Determines whether this type implies access restrictions
+     * (e.g. access array only at index 1 in the first dimension).
+     *
+     * @return {@code true} if this type has restrictions;
+     * {@code false} otherwise
+     */
+    default boolean isRestricted() {
+        return getRestrictions() != null;
     }
 
     // endregion
     //-------------------------------------------------------------------------
     // region Overridden methods
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MetaType<?> that = (MetaType<?>) o;
-        return getDim() == that.getDim() &&
-                kind == that.kind &&
-                Objects.equals(clazz, that.clazz);
+    /**
+     * Compares this instance to another type.
+     *
+     * @param o The other type
+     * @return {@code true} if the type kinds, the mapped classes and the
+     * dimensions match; {@code false} otherwise
+     * @see Object#equals(Object)
+     */
+    default boolean equals(MetaType<?> o) {
+        return getDim() == o.getDim() &&
+                kind() == o.kind() &&
+                Objects.equals(clazz(), o.clazz());
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(kind, clazz, getDim());
+    /**
+     * Generates a hash code that corresponds to this instance.
+     *
+     * @return a hash value that uniquely identifies this instance.
+     * @see Object#hashCode()
+     */
+    default int hash() {
+        return Objects.hash(kind(), clazz(), getDim());
     }
 
-    @Override
-    public String toString() {
-        if (kind == Kind.VOID)
-            return "void";
-        return clazz.getCanonicalName();
+    /**
+     * Returns the descriptor of this type.
+     *
+     * @return the string representation of this type
+     * @see Object#toString()
+     */
+    default String name() {
+        return clazz().getCanonicalName();
     }
 
     // endregion
@@ -133,21 +144,21 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @param variable The variable holding this value
      * @return a hash code that identifies this value
      */
-    public abstract String getHashCode(FieldVarLogger<T> variable);
+    String getHashCode(FieldVarLogger<T> variable);
 
     /**
      * Determines whether this type describes a primitive type.
      *
      * @return {@code true} for primitive types; {@code false} otherwise
      */
-    public abstract boolean isPrimitive();
+    boolean isPrimitive();
 
     /**
      * Determines whether this type describes a reference type.
      *
      * @return {@code true} for reference types; {@code false} otherwise
      */
-    public abstract boolean isRef();
+    boolean isRef();
 
 
     /**
@@ -155,14 +166,14 @@ public abstract class MetaType<T> implements Instantiable<T> {
      *
      * @return {@code true} for array types; {@code false} otherwise
      */
-    public abstract boolean isArray();
+    boolean isArray();
 
     /**
      * Determines whether this type is the {@code void} type.
      *
      * @return {@code true} if this type is {@code void}; {@code false} otherwise
      */
-    public abstract boolean isVoid();
+    boolean isVoid();
 
     // endregion
     //-------------------------------------------------------------------------
@@ -174,7 +185,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      *
      * @return a list of assignable types
      */
-    public abstract List<? extends MetaType<?>> getAssignableTypes();
+    List<? extends MetaType<?>> getAssignableTypes();
 
     /**
      * Determines whether this type is assignable from the given type.
@@ -187,7 +198,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @return {@code true} if this is assignable from the given type;
      * {@code false} otherwise
      */
-    public abstract boolean isAssignableFrom(MetaType<?> type);
+    boolean isAssignableFrom(MetaType<?> type);
 
     /**
      * Determines whether this type is assignable to the given type
@@ -201,7 +212,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @return {@code true} if this type is assignable to the given type;
      * {@code false} otherwise
      */
-    public final boolean isAssignableTo(MetaType<?> type) {
+    default boolean isAssignableTo(MetaType<?> type) {
         assert type != null;
         return type.isAssignableFrom(this);
     }
@@ -219,7 +230,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @return the component type of this type or {@code null} if this type
      * is no array type
      */
-    public MetaType<?> getInner() {
+    default MetaType<?> getInner() {
         return NO_INNER_TYPE;
     }
 
@@ -230,7 +241,7 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @return a strictly positive number of dimensions for array types;
      * {@code 0} for non-array types
      */
-    public int getDim() {
+    default int getDim() {
         return DIMENSIONLESS;
     }
 
@@ -243,51 +254,8 @@ public abstract class MetaType<T> implements Instantiable<T> {
      * @return an array that describes the access restrictions for each
      * dimension of an array type; {@code null} for non-array types
      */
-    public BitSet[] getRestrictions() {
+    default BitSet[] getRestrictions() {
         return UNRESTRICTED;
-    }
-
-    // endregion
-    //-------------------------------------------------------------------------
-    // region Getters / setters
-
-    /**
-     * Returns the kind associated with this type.
-     *
-     * @return the kind that categorizes this type
-     */
-    public final Kind getKind() {
-        return kind;
-    }
-
-    /**
-     * Returns the actual Java class that corresponds to this type.
-     *
-     * @return the Java class which is described by this type
-     */
-    public final Class<T> getClazz() {
-        return clazz;
-    }
-
-    /**
-     * Returns the Javassist representation of the Java class given by
-     * {@link #getClazz()}.
-     *
-     * @return the Javassist pendant to the Java class
-     */
-    public final CtClass getClazzType() {
-        return clazzType;
-    }
-
-    /**
-     * Determines whether this type implies access restrictions
-     * (e.g. access array only at index 1 in the first dimension).
-     *
-     * @return {@code true} if this type has restrictions;
-     * {@code false} otherwise
-     */
-    public final boolean isRestricted() {
-        return getRestrictions() != null;
     }
 
     // endregion

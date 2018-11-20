@@ -101,14 +101,14 @@ public class RandomSupplier {
 
     public MetaType<?> arrayType(int dim) {
         return randomizer
-                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind != Kind.VOID))
+                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind() != Kind.VOID))
                 .map(t -> ArrayType.of(t, dim))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
     public MetaType<?> restrictedArrayType(int dim) {
         return randomizer
-                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind != Kind.VOID))
+                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind() != Kind.VOID))
                 .map(t -> ArrayType.of(t, dim, arrayRestriction(dim)))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
@@ -186,7 +186,7 @@ public class RandomSupplier {
      */
     @SuppressWarnings("unchecked")
     public <T> Constant<T> constantOf(MetaType<T> type) {
-        switch (type.kind) {
+        switch (type.kind()) {
             case BYTE:
                 return (Constant<T>) new ByteConstant((byte) rand.nextInt());
             case SHORT:
@@ -230,7 +230,7 @@ public class RandomSupplier {
     }
 
     public String getRandomNumericValue(MetaType<?> type, boolean notZero) {
-        switch (type.kind) {
+        switch (type.kind()) {
             case BYTE:
             case SHORT:
             case INT:

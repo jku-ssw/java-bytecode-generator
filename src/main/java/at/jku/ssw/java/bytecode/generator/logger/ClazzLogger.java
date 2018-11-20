@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// TODO make subclass of reference type
 public class ClazzLogger extends Logger {
 
     public final String name;

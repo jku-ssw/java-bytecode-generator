@@ -19,7 +19,7 @@ import static java.util.Collections.singletonList;
  *
  * @param <T> The Java primitive type class that is associated with this type
  */
-public class PrimitiveType<T> extends MetaType<T> {
+public class PrimitiveType<T> implements MetaType<T> {
 
     //-------------------------------------------------------------------------
     // region Type constants
@@ -27,36 +27,42 @@ public class PrimitiveType<T> extends MetaType<T> {
     /**
      * {@code byte} type constant.
      */
-    public static final PrimitiveType<Byte> BYTE = of(byte.class, CtClass.byteType, Kind.BYTE);
+    public static final PrimitiveType<Byte> BYTE = new PrimitiveType<>(byte.class, CtClass.byteType, Kind.BYTE);
 
     /**
      * {@code short} type constant.
      */
-    public static final PrimitiveType<Short> SHORT = of(short.class, CtClass.shortType, Kind.SHORT);
+    public static final PrimitiveType<Short> SHORT = new PrimitiveType<>(short.class, CtClass.shortType, Kind.SHORT);
+
     /**
      * {@code int} type constant.
      */
-    public static final PrimitiveType<Integer> INT = of(int.class, CtClass.intType, Kind.INT);
+    public static final PrimitiveType<Integer> INT = new PrimitiveType<>(int.class, CtClass.intType, Kind.INT);
+
     /**
      * {@code long} type constant.
      */
-    public static final PrimitiveType<Long> LONG = of(long.class, CtClass.longType, Kind.LONG);
+    public static final PrimitiveType<Long> LONG = new PrimitiveType<>(long.class, CtClass.longType, Kind.LONG);
+
     /**
      * {@code float} type constant.
      */
-    public static final PrimitiveType<Float> FLOAT = of(float.class, CtClass.floatType, Kind.FLOAT);
+    public static final PrimitiveType<Float> FLOAT = new PrimitiveType<>(float.class, CtClass.floatType, Kind.FLOAT);
+
     /**
      * {@code double} type constant.
      */
-    public static final PrimitiveType<Double> DOUBLE = of(double.class, CtClass.doubleType, Kind.DOUBLE);
+    public static final PrimitiveType<Double> DOUBLE = new PrimitiveType<>(double.class, CtClass.doubleType, Kind.DOUBLE);
+
     /**
      * {@code boolean} type constant.
      */
-    public static final PrimitiveType<Boolean> BOOLEAN = of(boolean.class, CtClass.booleanType, Kind.BOOLEAN);
+    public static final PrimitiveType<Boolean> BOOLEAN = new PrimitiveType<>(boolean.class, CtClass.booleanType, Kind.BOOLEAN);
+
     /**
      * {@code char} type constant.
      */
-    public static final PrimitiveType<Character> CHAR = of(char.class, CtClass.charType, Kind.CHAR);
+    public static final PrimitiveType<Character> CHAR = new PrimitiveType<>(char.class, CtClass.charType, Kind.CHAR);
 
     // endregion
     //-------------------------------------------------------------------------
@@ -79,46 +85,110 @@ public class PrimitiveType<T> extends MetaType<T> {
         );
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
+
+    /**
+     * The described primitive type.
+     */
+    private final Class<T> clazz;
+
+    /**
+     * The Javassist equivalent to {@link #clazz}
+     */
+    private final CtClass javassistClass;
+
+    /**
+     * The primitive type kind.
+     */
+    private final Kind kind;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Kind kind() {
+        return kind;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Class<T> clazz() {
+        return clazz;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CtClass javassistClazz() {
+        return javassistClass;
+    }
 
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
 
     /**
-     * Initializes special types that are backed by specific {@link CtClass}
-     * type constants (i.e. primitive types, void).
+     * Generates a new primitive type based on the given properties.
      *
-     * @param clazz     The corresponding class (e.g. {@code int.class})
-     * @param clazzType The mapped {@link CtClass} type instance
-     *                  (e.g. {@link CtClass#intType}.
-     * @param kind      The kind of the type
-     */
-    public static <T> PrimitiveType<T> of(Class<T> clazz, CtClass clazzType, Kind kind) {
-        assert !clazz.isArray();
-        return new PrimitiveType<>(clazz, clazzType, kind);
-    }
-
-    /**
-     * Generates a new type based on the given properties.
-     *
-     * @param clazz     The actual Java class type instance corresponding to
-     *                  this {@link MetaType}.
+     * @param clazz     The actual primitive Java class type instance
      * @param clazzType The {@link CtClass} type that maps to this type
-     * @param kind      The kind descriptor to catgorize different types
+     * @param kind      The kind descriptor to categorize different primitive
+     *                  types
      */
     protected PrimitiveType(Class<T> clazz, CtClass clazzType, Kind kind) {
-        super(clazz, clazzType, kind);
+        assert clazz != null;
+        assert clazzType != null;
+        assert kind != null;
+        assert clazz.isPrimitive();
+
+        this.clazz = clazz;
+        this.javassistClass = clazzType;
+        this.kind = kind;
     }
 
     // endregion
     //-------------------------------------------------------------------------
     // region Overridden methods
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return equals((PrimitiveType<?>) o);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return hash();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return clazz.getCanonicalName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final String getHashCode(FieldVarLogger<T> variable) {
         String name = variable.access();
 
-        return kind == Kind.BOOLEAN
+        return kind() == Kind.BOOLEAN
                 ? ternary(name, 1, 0)
                 : inPar(name);
     }
@@ -129,25 +199,25 @@ public class PrimitiveType<T> extends MetaType<T> {
     @Override
     public boolean isAssignableFrom(MetaType<?> other) {
         // void is neither assignable from nor to anything
-        if (other.kind == Kind.VOID)
+        if (other.kind() == Kind.VOID)
             return false;
 
         if (!(other instanceof PrimitiveType<?>))
             return false;
 
-        if (kind == other.kind)
+        if (kind() == other.kind())
             return true;
 
-        switch (kind) {
+        switch (kind()) {
             case DOUBLE:
             case FLOAT:
-                return other.kind == Kind.FLOAT;
+                return other.kind() == Kind.FLOAT;
             case LONG:
             case INT:
-                if (other.kind == Kind.INT || other.kind == Kind.RINT)
+                if (other.kind() == Kind.INT || other.kind() == Kind.RINT)
                     return true;
             case SHORT:
-                return other.kind == Kind.SHORT || other.kind == Kind.CHAR || other.kind == Kind.BYTE;
+                return other.kind() == Kind.SHORT || other.kind() == Kind.CHAR || other.kind() == Kind.BYTE;
             default:
                 return false;
         }
@@ -158,7 +228,7 @@ public class PrimitiveType<T> extends MetaType<T> {
      */
     @Override
     public List<? extends PrimitiveType<?>> getAssignableTypes() {
-        switch (kind) {
+        switch (kind()) {
             case BYTE:
                 return singletonList(BYTE);
             case SHORT:

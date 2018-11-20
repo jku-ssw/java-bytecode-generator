@@ -67,7 +67,7 @@ class MethodGenerator extends MethodCaller {
             }
         }
         String returnStatement;
-        if (returnType.kind == MetaType.Kind.VOID) {
+        if (returnType.kind() == MetaType.Kind.VOID) {
             returnStatement = "";
         } else {
             returnStatement = "return " + new JavassistResolver().resolve(getClazzLogger().valueOf(returnType, ml)) + ";";

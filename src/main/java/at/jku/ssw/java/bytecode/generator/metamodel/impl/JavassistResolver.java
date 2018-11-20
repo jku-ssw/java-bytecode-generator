@@ -28,13 +28,13 @@ public class JavassistResolver implements Resolver<String> {
         if (type.isVoid())
             return VOID;
 
-        return type.getClazz().getCanonicalName();
+        return type.clazz().getCanonicalName();
     }
 
     @Override
     public <T> String resolve(ArrayInit<T> arrayInit) {
         return NewArray(
-                arrayInit.type().clazz,
+                arrayInit.type().clazz(),
                 arrayInit.getParams().stream()
                         .map(this::resolve)
                         .collect(Collectors.toList())
@@ -44,7 +44,7 @@ public class JavassistResolver implements Resolver<String> {
     @Override
     public <U> String resolve(ConstructorCall<U> constructorCall) {
         return New(
-                constructorCall.type().clazz,
+                constructorCall.type().clazz(),
                 constructorCall.getParams().stream()
                         .map(this::resolve)
                         .collect(Collectors.joining())
@@ -106,7 +106,7 @@ public class JavassistResolver implements Resolver<String> {
         // add cast to signal to prevent ambiguous method calls
         // e.g. `foo(null)` could invoke
         // `foo(java.lang.String)` or `foo(java.lang.Object)`
-        return cast(NULL).to(constant.type().clazz);
+        return cast(NULL).to(constant.type().clazz());
     }
 
     @Override

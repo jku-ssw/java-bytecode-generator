@@ -7,8 +7,6 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
-import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
-import javassist.CtClass;
 
 import java.util.Arrays;
 import java.util.BitSet;
@@ -84,7 +82,6 @@ public final class ArrayType<T> extends RefType<T> {
 
         return new ArrayType<>(
                 clazz,
-                JavassistUtils.toCtClass(clazz),
                 inner,
                 dim,
                 restrictions
@@ -117,11 +114,11 @@ public final class ArrayType<T> extends RefType<T> {
      */
     public static ArrayType<?> of(MetaType<?> type, int dim, BitSet[] restrictions) {
         assert type != null : "Array type must not be null";
-        assert type.kind != Kind.VOID : "Cannot create array of void type";
+        assert type.kind() != Kind.VOID : "Cannot create array of void type";
         assert dim > 0 : "Invalid array dimensions";
 
         final String desc;
-        switch (type.kind) {
+        switch (type.kind()) {
             case BYTE:
                 desc = "B";
                 break;
@@ -147,7 +144,7 @@ public final class ArrayType<T> extends RefType<T> {
                 desc = "C";
                 break;
             case INSTANCE:
-                desc = "L" + type.clazz.getCanonicalName() + ";";
+                desc = "L" + type.clazz().getCanonicalName() + ";";
                 break;
             default:
                 // should not occur
@@ -181,24 +178,22 @@ public final class ArrayType<T> extends RefType<T> {
      *
      * @param clazz        The actual Java class type instance corresponding to
      *                     this {@link MetaType}.
-     * @param clazzType    The {@link CtClass} type that maps to this type
      * @param inner        Optional inner type reference for array types
      * @param dim          Optional number of dimensions for array types
      * @param restrictions Optional access restrictions for array types.
      *                     Those can be specified for each dimension
      */
     private ArrayType(Class<T> clazz,
-                      CtClass clazzType,
                       MetaType<?> inner,
                       int dim,
                       BitSet[] restrictions) {
-        super(clazz, clazzType, ARRAY);
+        super(clazz, ARRAY);
 
         // iff the type does not have dimensions, it must not be an array
         // and not have an inner type
         // if restrictions are given, it must be an array
-        assert dim == 0 && inner == null && kind != Kind.ARRAY && restrictions == null ||
-                dim > 0 && inner != null && kind == Kind.ARRAY;
+        assert dim == 0 && inner == null && kind() != Kind.ARRAY && restrictions == null ||
+                dim > 0 && inner != null && kind() == Kind.ARRAY;
 
         // the restrictions must cover all dimensions (if any)
         // and provide empty sets for unrestricted dimensions
@@ -227,7 +222,7 @@ public final class ArrayType<T> extends RefType<T> {
         assert array != null;
         assert nParams > 0;
 
-        Class<?> aClass = array.getType().clazz;
+        Class<?> aClass = array.getType().clazz();
 
         // determine the return type
         // (e.g. accessing int[][][] with 2 parameters
@@ -235,7 +230,7 @@ public final class ArrayType<T> extends RefType<T> {
         int remainingDim = array.getType().getDim() - nParams;
 
         MetaType<?> innerType = array.getType().getInner();
-        Class<?> componentType = ClassUtils.nthComponentType(nParams, array.getType().clazz)
+        Class<?> componentType = ClassUtils.nthComponentType(nParams, array.getType().clazz())
                 .orElseThrow(() ->
                         new AssertionError(String.format(
                                 "Mismatching dimensions: %d for %s",

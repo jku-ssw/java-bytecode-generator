@@ -126,7 +126,7 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
      */
     @Override
     public String toString() {
-        return clazz.getCanonicalName() + "{" +
+        return clazz().getCanonicalName() + "{" +
                 "range=" + range + ", " +
                 "exclusions=" + exclusions + ", " +
                 "inclusions=" + inclusions +
