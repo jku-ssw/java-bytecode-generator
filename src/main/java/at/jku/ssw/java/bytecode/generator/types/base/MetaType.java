@@ -98,7 +98,7 @@ public interface MetaType<T> extends Instantiable<T> {
 
     // endregion
     //-------------------------------------------------------------------------
-    // region Overridden methods
+    // region Object method replacements
 
     /**
      * Compares this instance to another type.
@@ -136,7 +136,7 @@ public interface MetaType<T> extends Instantiable<T> {
 
     // endregion
     //-------------------------------------------------------------------------
-    // region Type cast / kind check replacements
+    // region Utilities
 
     /**
      * Returns a hash that corresponds to this values.
@@ -145,35 +145,6 @@ public interface MetaType<T> extends Instantiable<T> {
      * @return a hash code that identifies this value
      */
     String getHashCode(FieldVarLogger<T> variable);
-
-    /**
-     * Determines whether this type describes a primitive type.
-     *
-     * @return {@code true} for primitive types; {@code false} otherwise
-     */
-    boolean isPrimitive();
-
-    /**
-     * Determines whether this type describes a reference type.
-     *
-     * @return {@code true} for reference types; {@code false} otherwise
-     */
-    boolean isRef();
-
-
-    /**
-     * Determines whether this type describes an array type.
-     *
-     * @return {@code true} for array types; {@code false} otherwise
-     */
-    boolean isArray();
-
-    /**
-     * Determines whether this type is the {@code void} type.
-     *
-     * @return {@code true} if this type is {@code void}; {@code false} otherwise
-     */
-    boolean isVoid();
 
     // endregion
     //-------------------------------------------------------------------------

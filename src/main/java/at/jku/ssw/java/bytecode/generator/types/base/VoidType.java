@@ -12,36 +12,12 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns;
 /**
  * Specialized {@link MetaType} for {@code void}.
  */
-public final class VoidType implements MetaType<Void> {
+public enum VoidType implements MetaType<Void> {
 
     /**
      * Singleton instance.
      */
-    public static final VoidType VOID = new VoidType();
-
-    /**
-     * Creates the {@code void} type.
-     */
-    private VoidType() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return hash();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        return equals((VoidType) o);
-    }
+    VOID;
 
     /**
      * {@inheritDoc}
@@ -81,38 +57,6 @@ public final class VoidType implements MetaType<Void> {
     @Override
     public String getHashCode(FieldVarLogger<Void> variable) {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isRef() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isVoid() {
-        return true;
     }
 
     /**

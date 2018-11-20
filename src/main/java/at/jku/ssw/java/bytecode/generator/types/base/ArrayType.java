@@ -286,14 +286,6 @@ public final class ArrayType<T> extends RefType<T> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isArray() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public MetaType<?> getInner() {
         return inner;
     }

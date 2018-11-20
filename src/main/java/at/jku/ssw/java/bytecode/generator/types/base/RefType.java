@@ -127,7 +127,7 @@ public class RefType<T> implements MetaType<T> {
      */
     @Override
     public String toString() {
-        return clazz.getCanonicalName();
+        return name();
     }
 
     /**
@@ -175,38 +175,6 @@ public class RefType<T> implements MetaType<T> {
         return TypeCache.INSTANCE.refTypes()
                 .filter(this::isAssignableFrom)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isPrimitive() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isRef() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isVoid() {
-        return false;
     }
 
     // endregion

@@ -178,7 +178,7 @@ public class PrimitiveType<T> implements MetaType<T> {
      */
     @Override
     public String toString() {
-        return clazz.getCanonicalName();
+        return name();
     }
 
     /**
@@ -260,38 +260,6 @@ public class PrimitiveType<T> implements MetaType<T> {
         }
 
         throw ErrorUtils.shouldNotReachHere("Unexpected primitive type " + this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isPrimitive() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isRef() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isVoid() {
-        return false;
     }
 
     // endregion

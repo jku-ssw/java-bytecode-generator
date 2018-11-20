@@ -7,6 +7,7 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.TypeIdentifier;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
 
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class JavassistResolver implements Resolver<String> {
     public <T> String resolve(TypeIdentifier<T> typeIdentifier) {
         MetaType<T> type = typeIdentifier.type();
 
-        if (type.isVoid())
+        if (type == VoidType.VOID)
             return VOID;
 
         return type.clazz().getCanonicalName();
