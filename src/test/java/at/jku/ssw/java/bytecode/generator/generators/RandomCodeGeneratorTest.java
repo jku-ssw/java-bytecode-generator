@@ -4,8 +4,10 @@ import at.jku.ssw.java.bytecode.generator.CLIArgumentsProvider;
 import at.jku.ssw.java.bytecode.generator.GeneratedClass;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
 import at.jku.ssw.java.bytecode.generator.Result;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -31,6 +33,11 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
     private static final String DIR = "src/test/resources/generated";
 
+    @BeforeEach
+    void setUp() {
+        TypeCache.CACHE.initialize();
+    }
+
     @ParameterizedTest
     @ArgumentsSource(MinorRepetitionProvider.class)
     @SuppressWarnings("unchecked")
@@ -39,20 +46,24 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
         args.add("-seed");
         args.add(String.valueOf(seed));
 
-        final GeneratedClass classA = generateClass("ASeededClass" + index, args);
-
-        final GeneratedClass classB = generateClass("AClassWithTheSameSeed" + index, args);
+        final GeneratedClass classA = generateClass("originals", "ASeededClass" + index, args);
 
         logger.info("Running class {}", classA);
         final Result exp = run(classA);
+
+        // unload the class loader
+
+        TypeCache.CACHE.initialize();
+
+        final GeneratedClass classB = generateClass("seeded", "ASeededClass" + index, args);
 
         logger.info("Running class {}", classB);
         final Result act = run(classB);
 
         compareResults(exp, act);
 
-        byte[] classABytecode = Files.readAllBytes(Paths.get(DIR).resolve(classA.name + ".class"));
-        byte[] classBBytecode = Files.readAllBytes(Paths.get(DIR).resolve(classB.name + ".class"));
+        byte[] classABytecode = Files.readAllBytes(Paths.get(DIR).resolve(classA.path).resolve(classA.name + ".class"));
+        byte[] classBBytecode = Files.readAllBytes(Paths.get(DIR).resolve(classB.path).resolve(classB.name + ".class"));
 
         assertSameStructure(classABytecode, classBBytecode);
     }

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static at.jku.ssw.java.bytecode.generator.types.TypeCache.CACHE;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
@@ -26,7 +27,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
  * allow for dynamic invocation, the class is defined abstract
  * to generate dynamic overloads on demand.
  */
-public abstract class ClazzLogger
+public class ClazzLogger
         extends Logger
         implements RefType<ClazzLogger> {
 
@@ -76,7 +77,7 @@ public abstract class ClazzLogger
 
     /**
      * Generates a new anonymous subclass of {@link ClazzLogger} that is
-     * uniquely identifiable by its {@link Class} type and therefore
+     * uniquely identifiable by its name and therefore
      * distinguishable from other generated classes.
      *
      * @param rand     The random instance
@@ -87,10 +88,8 @@ public abstract class ClazzLogger
     public static ClazzLogger generate(final Random rand,
                                        final String name,
                                        final RandomSupplier supplier) {
-        return new ClazzLogger(rand, name, supplier) {
-            /* nothing */
-        };
-        // TODO register in type cache
+        // register this type by name
+        return CACHE.register(new ClazzLogger(rand, name, supplier));
     }
 
     /**
@@ -145,7 +144,15 @@ public abstract class ClazzLogger
      */
     @Override
     public final int hashCode() {
-        return Objects.hash(name);
+        return descriptor().hashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String descriptor() {
+        return name;
     }
 
     /**
@@ -182,6 +189,26 @@ public abstract class ClazzLogger
         );
     }
 
+    /**
+     * A generated class is only assignable from other generated classes
+     * that extend it (therefore this lookup has to be dynamic).
+     *
+     * @param other The other type
+     * @return {@code true} if the other type is a generated class inheriting
+     * from this class or the same class; {@code false} otherwise
+     */
+    @Override
+    public boolean isAssignableFrom(MetaType<?> other) {
+        return other == this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<? extends ClazzLogger> getAssignableTypes() {
+        return Collections.singletonList(this);
+    }
 
     // endregion
     //-------------------------------------------------------------------------

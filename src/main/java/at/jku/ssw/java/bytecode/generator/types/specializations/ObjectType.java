@@ -62,6 +62,6 @@ public enum ObjectType implements RefType<Object> {
      */
     @Override
     public List<? extends RefType<?>> getAssignableTypes() {
-        return TypeCache.INSTANCE.refTypes().collect(Collectors.toList());
+        return TypeCache.CACHE.refTypes().collect(Collectors.toList());
     }
 }

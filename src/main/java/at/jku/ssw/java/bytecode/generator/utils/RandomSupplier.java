@@ -90,25 +90,25 @@ public class RandomSupplier {
     }
 
     public MetaType<?> primitiveType() {
-        return randomizer.oneOf(TypeCache.INSTANCE.primitiveTypes())
+        return randomizer.oneOf(TypeCache.CACHE.primitiveTypes())
                 .orElseThrow(() -> new AssertionError("No primitive types available"));
     }
 
     public MetaType<?> classType() {
-        return randomizer.oneOf(TypeCache.INSTANCE.refTypes())
+        return randomizer.oneOf(TypeCache.CACHE.refTypes())
                 .orElseThrow(() -> new AssertionError("No class types available"));
     }
 
     public MetaType<?> arrayType(int dim) {
         return randomizer
-                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind() != Kind.VOID))
+                .oneOf(TypeCache.CACHE.types().filter(t -> t.kind() != Kind.VOID))
                 .map(t -> ArrayType.of(t, dim))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }
 
     public MetaType<?> restrictedArrayType(int dim) {
         return randomizer
-                .oneOf(TypeCache.INSTANCE.types().filter(t -> t.kind() != Kind.VOID))
+                .oneOf(TypeCache.CACHE.types().filter(t -> t.kind() != Kind.VOID))
                 .map(t -> ArrayType.of(t, dim, arrayRestriction(dim)))
                 .orElseThrow(() -> new AssertionError("Could not create array type"));
     }

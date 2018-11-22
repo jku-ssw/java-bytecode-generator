@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
@@ -12,7 +13,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
  *
  * @param <T> The mapped Java class
  */
-public final class DynamicRefType<T> implements RefType<T> {
+public class DynamicRefType<T> implements RefType<T> {
     //-------------------------------------------------------------------------
     // region Properties
 
@@ -36,7 +37,7 @@ public final class DynamicRefType<T> implements RefType<T> {
         assert !clazz.isArray();
         this.clazz = clazz;
 
-        // TODO register in type cache
+        TypeCache.CACHE.register(this);
     }
 
     // endregion
@@ -58,7 +59,7 @@ public final class DynamicRefType<T> implements RefType<T> {
      */
     @Override
     public int hashCode() {
-        return clazz.hashCode();
+        return descriptor().hashCode();
     }
 
     /**

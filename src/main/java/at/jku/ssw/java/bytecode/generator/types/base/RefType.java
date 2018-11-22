@@ -42,7 +42,7 @@ public interface RefType<T> extends MetaType<T> {
      */
     @Override
     default List<? extends RefType<?>> getAssignableTypes() {
-        return TypeCache.INSTANCE.refTypes()
+        return TypeCache.CACHE.refTypes()
                 .filter(this::isAssignableFrom)
                 .collect(Collectors.toList());
     }

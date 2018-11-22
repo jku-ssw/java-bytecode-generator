@@ -8,9 +8,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +38,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         );
     }
 
-    default GeneratedClass generateClass(String name, String... options) {
+    default GeneratedClass generateClass(String path, String name, String... options) {
         // join passed options and defaults
         String[] allOpts = Stream.concat(
                 Stream.of(
@@ -44,7 +46,6 @@ public interface GeneratorTest extends CLIArgumentsProvider {
                 ),
                 Stream.of(options)
         ).toArray(String[]::new);
-
 
         ControlValueParser parser = new ControlValueParser(allOpts);
         GenerationController controller = parser.parse();
@@ -59,15 +60,22 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         try {
             randomCodeGenerator = new RandomCodeGenerator(className, controller);
             randomCodeGenerator.generate();
-            randomCodeGenerator.writeFile(outputDirectory());
+            Path p = Paths.get(outputDirectory()).resolve(path);
+            Files.createDirectories(p);
+            randomCodeGenerator.writeFile(p.toString());
         } catch (Throwable t) {
             logger.error("Generation failed");
             logger.error("Command line arguments: {}", String.join(" ", allOpts));
             logger.error("Seed: {}", controller.getSeedValue());
-            throw t;
+            Assertions.fail(t);
+            return null;
         }
 
-        return new GeneratedClass(className, randomCodeGenerator.getSeed(), String.join(" ", allOpts));
+        return new GeneratedClass(path, className, randomCodeGenerator.getSeed(), String.join(" ", allOpts));
+    }
+
+    default GeneratedClass generateClass(String path, String name, List<String> options) {
+        return generateClass(path, name, options.toArray(new String[0]));
     }
 
     default void compareResults(Result expected, Result actual) {
@@ -76,13 +84,15 @@ public interface GeneratorTest extends CLIArgumentsProvider {
     }
 
     default GeneratedClass generateClass(String name, List<String> options) {
-        return generateClass(name, options.toArray(new String[0]));
+        return generateClass("", name, options);
     }
 
     default Result run(GeneratedClass clazz)
             throws IOException, InterruptedException {
 
-        Process p = Runtime.getRuntime().exec("java " + clazz.name, null, new File(outputDirectory()));
+        Path path = Paths.get(outputDirectory()).resolve(clazz.path);
+
+        Process p = Runtime.getRuntime().exec("java " + clazz.name, null, path.toFile());
 
         try (BufferedReader outStr = new BufferedReader(new InputStreamReader(p.getInputStream()));
              BufferedReader errStr = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {

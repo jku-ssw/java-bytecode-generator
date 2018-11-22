@@ -10,7 +10,9 @@ import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
@@ -20,29 +22,44 @@ import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
  * current run.
  */
 public enum TypeCache {
+    //-------------------------------------------------------------------------
+    // region Constants, singleton
 
     /**
      * Singleton instance.
      */
-    INSTANCE;
+    CACHE;
 
     public static final Logger logger = LogManager.getLogger();
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Properties
+
     /**
      * Captures all primitive types.
-     * Since they are initialized on startup, this map remains constant
+     * Since they are initialized on startup, this set remains constant
      * throughout the execution.
      */
-    private final Map<Class<?>, PrimitiveType<?>> primitiveTypes;
+    final Set<PrimitiveType<?>> primitiveTypes;
 
     /**
      * Captures all reference types.
-     * Since "array types" are created on demand, this map only stores
+     * Since "array types" are created on demand, this set only stores
      * common reference types (including those that are explicitly covered
-     * by a meta type). This map may be modified when new types are registered
+     * by a meta type). This set may be modified when new types are registered
      * (e.g. a new class is generated).
      */
-    private final Map<Class<?>, RefType<?>> refTypes;
+    final Set<RefType<?>> refTypes;
+
+    /**
+     * Checks whether this cache was already initialized.
+     */
+    private boolean initialized;
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Initialization
 
     /**
      * Initializes the type maps.
@@ -51,66 +68,82 @@ public enum TypeCache {
      * access).
      */
     TypeCache() {
-        primitiveTypes = new HashMap<>();
-        refTypes = new HashMap<>();
+        primitiveTypes = new HashSet<>();
+        refTypes = new HashSet<>();
+        initialize();
+        System.out.println("INITIALIZED!!!");
+    }
 
-        // register primitive types
-        primitiveTypes.put(Byte.TYPE, BYTE);
-        primitiveTypes.put(Short.TYPE, SHORT);
-        primitiveTypes.put(Integer.TYPE, INT);
-        primitiveTypes.put(Long.TYPE, LONG);
-        primitiveTypes.put(Float.TYPE, FLOAT);
-        primitiveTypes.put(Double.TYPE, DOUBLE);
-        primitiveTypes.put(Boolean.TYPE, BOOLEAN);
-        primitiveTypes.put(Character.TYPE, CHAR);
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Caching
 
-        // register reference types
-        refTypes.put(Object.class, ObjectType.OBJECT);
-        refTypes.put(Date.class, DateType.DATE);
-        refTypes.put(String.class, StringType.STRING);
-
-        // register boxed types
-        refTypes.put(Byte.class, BoxedType.BYTE);
-        refTypes.put(Short.class, BoxedType.SHORT);
-        refTypes.put(Integer.class, BoxedType.INT);
-        refTypes.put(Long.class, BoxedType.LONG);
-        refTypes.put(Float.class, BoxedType.FLOAT);
-        refTypes.put(Double.class, BoxedType.DOUBLE);
-        refTypes.put(Boolean.class, BoxedType.BOOLEAN);
-        refTypes.put(Character.class, BoxedType.CHAR);
+    /**
+     * Registers the given primitive type.
+     * This method is private since primitive types are only registered during
+     * initialization by the cache itself.
+     *
+     * @param primitiveType The primitive type
+     * @param <T>           The actual primitive type implementation
+     * @param <U>           The actual Java class
+     * @return the registered primitive type
+     */
+    private <T extends PrimitiveType<U>, U> T register(T primitiveType) {
+        return register(primitiveTypes, primitiveType);
     }
 
     /**
      * Registers a new reference type.
      *
-     * @param newType The reference type that should be made available.
-     * @param <T>     The actual Java type
+     * @param type The reference type that should be made available.
+     * @param <T>  The actual Java type
      * @return the reference type that was registered (the same as the input)
      */
-    @SuppressWarnings("unchecked")
-    public final <T> RefType<T> register(RefType<T> newType) {
-        logger.error("Registering type " + newType);
-        final T oldType = (T) refTypes.putIfAbsent(newType.clazz(), newType);
-
-        assert oldType == null : "Type '" + oldType + "' already registered";
-        return newType;
+    public <T extends RefType<U>, U> T register(T type) {
+        return register(refTypes, type);
     }
 
     /**
-     * Looks up the registered meta type for the given Java class.
+     * Private helper to register the given type within the given type set.
      *
-     * @param clazz The class that is looked up
-     * @param <T>   The parameter identifying the type
-     * @return the mapped meta type for the given class or nothing if the
-     * class is not registered yet
+     * @param types The set of registered types
+     * @param type  The new type
+     * @param <T>   The actual type of the set values
+     * @param <U>   The actual meta type implementation
+     * @return the registered type
      */
-    @SuppressWarnings("unchecked")
-    public final <T> Optional<? extends MetaType<? extends T>> find(Class<T> clazz) {
-        MetaType<? extends T> type = (MetaType<? extends T>) primitiveTypes.get(clazz);
+    private <T extends MetaType<?>, U extends T> U register(Set<T> types, U type) {
+        final boolean success = types.add(type);
 
-        return type == null
-                ? Optional.ofNullable((MetaType<? extends T>) refTypes.get(clazz))
-                : Optional.of(type);
+        assert success : "Type '" + type + "' already registered";
+        return type;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Cache lookup
+
+    /**
+     * Checks whether the given primitive type is already cached.
+     *
+     * @param primitiveType The primitive type
+     * @return {@code true} if the primitive type set already contains this
+     * primitive type; {@code false} otherwise
+     * }
+     */
+    public boolean contains(PrimitiveType<?> primitiveType) {
+        return primitiveTypes.contains(primitiveType);
+    }
+
+    /**
+     * Checks whether the given reference type is already cached.
+     *
+     * @param refType The reference type
+     * @return {@code true} if the reference type set already contains this
+     * reference type; {@code false} otherwise
+     */
+    public boolean contains(RefType<?> refType) {
+        return refTypes.contains(refType);
     }
 
     /**
@@ -119,10 +152,9 @@ public enum TypeCache {
      *
      * @return a stream of all available (registered) meta types
      */
-    public final Stream<? extends MetaType<?>> types() {
+    public Stream<? extends MetaType<?>> types() {
         return Stream
                 .of(primitiveTypes, refTypes)
-                .map(Map::values)
                 .flatMap(Collection::stream);
     }
 
@@ -131,8 +163,8 @@ public enum TypeCache {
      *
      * @return a stream of reference types
      */
-    public final Stream<RefType<?>> refTypes() {
-        return refTypes.values().stream();
+    public Stream<RefType<?>> refTypes() {
+        return refTypes.stream();
     }
 
     /**
@@ -140,9 +172,57 @@ public enum TypeCache {
      *
      * @return a stream of primitive types
      */
-    public final Stream<PrimitiveType<?>> primitiveTypes() {
-        return primitiveTypes.values().stream();
+    public Stream<PrimitiveType<?>> primitiveTypes() {
+        return primitiveTypes.stream();
     }
 
+    // endregion
+    //-------------------------------------------------------------------------
+    // region Cache control
 
+    /**
+     * Initializes this cache and fills it with the default values.
+     */
+    public void initialize() {
+        if (initialized)
+            invalidate();
+
+        // register primitive types
+        register(BYTE);
+        register(SHORT);
+        register(INT);
+        register(LONG);
+        register(FLOAT);
+        register(DOUBLE);
+        register(BOOLEAN);
+        register(CHAR);
+
+        // register reference types
+        register(ObjectType.OBJECT);
+        register(DateType.DATE);
+        register(StringType.STRING);
+
+        // register boxed types
+        register(BoxedType.BYTE);
+        register(BoxedType.SHORT);
+        register(BoxedType.INT);
+        register(BoxedType.LONG);
+        register(BoxedType.FLOAT);
+        register(BoxedType.DOUBLE);
+        register(BoxedType.BOOLEAN);
+        register(BoxedType.CHAR);
+        initialized = true;
+    }
+
+    /**
+     * Invalidates the cache by clearing all entries.
+     */
+    public void invalidate() {
+        primitiveTypes.clear();
+        refTypes.clear();
+        initialized = false;
+    }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

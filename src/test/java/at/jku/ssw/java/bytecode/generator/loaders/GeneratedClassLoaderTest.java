@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.loaders;
 
 import at.jku.ssw.java.bytecode.generator.GeneratedClass;
 import at.jku.ssw.java.bytecode.generator.GeneratorTest;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @BeforeEach
     public void setUp() {
         generatedClassLoader = new GeneratedClassLoader(DIR);
+        TypeCache.CACHE.initialize();
     }
 
     @AfterEach
