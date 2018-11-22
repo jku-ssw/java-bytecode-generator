@@ -5,11 +5,9 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
-import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
-import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,42 +30,42 @@ public class BoxedType<T> implements RefType<T> {
     /**
      * {@code byte} type constant.
      */
-    public static final BoxedType<Byte> BYTE = new BoxedType<>(Byte.class, byte.class);
+    public static final BoxedType<Byte> BYTE = new BoxedType<>(Byte.class, PrimitiveType.BYTE);
 
     /**
      * {@code short} type constant.
      */
-    public static final BoxedType<Short> SHORT = new BoxedType<>(Short.class, short.class);
+    public static final BoxedType<Short> SHORT = new BoxedType<>(Short.class, PrimitiveType.SHORT);
 
     /**
      * {@code int} type constant.
      */
-    public static final BoxedType<Integer> INT = new BoxedType<>(Integer.class, int.class);
+    public static final BoxedType<Integer> INT = new BoxedType<>(Integer.class, PrimitiveType.INT);
 
     /**
      * {@code long} type constant.
      */
-    public static final BoxedType<Long> LONG = new BoxedType<>(Long.class, long.class);
+    public static final BoxedType<Long> LONG = new BoxedType<>(Long.class, PrimitiveType.LONG);
 
     /**
      * {@code float} type constant.
      */
-    public static final BoxedType<Float> FLOAT = new BoxedType<>(Float.class, float.class);
+    public static final BoxedType<Float> FLOAT = new BoxedType<>(Float.class, PrimitiveType.FLOAT);
 
     /**
      * {@code double} type constant.
      */
-    public static final BoxedType<Double> DOUBLE = new BoxedType<>(Double.class, double.class);
+    public static final BoxedType<Double> DOUBLE = new BoxedType<>(Double.class, PrimitiveType.DOUBLE);
 
     /**
      * {@code boolean} type constant.
      */
-    public static final BoxedType<Boolean> BOOLEAN = new BoxedType<>(Boolean.class, boolean.class);
+    public static final BoxedType<Boolean> BOOLEAN = new BoxedType<>(Boolean.class, PrimitiveType.BOOLEAN);
 
     /**
      * {@code char} type constant.
      */
-    public static final BoxedType<Character> CHAR = new BoxedType<>(Character.class, char.class);
+    public static final BoxedType<Character> CHAR = new BoxedType<>(Character.class, PrimitiveType.CHAR);
 
     // endregion
     //-------------------------------------------------------------------------
@@ -81,7 +79,7 @@ public class BoxedType<T> implements RefType<T> {
     /**
      * The boxed primitive type.
      */
-    private final Class<?> boxed;
+    private final PrimitiveType<?> boxed;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -93,9 +91,9 @@ public class BoxedType<T> implements RefType<T> {
      * @param clazz The Java class type
      * @param boxed The boxed primitive type
      */
-    private BoxedType(Class<T> clazz, Class<?> boxed) {
+    private BoxedType(Class<T> clazz, PrimitiveType<T> boxed) {
         assert !clazz.isArray();
-        assert boxed.isPrimitive();
+        assert !clazz.isPrimitive();
         this.clazz = clazz;
         this.boxed = boxed;
     }
@@ -116,7 +114,7 @@ public class BoxedType<T> implements RefType<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(clazz, boxed);
+        return descriptor().hashCode();
     }
 
     @Override
@@ -154,11 +152,7 @@ public class BoxedType<T> implements RefType<T> {
                     @SuppressWarnings("unchecked")
                     @Override
                     public List<PrimitiveType<?>> requires() {
-                        PrimitiveType<T> primitiveType =
-                                (PrimitiveType<T>) TypeCache.INSTANCE.find(boxed)
-                                        .orElseThrow(ErrorUtils::shouldNotReachHere);
-
-                        return singletonList(primitiveType);
+                        return singletonList(boxed);
                     }
 
                     @Override
