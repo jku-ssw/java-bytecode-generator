@@ -2,7 +2,6 @@ package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import javassist.CtClass;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,14 +40,6 @@ public enum VoidType implements MetaType<Void> {
     @Override
     public Class<Void> clazz() {
         return Void.class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CtClass javassistClass() {
-        return CtClass.voidType;
     }
 
     /**

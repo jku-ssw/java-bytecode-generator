@@ -3,6 +3,7 @@ package at.jku.ssw.java.bytecode.generator.logger;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
+import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CtClass;
 
 import java.lang.reflect.Modifier;
@@ -139,11 +140,10 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
                 TO_STRING_FORMAT,
                 (inherited ? "@Inherited " : ""),
                 Modifier.toString(modifiers),
-                returnType.clazz().getCanonicalName(),
+                returnType.descriptor(),
                 name,
                 Arrays.stream(paramTypes)
-                        .map(MetaType::clazz)
-                        .map(Class::getCanonicalName)
+                        .map(MetaType::descriptor)
                         .collect(Collectors.joining(", ")));
     }
 
@@ -169,7 +169,9 @@ public class MethodLogger<T> extends Logger /*implements Builder<T>*/ {
 
     public CtClass[] getCtParamTypes() {
         if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes).map(MetaType::javassistClass).toArray(CtClass[]::new);
+        return Arrays.stream(paramTypes)
+                .map(JavassistUtils::toCtClass)
+                .toArray(CtClass[]::new);
     }
 
     public boolean isInherited() {

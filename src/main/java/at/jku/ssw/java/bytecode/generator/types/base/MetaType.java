@@ -2,8 +2,6 @@ package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Instantiable;
-import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
-import javassist.CtClass;
 
 import java.util.BitSet;
 import java.util.List;
@@ -88,16 +86,6 @@ public interface MetaType<T> extends Instantiable<T> {
      */
     default String descriptor() {
         return clazz().getCanonicalName();
-    }
-
-    /**
-     * Returns the Javassist {@link CtClass} representation of the Java class
-     * given by {@link #clazz()}.
-     *
-     * @return the Javassist pendant to the Java class
-     */
-    default CtClass javassistClass() {
-        return JavassistUtils.toCtClass(clazz());
     }
 
     /**

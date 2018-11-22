@@ -3,9 +3,9 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.IntRange;
-import javassist.CtClass;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a restricted version of an integer.
@@ -70,7 +70,7 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
     private RestrictedIntType(IntRange range,
                               Set<Integer> exclusions,
                               Set<Integer> inclusions) {
-        super(int.class, CtClass.intType, Kind.RINT);
+        super(int.class, Kind.RINT);
 
         if (range == null && (inclusions == null || inclusions.isEmpty()))
             throw new IllegalArgumentException("Cannot create restricted type with neither range nor options");
@@ -151,7 +151,43 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), range, exclusions, inclusions);
+        return descriptor().hashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String descriptor() {
+        StringBuilder str = new StringBuilder(super.descriptor());
+
+        if (range != null) {
+            str.append("[")
+                    .append(range.min)
+                    .append(", ")
+                    .append(range.max)
+                    .append("]");
+        }
+
+        if (inclusions != null) {
+            str.append(" w/ ")
+                    .append("[")
+                    .append(inclusions.stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(" ")))
+                    .append("]");
+        }
+
+        if (exclusions != null) {
+            str.append(" w/o ")
+                    .append("[")
+                    .append(exclusions.stream()
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(" ")))
+                    .append("]");
+        }
+
+        return str.toString();
     }
 
     /**
@@ -159,11 +195,7 @@ public class RestrictedIntType extends PrimitiveType<Integer> {
      */
     @Override
     public String toString() {
-        return clazz().getCanonicalName() + "{" +
-                "range=" + range + ", " +
-                "exclusions=" + exclusions + ", " +
-                "inclusions=" + inclusions +
-                "}";
+        return descriptor();
     }
 
     // endregion

@@ -5,7 +5,6 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
-import javassist.CtClass;
 
 import java.util.List;
 
@@ -27,42 +26,42 @@ public class PrimitiveType<T> implements MetaType<T> {
     /**
      * {@code byte} type constant.
      */
-    public static final PrimitiveType<Byte> BYTE = new PrimitiveType<>(byte.class, CtClass.byteType, Kind.BYTE);
+    public static final PrimitiveType<Byte> BYTE = new PrimitiveType<>(byte.class, Kind.BYTE);
 
     /**
      * {@code short} type constant.
      */
-    public static final PrimitiveType<Short> SHORT = new PrimitiveType<>(short.class, CtClass.shortType, Kind.SHORT);
+    public static final PrimitiveType<Short> SHORT = new PrimitiveType<>(short.class, Kind.SHORT);
 
     /**
      * {@code int} type constant.
      */
-    public static final PrimitiveType<Integer> INT = new PrimitiveType<>(int.class, CtClass.intType, Kind.INT);
+    public static final PrimitiveType<Integer> INT = new PrimitiveType<>(int.class, Kind.INT);
 
     /**
      * {@code long} type constant.
      */
-    public static final PrimitiveType<Long> LONG = new PrimitiveType<>(long.class, CtClass.longType, Kind.LONG);
+    public static final PrimitiveType<Long> LONG = new PrimitiveType<>(long.class, Kind.LONG);
 
     /**
      * {@code float} type constant.
      */
-    public static final PrimitiveType<Float> FLOAT = new PrimitiveType<>(float.class, CtClass.floatType, Kind.FLOAT);
+    public static final PrimitiveType<Float> FLOAT = new PrimitiveType<>(float.class, Kind.FLOAT);
 
     /**
      * {@code double} type constant.
      */
-    public static final PrimitiveType<Double> DOUBLE = new PrimitiveType<>(double.class, CtClass.doubleType, Kind.DOUBLE);
+    public static final PrimitiveType<Double> DOUBLE = new PrimitiveType<>(double.class, Kind.DOUBLE);
 
     /**
      * {@code boolean} type constant.
      */
-    public static final PrimitiveType<Boolean> BOOLEAN = new PrimitiveType<>(boolean.class, CtClass.booleanType, Kind.BOOLEAN);
+    public static final PrimitiveType<Boolean> BOOLEAN = new PrimitiveType<>(boolean.class, Kind.BOOLEAN);
 
     /**
      * {@code char} type constant.
      */
-    public static final PrimitiveType<Character> CHAR = new PrimitiveType<>(char.class, CtClass.charType, Kind.CHAR);
+    public static final PrimitiveType<Character> CHAR = new PrimitiveType<>(char.class, Kind.CHAR);
 
     // endregion
     //-------------------------------------------------------------------------
@@ -95,11 +94,6 @@ public class PrimitiveType<T> implements MetaType<T> {
     private final Class<T> clazz;
 
     /**
-     * The Javassist equivalent to {@link #clazz}
-     */
-    private final CtClass javassistClass;
-
-    /**
      * The primitive type kind.
      */
     private final Kind kind;
@@ -120,14 +114,6 @@ public class PrimitiveType<T> implements MetaType<T> {
         return clazz;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CtClass javassistClass() {
-        return javassistClass;
-    }
-
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
@@ -135,19 +121,16 @@ public class PrimitiveType<T> implements MetaType<T> {
     /**
      * Generates a new primitive type based on the given properties.
      *
-     * @param clazz     The actual primitive Java class type instance
-     * @param clazzType The {@link CtClass} type that maps to this type
-     * @param kind      The kind descriptor to categorize different primitive
-     *                  types
+     * @param clazz The actual primitive Java class type instance
+     * @param kind  The kind descriptor to categorize different primitive
+     *              types
      */
-    protected PrimitiveType(Class<T> clazz, CtClass clazzType, Kind kind) {
+    protected PrimitiveType(Class<T> clazz, Kind kind) {
         assert clazz != null;
-        assert clazzType != null;
         assert kind != null;
         assert clazz.isPrimitive();
 
         this.clazz = clazz;
-        this.javassistClass = clazzType;
         this.kind = kind;
     }
 
@@ -170,7 +153,7 @@ public class PrimitiveType<T> implements MetaType<T> {
      */
     @Override
     public int hashCode() {
-        return clazz.hashCode();
+        return descriptor().hashCode();
     }
 
     /**
