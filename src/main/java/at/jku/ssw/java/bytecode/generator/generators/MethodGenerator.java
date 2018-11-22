@@ -53,7 +53,7 @@ class MethodGenerator extends MethodCaller {
 
     @SuppressWarnings("unchecked")
     private <T> MethodLogger<T> generateMethod(String name, MetaType<T> returnType, MetaType[] paramTypes, int modifiers) {
-        MethodLogger<T> ml = new MethodLogger<>(rand, getClazzLogger().name(), name, modifiers, returnType, paramTypes);
+        MethodLogger<T> ml = new MethodLogger<>(rand, getClazzLogger(), name, modifiers, returnType, paramTypes);
         StringBuilder paramsStr = new StringBuilder();
         if (paramTypes != null && paramTypes.length != 0) {
             String paramName = this.getRandomSupplier().getParVarName(1);
