@@ -17,14 +17,4 @@ public interface Expression<T> {
      * @return the type corresponding to the evaluated type
      */
     MetaType<T> type();
-
-    /**
-     * Returns the actual Java class that corresponds to this expressions
-     * result.
-     *
-     * @return the Java class to which this expression evaluates
-     */
-    default Class<? extends T> clazz() {
-        return type().clazz();
-    }
 }
