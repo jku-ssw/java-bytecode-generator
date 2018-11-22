@@ -7,13 +7,13 @@ import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
+import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.MetaType.Kind.ARRAY;
@@ -159,13 +159,13 @@ public final class ArrayType<T> implements RefType<T> {
         Class<?> clazz;
         try {
             clazz = Class.forName(
-                    IntStream.range(0, dim)
-                            .mapToObj(__ -> "[")
+                    Stream.generate(() -> "[")
+                            .limit(dim)
                             .collect(Collectors.joining()) + desc
             );
         } catch (ClassNotFoundException e) {
             // should not happen
-            throw new AssertionError(e);
+            throw ErrorUtils.shouldNotReachHere();
         }
 
         return of(clazz, dim, type, restrictions);
@@ -223,6 +223,7 @@ public final class ArrayType<T> implements RefType<T> {
      */
     public static MetaType<?> resultingTypeOf(FieldVarLogger<?> array, int nParams) {
         assert array != null;
+        assert array.getType().kind() == ARRAY;
         assert nParams > 0;
 
         Class<?> aClass = array.getType().clazz();
@@ -269,9 +270,22 @@ public final class ArrayType<T> implements RefType<T> {
      */
     @Override
     public int hashCode() {
-        return clazz.hashCode();
+        return descriptor().hashCode();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String descriptor() {
+        return inner.descriptor() + Stream.generate(() -> "[]").
+                limit(dim)
+                .collect(Collectors.joining());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return descriptor();
