@@ -104,10 +104,10 @@ public interface MetaType<T> extends Instantiable<T> {
     // region Utilities
 
     /**
-     * Returns a hash that corresponds to this values.
+     * Returns an expression that generates a hash corresponding to this value.
      *
      * @param variable The variable holding this value
-     * @return a hash code that identifies this value
+     * @return an expression that - when resolved - generates a hash code
      */
     // TODO migrate return type to expression
     String getHashCode(FieldVarLogger<T> variable);

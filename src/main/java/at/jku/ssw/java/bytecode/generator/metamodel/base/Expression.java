@@ -16,5 +16,5 @@ public interface Expression<T> {
      *
      * @return the type corresponding to the evaluated type
      */
-    MetaType<T> type();
+    MetaType<? extends T> type();
 }

@@ -23,6 +23,8 @@ public interface Resolver<T> {
             return resolve((ConstructorCall<U>) expression);
         if (expression instanceof FieldVarLogger)
             return resolve((FieldVarLogger<T>) expression);
+        if (expression instanceof MethodCall)
+            return resolve((MethodCall<T>) expression);
 
         throw ErrorUtils.shouldNotReachHere("Unexpected expression " + expression.getClass());
     }
@@ -79,5 +81,7 @@ public interface Resolver<T> {
     <U> T resolve(ConstructorCall<U> constructorCall);
 
     <U> T resolve(FieldVarLogger<U> fieldVarLogger);
+
+    <U> T resolve(MethodCall<U> methodCall);
 
 }

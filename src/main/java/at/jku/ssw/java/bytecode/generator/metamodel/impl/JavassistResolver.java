@@ -1,10 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.impl;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.ArrayInit;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.TypeIdentifier;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.*;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
@@ -24,7 +21,7 @@ public class JavassistResolver implements Resolver<String> {
 
     @Override
     public <T> String resolve(TypeIdentifier<T> typeIdentifier) {
-        MetaType<T> type = typeIdentifier.type();
+        MetaType<? extends T> type = typeIdentifier.type();
 
         if (type == VoidType.VOID)
             return VOID;
@@ -59,6 +56,17 @@ public class JavassistResolver implements Resolver<String> {
                         ? fieldVarLogger.getClazz()
                         : fieldVarLogger.isField() ? "this" : "",
                 fieldVarLogger.name
+        );
+    }
+
+    @Override
+    public <U> String resolve(MethodCall<U> methodCall) {
+        return method(
+                resolve(methodCall.sender()),
+                methodCall.name(),
+                methodCall.arguments().stream()
+                        .map(this::resolve)
+                        .collect(Collectors.toList())
         );
     }
 

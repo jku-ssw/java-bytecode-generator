@@ -98,7 +98,7 @@ public class StatementDSL {
         public static final String NULL = "null";
         public static final String ARRAY = "[%s]";
         public static final String FIELD_ACCESS = "%s.%s";
-        public static final String METHOD_CALL_NO_ARGS = "%s.%s()";
+        public static final String METHOD_CALL = "%s.%s(%s)";
         public static final String VOID = "void";
     }
 
@@ -220,7 +220,11 @@ public class StatementDSL {
     }
 
     public static String method(String owner, String name) {
-        return String.format(METHOD_CALL_NO_ARGS, owner, name);
+        return String.format(METHOD_CALL, owner, name, "");
+    }
+
+    public static String method(String owner, String name, List<String> arguments) {
+        return String.format(METHOD_CALL, owner, name, String.join(", ", arguments));
     }
 
     public static String variable(String owner, String v) {
