@@ -71,7 +71,6 @@ public enum TypeCache {
         primitiveTypes = new HashSet<>();
         refTypes = new HashSet<>();
         reset();
-        System.out.println("INITIALIZED!!!");
     }
 
     // endregion
