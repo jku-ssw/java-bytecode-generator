@@ -6,6 +6,7 @@ import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
+import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import javassist.CannotCompileException;
 import javassist.CtField;
 import javassist.CtMethod;
@@ -24,7 +25,7 @@ class FieldVarGenerator extends Generator {
 
     private void generateField(String name, MetaType<?> type, int modifiers, String value) {
         try {
-            CtField f = new CtField(type.javassistClass(), name, this.getClazzContainer().getClazzFile());
+            CtField f = new CtField(JavassistUtils.toCtClass(type), name, this.getClazzContainer().getClazzFile());
             if (value == null) {
                 this.getClazzFile().addField(f);
             } else {
@@ -64,7 +65,7 @@ class FieldVarGenerator extends Generator {
     private String srcGenerateLocalVariable(String name, MetaType<?> type, MethodLogger<?> method, String value) {
         CtMethod ctMethod = this.getCtMethod(method);
         try {
-            ctMethod.addLocalVariable(name, type.javassistClass());
+            ctMethod.addLocalVariable(name, JavassistUtils.toCtClass(type));
             String src = name + " = " + value + ";";
             method.logVariable(name, clazzContainer.getFileName(), type, 0, true, false);
             return src;
