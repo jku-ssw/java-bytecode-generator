@@ -70,7 +70,7 @@ public enum TypeCache {
     TypeCache() {
         primitiveTypes = new HashSet<>();
         refTypes = new HashSet<>();
-        initialize();
+        reset();
         System.out.println("INITIALIZED!!!");
     }
 
@@ -181,12 +181,18 @@ public enum TypeCache {
     // region Cache control
 
     /**
+     * Resets and clears this cache and fills it with the default values.
+     */
+    public void reset() {
+        if (initialized)
+            invalidate();
+        initialize();
+    }
+
+    /**
      * Initializes this cache and fills it with the default values.
      */
     public void initialize() {
-        if (initialized)
-            invalidate();
-
         // register primitive types
         register(BYTE);
         register(SHORT);

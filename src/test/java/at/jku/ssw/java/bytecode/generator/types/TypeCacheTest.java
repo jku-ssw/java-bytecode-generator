@@ -24,7 +24,7 @@ public class TypeCacheTest {
 
     @BeforeEach
     void setUp() {
-        CACHE.initialize();
+        CACHE.reset();
     }
 
     @Test

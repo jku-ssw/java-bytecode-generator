@@ -24,7 +24,7 @@ public class ClazzLoggerTest {
     void setUp() {
         rand = new Random();
         supplier = new RandomSupplier(rand, 0, 0, 0, 0, 0, 0, 0);
-        CACHE.initialize();
+        CACHE.reset();
     }
 
     @AfterEach

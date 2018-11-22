@@ -35,7 +35,7 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
     @BeforeEach
     void setUp() {
-        TypeCache.CACHE.initialize();
+        TypeCache.CACHE.reset();
     }
 
     @ParameterizedTest
@@ -53,7 +53,7 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
         // unload the class loader
 
-        TypeCache.CACHE.initialize();
+        TypeCache.CACHE.reset();
 
         final GeneratedClass classB = generateClass("seeded", "ASeededClass" + index, args);
 

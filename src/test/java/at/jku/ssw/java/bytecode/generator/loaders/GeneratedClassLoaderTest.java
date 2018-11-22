@@ -28,7 +28,7 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     @BeforeEach
     public void setUp() {
         generatedClassLoader = new GeneratedClassLoader(DIR);
-        TypeCache.CACHE.initialize();
+        TypeCache.CACHE.reset();
     }
 
     @AfterEach
