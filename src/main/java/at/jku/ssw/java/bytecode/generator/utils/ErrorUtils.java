@@ -6,12 +6,11 @@ import at.jku.ssw.java.bytecode.generator.exceptions.UnexpectedApplicationState;
  * Utilities regarding error handling and simplified throwing mechanisms.
  */
 public class ErrorUtils {
-    public static RuntimeException shouldNotReachHere(String msg) {
+    public static UnexpectedApplicationState shouldNotReachHere(String msg) {
         return new UnexpectedApplicationState(msg);
     }
 
-    public static RuntimeException shouldNotReachHere() {
+    public static UnexpectedApplicationState shouldNotReachHere() {
         return new UnexpectedApplicationState();
     }
-
 }
