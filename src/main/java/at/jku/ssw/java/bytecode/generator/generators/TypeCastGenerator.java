@@ -43,7 +43,7 @@ public class TypeCastGenerator extends Generator {
                                         .filter(v -> !dest.getType().equals(v.getType()))
                                         .map(v -> (Supplier<String>) () -> {
                                             dest.setInitialized();
-                                            return Statement(assign(cast(v.access()).to(dest.getType().clazz())).to(dest.access()));
+                                            return Statement(assign(cast(v.access()).to(dest.getType().descriptor())).to(dest.access()));
                                         }))
         ).findFirst()
                 .map(Supplier::get)

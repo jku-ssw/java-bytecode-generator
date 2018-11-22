@@ -63,6 +63,10 @@ public class StatementDSL {
         public String to(Class<?> type) {
             return String.format(CAST, type.getCanonicalName(), value);
         }
+
+        public String to(String type) {
+            return String.format(CAST, type, value);
+        }
     }
 
     public static class Conditions {
@@ -185,21 +189,20 @@ public class StatementDSL {
         return String.format(LT, a, b);
     }
 
-    public static String New(Class<?> clazz, String... params) {
-        return String.format(NEW, clazz.getCanonicalName(), String.join(", ", params));
+    public static String New(String descriptor, String... params) {
+        return String.format(NEW, descriptor, String.join(", ", params));
     }
 
-    public static String NewArray(Class<?> clazz, List<Object> dim) {
-        String className = clazz.getCanonicalName();
-        String descriptor =
+    public static String NewArray(String descriptor, List<Object> dim) {
+        String name =
                 dim.stream()
                         .reduce(
-                                className.substring(0, className.indexOf('[')),
+                                descriptor.substring(0, descriptor.indexOf('[')),
                                 (n, d) -> n + String.format(ARRAY_DIM, d),
                                 String::concat
                         );
 
-        return String.format(NEW_ARRAY, descriptor);
+        return String.format(NEW_ARRAY, name);
     }
 
     public static <T> String ternary(String cond, T t, T e) {

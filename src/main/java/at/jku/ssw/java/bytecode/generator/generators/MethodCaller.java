@@ -24,7 +24,7 @@ abstract class MethodCaller extends Generator {
                 .map(v -> IntStream.range(0, paramTypes.length)
                         .mapToObj(i ->
                                 cast(paramValues[i].getParamValue())
-                                        .to(paramTypes[i].clazz()))
+                                        .to(paramTypes[i].descriptor()))
                         .collect(Collectors.joining(", ")))
                 .orElse("");
         return Statement(call(methodName, params));

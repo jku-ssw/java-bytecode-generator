@@ -26,8 +26,8 @@ public class AssignableFromCall implements Snippet {
                 .filter(t -> !t.equals(t1))
                 .findFirst()
                 .orElseThrow(ErrorUtils::shouldNotReachHere);
-        String c1 = t1.clazz().getCanonicalName();
-        String c2 = t2.clazz().getCanonicalName();
+        String c1 = t1.descriptor();
+        String c2 = t2.descriptor();
 
         return Statement(
                 SystemOutPrintln(
