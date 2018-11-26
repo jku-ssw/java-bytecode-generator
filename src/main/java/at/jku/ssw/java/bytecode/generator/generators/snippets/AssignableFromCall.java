@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
@@ -20,7 +21,7 @@ public class AssignableFromCall implements Snippet {
     }
 
     @Override
-    public String generate(RandomSupplier randomSupplier) {
+    public String generate(RandomSupplier randomSupplier, ClazzFileContainer __, MethodLogger ___) {
         MetaType<?> t1 = randomSupplier.type();
         MetaType<?> t2 = randomSupplier.types()
                 .filter(t -> !t.equals(t1))

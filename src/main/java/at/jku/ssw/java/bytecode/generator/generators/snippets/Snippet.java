@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
 /**
@@ -24,7 +25,10 @@ public interface Snippet {
      *
      * @param randomSupplier A random supplier that allows to fetch
      *                       random values
+     * @param container      The current container that enables access to
+     *                       variables
+     * @param context        The current method
      * @return a string containing the generated source code
      */
-    String generate(RandomSupplier randomSupplier);
+    String generate(RandomSupplier randomSupplier, ClazzFileContainer container, MethodLogger context);
 }

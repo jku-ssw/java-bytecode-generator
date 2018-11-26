@@ -32,7 +32,13 @@ public class SnippetGenerator extends Generator {
      */
     private final List<? extends Snippet> snippets;
 
-
+    /**
+     * Instantiates the snippet generator and passes on the random instance
+     * to get the seed and the code generator.
+     *
+     * @param rand          The global random instance
+     * @param codeGenerator The code generator
+     */
     public SnippetGenerator(Random rand, RandomCodeGenerator codeGenerator) {
         super(rand, codeGenerator.getClazzFileContainer());
 
@@ -57,7 +63,10 @@ public class SnippetGenerator extends Generator {
         new Randomizer(rand)
                 .shuffle(snippets.stream())
                 .filter(s -> s.isPossible(method))
-                .map(s -> s.generate(getRandomSupplier()))
+                .map(s -> s.generate(
+                        getRandomSupplier(),
+                        getClazzContainer(),
+                        method))
                 .findFirst()
                 .ifPresent(src -> insertIntoMethodBody(method, src));
     }
