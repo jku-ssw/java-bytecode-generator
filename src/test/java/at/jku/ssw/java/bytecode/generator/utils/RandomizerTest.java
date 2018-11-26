@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.*;
 
 public class RandomizerTest {
 
-    private static final int REPETITIONS = 20;
+    private static final int REPETITIONS = 10;
     private Random rand;
     private Randomizer randomizer;
 
