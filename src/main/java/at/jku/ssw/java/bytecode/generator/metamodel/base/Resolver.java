@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.*;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
 /**
