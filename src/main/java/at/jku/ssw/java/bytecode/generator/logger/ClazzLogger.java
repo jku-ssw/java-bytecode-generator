@@ -112,7 +112,6 @@ public class ClazzLogger
 
         this.fields = new ArrayList<>();
         this.methods = new ArrayList<>();
-        this.variables = new HashMap<>();
         this.randomizer = new Randomizer(rand);
 
         // generate the main method

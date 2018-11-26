@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -9,15 +10,36 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Represents a generic scope that allows access to variables that are declared
+ * in it. Also provides methods to store those variables.
+ */
 abstract class Logger {
 
+    /**
+     * Random instance.
+     */
     protected final Random rand;
 
+    /**
+     * Creates a new scope using the given random instance.
+     *
+     * @param rand The random instance that should be used to allow
+     *             randomized variable / method access
+     */
     protected Logger(Random rand) {
         this.rand = rand;
+        this.variables = new HashMap<>();
     }
 
-    Map<String, FieldVarLogger<?>> variables;
+    /**
+     * Creates a new scope that does not require random access.
+     */
+    protected Logger() {
+        this(null);
+    }
+
+    private final Map<String, FieldVarLogger<?>> variables;
 
     public <T> void logVariable(String name, String clazz, MetaType<T> type, int modifiers, boolean initialized, boolean isField) {
         FieldVarLogger<T> f = new FieldVarLogger<>(name, clazz, modifiers, type, initialized, isField);

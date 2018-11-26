@@ -64,7 +64,6 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         this.modifiers = modifiers;
         this.returnType = returnType;
         this.container = container;
-        this.variables = new HashMap<>();
         this.paramTypes = paramTypes;
         this.methodsExcludedForCalling = new HashSet<>();
         this.calledByThisMethod = new HashSet<>();
