@@ -3,6 +3,8 @@ package at.jku.ssw.java.bytecode.generator.utils;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
 import javassist.*;
 import javassist.bytecode.ClassFilePrinter;
 
@@ -19,8 +21,16 @@ public class ClazzFileContainer {
     private final RandomSupplier randomSupplier;
     private final String fileName;
 
+    /**
+     * The global resolver instance.
+     */
+    private final Resolver<String> resolver;
+
     public ClazzFileContainer(Random rand, GenerationController controller, String fileName) {
         this.clazz = ClassPool.getDefault().makeClass(fileName);
+
+        this.resolver = new JavassistResolver();
+
         this.randomSupplier = new RandomSupplier(
                 rand,
                 controller.getMaxArrayDimensions(),
@@ -62,6 +72,10 @@ public class ClazzFileContainer {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public Resolver<String> resolver() {
+        return resolver;
     }
 
     @Override
