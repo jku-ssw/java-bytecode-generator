@@ -161,12 +161,14 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * @param method The reflective method
      * @return a new method logger which encapsulates the reflective method
      */
+    @SuppressWarnings("unchecked")
     public static MethodLogger<?> infer(Method method) {
         RefType<?> sender = (RefType<?>) CACHE.find(method.getDeclaringClass())
                 .orElseThrow(ErrorUtils::shouldNotReachHere);
 
-        MetaType<?> returnType = CACHE.find(method.getReturnType())
-                .orElseThrow(ErrorUtils::shouldNotReachHere);
+        MetaType<?> returnType = Optional.ofNullable(method.getReturnType())
+                .flatMap(CACHE::find)
+                .orElse((MetaType) VOID);
 
         MetaType<?>[] paramTypes = Arrays.stream(method.getParameterTypes())
                 .map(CACHE::find)
