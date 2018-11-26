@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedExce
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
+import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 import javassist.*;
 import javassist.bytecode.BadBytecode;
@@ -67,10 +68,14 @@ abstract class Generator {
 
     public CtMethod getCtMethod(MethodLogger<?> method) {
         try {
-            if (method.getName().equals("main")) {
-                return this.getClazzFile().getDeclaredMethod(method.getName());
+            if (method.name().equals("main")) {
+                return getClazzFile().getDeclaredMethod(method.name());
             } else {
-                return this.getClazzFile().getDeclaredMethod(method.getName(), method.getCtParamTypes());
+                return getClazzFile().getDeclaredMethod(
+                        method.name(),
+                        method.argumentTypes().stream()
+                                .map(JavassistUtils::toCtClass)
+                                .toArray(CtClass[]::new));
             }
         } catch (NotFoundException e) {
             throw new AssertionError(e);

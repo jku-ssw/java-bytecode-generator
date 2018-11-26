@@ -417,7 +417,7 @@ public class ClazzLogger
 
     public List<MethodLogger<?>> getOverloadedMethods(String name) {
         return methods.stream()
-                .filter(m -> m.getName().equals(name))
+                .filter(m -> m.name().equals(name))
                 .collect(Collectors.toList());
     }
 
@@ -440,7 +440,7 @@ public class ClazzLogger
 
         callableMethods.remove(callingMethod);
 
-        removeAllExcludedForCalling(callableMethods, callingMethod.getMethodsExcludedForCalling());
+        removeAllExcludedForCalling(callableMethods, callingMethod.excludedCalls());
 
         return callableMethods;
     }
@@ -449,7 +449,7 @@ public class ClazzLogger
     public <T> MethodLogger<T> getRandomCallableMethodOfType(MethodLogger<?> callingMethod, MetaType<T> metaType) {
         return (MethodLogger<T>) randomizer
                 .oneOf(getCallableMethods(callingMethod).stream()
-                        .filter(m -> m.getReturnType() == metaType))
+                        .filter(m -> m.returns() == metaType))
                 .orElse(null);
     }
 
@@ -462,7 +462,7 @@ public class ClazzLogger
         excludedForCalling.forEach(m ->
                 removeAllExcludedForCalling(
                         callableMethods,
-                        m.getMethodsExcludedForCalling()
+                        m.excludedCalls()
                 )
         );
     }

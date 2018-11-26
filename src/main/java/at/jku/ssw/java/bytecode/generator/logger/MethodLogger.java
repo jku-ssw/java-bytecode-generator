@@ -1,14 +1,14 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.MethodCall;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
+import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
-import at.jku.ssw.java.bytecode.generator.utils.JavassistUtils;
-import javassist.CtClass;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,7 +22,7 @@ import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
  *
  * @param <B> The Java class representing the return type of the method
  */
-public class MethodLogger<B> extends Logger implements Builder<B> {
+public class MethodLogger<B> extends Logger implements MethodBuilder<B> {
     //-------------------------------------------------------------------------
     // region Constants
 
@@ -35,26 +35,47 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
     //-------------------------------------------------------------------------
     // region Properties
 
+    /**
+     * The method name (not the descriptor).
+     */
     private final String name;
+
+    /**
+     * The modifiers.
+     */
     private final int modifiers;
-    private final MetaType[] paramTypes;
+
+    /**
+     * The parameter types that are required to call this method
+     * (does not include sender).
+     */
+    private final List<MetaType<?>> paramTypes;
+
+    /**
+     * The type that is returned.
+     */
     private final MetaType<B> returnType;
 
     /**
-     * The type of the container (i.e. the class in which this method
+     * The type of the sender (i.e. the class in which this method
      * is defined).
      */
-    private final MetaType<?> container;
+    private final RefType<?> sender;
 
-    private final Set<MethodLogger<?>> methodsExcludedForCalling;
-    private final Set<MethodLogger<?>> calledByThisMethod;
+    /**
+     * The methods that are excluded from being called from within this
+     * method's generated body.
+     * This distinction is necessary to avoid infinite recursions by methods
+     * calling each other mutually.
+     */
+    private final Set<MethodLogger<?>> excludedCalls;
 
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
 
     public MethodLogger(Random rand,
-                        MetaType<?> container,
+                        RefType<?> sender,
                         String name,
                         int modifiers,
                         MetaType<B> returnType,
@@ -63,18 +84,17 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         this.name = name;
         this.modifiers = modifiers;
         this.returnType = returnType;
-        this.container = container;
-        this.paramTypes = paramTypes;
-        this.methodsExcludedForCalling = new HashSet<>();
-        this.calledByThisMethod = new HashSet<>();
+        this.sender = sender;
+        this.paramTypes = Arrays.asList(paramTypes);
+        this.excludedCalls = new HashSet<>();
     }
 
-    public MethodLogger(MetaType<?> container,
+    public MethodLogger(RefType<?> sender,
                         String name,
                         int modifiers,
                         MetaType<B> returnType,
                         MetaType<?>... paramTypes) {
-        this(null, container, name, modifiers, returnType, paramTypes);
+        this(null, sender, name, modifiers, returnType, paramTypes);
     }
 
     // endregion
@@ -122,31 +142,47 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         );
     }
 
+    /**
+     * Infers a new {@link MethodLogger} instance from the given reflective
+     * method.
+     *
+     * @param method The reflective method
+     * @param <T>    The returned Java class
+     * @return a new method logger which encapsulates the reflective method
+     */
+    public static <T> MethodLogger<T> infer(Method method) {
+        // TODO
+        return null;
+    }
+
     // endregion
     //-------------------------------------------------------------------------
     // region Object overrides
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodLogger<?> that = (MethodLogger<?>) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(container, that.container) &&
-                Arrays.equals(paramTypes, that.paramTypes);
+                Objects.equals(paramTypes, that.paramTypes) &&
+                Objects.equals(sender, that.sender);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, container);
-        result = 31 * result + Arrays.hashCode(paramTypes);
-        return result;
+        return Objects.hash(name, paramTypes, sender);
     }
 
     /**
      * Returns a string representation of this object.
-     * Parses the actual method signature and returns it.
+     * This implementation parses the actual method signature and returns it.
      */
     @Override
     public String toString() {
@@ -155,7 +191,7 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
                 Modifier.toString(modifiers),
                 returnType.descriptor(),
                 name,
-                Arrays.stream(paramTypes)
+                paramTypes.stream()
                         .map(MetaType::descriptor)
                         .collect(Collectors.joining(", ")));
     }
@@ -164,66 +200,74 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
     //-------------------------------------------------------------------------
     // region Property accessors
 
-    public void addToExcludedForCalling(Set<MethodLogger<?>> excludedForCalling) {
-        methodsExcludedForCalling.addAll(excludedForCalling);
+    public void excludeCall(Set<MethodLogger<?>> method) {
+        excludedCalls.addAll(method);
     }
 
-    public void addMethodToCalledByThisMethod(Set<MethodLogger<?>> calledByThisMethod) {
-        this.calledByThisMethod.addAll(calledByThisMethod);
+    public Set<MethodLogger<?>> excludedCalls() {
+        return new HashSet<>(excludedCalls);
     }
 
-    public Set<MethodLogger<?>> getMethodsExcludedForCalling() {
-        return new HashSet<>(methodsExcludedForCalling);
+    // TODO replace all calls with #argumentTypes
+    public MetaType[] getParamTypes() {
+        return paramTypes.toArray(new MetaType[0]);
     }
 
-    public Set<MethodLogger<?>> getMethodsCalledByThisMethod() {
-        return new HashSet<>(calledByThisMethod);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RefType<?> sender() {
+        return sender;
     }
 
-    public CtClass[] getCtParamTypes() {
-        if (paramTypes == null) return new CtClass[0];
-        return Arrays.stream(paramTypes)
-                .map(JavassistUtils::toCtClass)
-                .toArray(CtClass[]::new);
-    }
-
-    public boolean isVoid() {
-        return returnType == VOID;
-    }
-
-    public MetaType<B> getReturnType() {
-        return returnType;
-    }
-
-    public String getName() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String name() {
         return name;
     }
 
-    public boolean isStatic() {
-        return Modifier.isStatic(modifiers);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int modifiers() {
+        return modifiers;
     }
 
-    public MetaType[] getParamTypes() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MetaType<?>> argumentTypes() {
         return paramTypes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<MetaType<?>> requires() {
         return isStatic()
-                ? Arrays.asList(paramTypes)
+                ? paramTypes
                 : Stream.concat(
-                Stream.<MetaType<?>>of(container),
-                Arrays.<MetaType<?>>stream(paramTypes)
+                Stream.<MetaType<?>>of(sender),
+                paramTypes.stream()
         ).collect(Collectors.toList());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Expression<B> build(List<Expression<?>> params) {
         if (isStatic())
             return new MethodCall.Static<>(
                     name,
                     returnType,
-                    () -> container,
+                    () -> sender,
                     params
             );
 
@@ -238,6 +282,9 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public MetaType<B> returns() {
         return returnType;

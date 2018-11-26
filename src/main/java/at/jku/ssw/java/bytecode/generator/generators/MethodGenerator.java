@@ -105,19 +105,19 @@ class MethodGenerator extends MethodCaller {
             return null;
         }
 
-        List<MethodLogger<?>> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.getName());
+        List<MethodLogger<?>> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.name());
         MetaType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
         if (paramTypes == null) {
             return null;
         }
 
-        return this.generateMethod(methodToOverload.getName(),
+        return this.generateMethod(methodToOverload.name(),
                 getRandomSupplier().returnType(), paramTypes, getRandomSupplier().getMethodModifiers());
     }
 
     public <T> void insertReturn(MethodLogger<T> method) {
         CtMethod ctMethod = getCtMethod(method);
-        MetaType<T> returnType = method.getReturnType();
+        MetaType<T> returnType = method.returns();
 
         if (returnType == VOID) {
             try {
@@ -147,15 +147,12 @@ class MethodGenerator extends MethodCaller {
     private String srcCallMethod(MethodLogger<?> calledMethod, MethodLogger<?> method) {
         MetaType[] paramTypes = calledMethod.getParamTypes();
         ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
-        Set<MethodLogger<?>> excludedForCalling = method.getMethodsExcludedForCalling();
+        Set<MethodLogger<?>> excludedForCalling = method.excludedCalls();
         excludedForCalling.add(method);
-        calledMethod.addToExcludedForCalling(excludedForCalling);
-        Set<MethodLogger<?>> calledByThisMethod = calledMethod.getMethodsCalledByThisMethod();
-        calledByThisMethod.add(calledMethod);
-        method.addMethodToCalledByThisMethod(calledByThisMethod);
+        calledMethod.excludeCall(excludedForCalling);
         String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
 
-        return caller + "." + generateMethodCallString(calledMethod.getName(), paramTypes, values);
+        return caller + "." + generateMethodCallString(calledMethod.name(), paramTypes, values);
     }
 
     public void generateMethodCall(MethodLogger<?> method) {
