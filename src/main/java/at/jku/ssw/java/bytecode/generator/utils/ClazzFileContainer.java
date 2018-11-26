@@ -3,8 +3,8 @@ package at.jku.ssw.java.bytecode.generator.utils;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
-import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.Resolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import javassist.*;
 import javassist.bytecode.ClassFilePrinter;
 

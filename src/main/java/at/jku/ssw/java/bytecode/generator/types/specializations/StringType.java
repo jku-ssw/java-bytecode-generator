@@ -1,10 +1,10 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.DefaultConstructorBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.DefaultConstructorBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
@@ -34,6 +34,9 @@ public enum StringType implements RefType<String> {
         return String.class;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return descriptor();

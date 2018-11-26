@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Instantiable;
+import at.jku.ssw.java.bytecode.generator.metamodel.Instantiable;
 
 import java.util.BitSet;
 import java.util.List;

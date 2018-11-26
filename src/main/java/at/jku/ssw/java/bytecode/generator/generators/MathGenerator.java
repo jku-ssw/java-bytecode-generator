@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;

@@ -1,6 +1,6 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base.constants;
+package at.jku.ssw.java.bytecode.generator.metamodel.expressions.constants;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 
 /**
  * Interface of constant expressions.

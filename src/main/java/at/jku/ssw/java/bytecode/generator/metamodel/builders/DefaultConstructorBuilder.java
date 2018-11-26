@@ -1,6 +1,8 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base;
+package at.jku.ssw.java.bytecode.generator.metamodel.builders;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.ConstructorCall;
+import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 

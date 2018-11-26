@@ -1,5 +1,6 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base;
+package at.jku.ssw.java.bytecode.generator.metamodel;
 
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 
 import java.util.Arrays;

@@ -1,12 +1,11 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.impl;
+package at.jku.ssw.java.bytecode.generator.metamodel.resolvers;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Assignment;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression.NOP;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.TypeIdentifier;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.*;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Assignment;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression.NOP;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.TypeIdentifier;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.constants.*;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.*;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
 

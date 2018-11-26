@@ -1,9 +1,9 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.ResolvedBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.impl.JavassistResolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.ResolvedBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;

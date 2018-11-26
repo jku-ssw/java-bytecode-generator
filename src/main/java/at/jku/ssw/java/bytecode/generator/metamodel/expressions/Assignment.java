@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base;
+package at.jku.ssw.java.bytecode.generator.metamodel.expressions;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;

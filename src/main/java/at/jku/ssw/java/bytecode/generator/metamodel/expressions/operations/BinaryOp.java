@@ -1,6 +1,6 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base.operations;
+package at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;
 

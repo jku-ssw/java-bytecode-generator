@@ -1,8 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.DefaultConstructorBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.DefaultConstructorBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 
 import java.util.List;

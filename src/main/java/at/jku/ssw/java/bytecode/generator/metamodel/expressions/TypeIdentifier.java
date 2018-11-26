@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base;
+package at.jku.ssw.java.bytecode.generator.metamodel.expressions;
 
 /**
  * Expression that identifies a type (e.g. for type casts or for a

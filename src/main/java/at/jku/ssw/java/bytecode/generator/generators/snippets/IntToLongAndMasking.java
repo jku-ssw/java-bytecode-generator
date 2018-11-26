@@ -2,17 +2,17 @@ package at.jku.ssw.java.bytecode.generator.generators.snippets;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Assignment;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.LongConstant;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.BinaryOp;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.TypeCast;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Assignment;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.constants.LongConstant;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.BinaryOp;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.TypeCast;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Operator;
 import at.jku.ssw.java.bytecode.generator.utils.RandomSupplier;
 
-import static at.jku.ssw.java.bytecode.generator.metamodel.base.Expression.NOP.NOP;
+import static at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression.NOP.NOP;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statement;
 
 /**

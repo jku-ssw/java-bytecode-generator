@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.base;
+package at.jku.ssw.java.bytecode.generator.metamodel;
 
 import java.util.List;
 

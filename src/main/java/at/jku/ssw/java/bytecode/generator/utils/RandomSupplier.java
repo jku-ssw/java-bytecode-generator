@@ -1,6 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.constants.*;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
