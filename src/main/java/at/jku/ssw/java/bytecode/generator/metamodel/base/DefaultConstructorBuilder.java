@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
+import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 

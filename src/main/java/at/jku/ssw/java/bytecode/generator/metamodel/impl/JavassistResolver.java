@@ -34,7 +34,7 @@ public class JavassistResolver implements Resolver<String> {
     public <T> String resolve(ArrayInit<T> arrayInit) {
         return NewArray(
                 arrayInit.type().descriptor(),
-                arrayInit.getParams().stream()
+                arrayInit.arguments().stream()
                         .map(this::resolve)
                         .collect(Collectors.toList())
         );
@@ -44,7 +44,7 @@ public class JavassistResolver implements Resolver<String> {
     public <U> String resolve(ConstructorCall<U> constructorCall) {
         return New(
                 constructorCall.type().descriptor(),
-                constructorCall.getParams().stream()
+                constructorCall.arguments().stream()
                         .map(this::resolve)
                         .collect(Collectors.joining())
         );

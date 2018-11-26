@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.MethodCall;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.MethodCall;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;

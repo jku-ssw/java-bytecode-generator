@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.ConstructorCall;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
