@@ -1,7 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.types.specializations.DynamicRefType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,10 +58,6 @@ public class ArrayTypeTest {
         return new FieldVarLogger<>("", "", 0, arrayType(type, componentType), false, false);
     }
 
-    private static <T> RefType<T> refType(Class<T> type) {
-        return new DynamicRefType<>(type);
-    }
-
     private static <T> MetaType<T> arrayType(Class<T> type, MetaType<?> componentType) {
         assert type.isArray();
 
@@ -91,8 +86,8 @@ public class ArrayTypeTest {
 
     private static Stream<Arguments> arrayTypeProvider() {
         return Stream.of(
-                arguments(refType(String.class), 1, arrayType(String[].class, STRING)),
-                arguments(refType(Date.class), 3, arrayType(Date[][][].class, DATE)),
+                arguments(STRING, 1, arrayType(String[].class, STRING)),
+                arguments(DATE, 3, arrayType(Date[][][].class, DATE)),
                 arguments(BYTE, 19, arrayType(byte[][][][][][][][][][][][][][][][][][][].class, BYTE)),
                 arguments(SHORT, 2, arrayType(short[][].class, SHORT)),
                 arguments(INT, 10, arrayType(int[][][][][][][][][][].class, INT)),
