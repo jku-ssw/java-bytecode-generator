@@ -1,6 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression.NOP;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.*;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
@@ -18,14 +19,18 @@ public interface Resolver<T> {
             return resolve((Constant<U>) expression);
         if (expression instanceof TypeIdentifier)
             return resolve((TypeIdentifier<U>) expression);
-        if (expression instanceof ArrayInit)
-            return resolve((ArrayInit<U>) expression);
-        if (expression instanceof ConstructorCall)
-            return resolve((ConstructorCall<U>) expression);
         if (expression instanceof FieldVarLogger)
             return resolve((FieldVarLogger<T>) expression);
-        if (expression instanceof MethodCall)
-            return resolve((MethodCall<T>) expression);
+        if (expression instanceof Call)
+            return resolve((Call<T>) expression);
+        if (expression instanceof TypeCast)
+            return resolve((TypeCast<T>) expression);
+        if (expression instanceof BinaryOp)
+            return resolve((BinaryOp<T>) expression);
+        if (expression instanceof Assignment)
+            return resolve((Assignment<T>) expression);
+        if (expression instanceof NOP)
+            return resolve((NOP) expression);
 
         throw ErrorUtils.shouldNotReachHere("Unexpected expression " + expression.getClass());
     }
@@ -53,6 +58,17 @@ public interface Resolver<T> {
             return resolve((CharConstant) constant);
 
         throw ErrorUtils.shouldNotReachHere("Unexpected constant " + constant.getClass());
+    }
+
+    default <U> T resolve(Call<U> call) {
+        if (call instanceof MethodCall.Static)
+            return resolve((MethodCall.Static<U>) call);
+        if (call instanceof ConstructorCall)
+            return resolve((ConstructorCall<U>) call);
+        if (call instanceof ArrayInit)
+            return resolve((ArrayInit<U>) call);
+        else
+            return resolve(call);
     }
 
     T resolve(ByteConstant constant);
@@ -84,5 +100,15 @@ public interface Resolver<T> {
     <U> T resolve(FieldVarLogger<U> fieldVarLogger);
 
     <U> T resolve(MethodCall<U> methodCall);
+
+    <U> T resolve(MethodCall.Static<U> methodCall);
+
+    <U> T resolve(TypeCast<U> typeCast);
+
+    <U> T resolve(BinaryOp<U> binaryOp);
+
+    <U> T resolve(Assignment<U> assignment);
+
+    T resolve(NOP nop);
 
 }

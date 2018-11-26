@@ -1,7 +1,10 @@
 package at.jku.ssw.java.bytecode.generator.metamodel.impl;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.base.*;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Assignment;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Expression.NOP;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.Resolver;
+import at.jku.ssw.java.bytecode.generator.metamodel.base.TypeIdentifier;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.constants.*;
 import at.jku.ssw.java.bytecode.generator.metamodel.base.operations.*;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
@@ -9,10 +12,10 @@ import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
 
 import java.util.stream.Collectors;
 
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.*;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.NULL;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.VOID;
+import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Patterns.*;
 
 /**
  * {@link Resolver} implementation that interprets expressions by
@@ -72,6 +75,17 @@ public class JavassistResolver implements Resolver<String> {
     }
 
     @Override
+    public <U> String resolve(MethodCall.Static<U> methodCall) {
+        return resolve((MethodCall<U>) methodCall);
+    }
+
+    @Override
+    public <U> String resolve(Assignment<U> assignment) {
+        return assign(resolve(assignment.src()))
+                .to(resolve(assignment.dest()));
+    }
+
+    @Override
     public String resolve(ByteConstant constant) {
         return cast(constant.raw()).to(byte.class);
     }
@@ -124,4 +138,25 @@ public class JavassistResolver implements Resolver<String> {
         return asChar(constant.raw());
     }
 
+    @Override
+    public <U> String resolve(TypeCast<U> typeCast) {
+        return inPar(
+                cast(resolve(typeCast.expression()))
+                        .to(typeCast.type().descriptor())
+        );
+    }
+
+    @Override
+    public <U> String resolve(BinaryOp<U> binaryOp) {
+        return inPar(
+                resolve(binaryOp.a()) +
+                        binaryOp.op().toString() +
+                        resolve(binaryOp.b())
+        );
+    }
+
+    @Override
+    public String resolve(NOP nop) {
+        return NOP;
+    }
 }
