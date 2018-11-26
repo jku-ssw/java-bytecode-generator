@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -63,14 +64,12 @@ public enum TypeCache {
 
     /**
      * Initializes the type maps.
-     * It is done in the constructor as to prevent issues when the classes are
-     * loaded (e.g. cross-references, null pointers on pre-initialization
-     * access).
+     * The static types are not stored yet to prevent issues when
+     * invoking the generator multiple times.
      */
     TypeCache() {
         primitiveTypes = new HashSet<>();
         refTypes = new HashSet<>();
-        reset();
     }
 
     // endregion
@@ -121,6 +120,24 @@ public enum TypeCache {
     // endregion
     //-------------------------------------------------------------------------
     // region Cache lookup
+
+    /**
+     * Looks up the given Java class in the cache and returns the first
+     * meta type instance that corresponds to it.
+     *
+     * @param type The Java type to look up
+     * @param <T>  The Java type
+     * @return either the mapped meta type or nothing
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Optional<MetaType<T>> find(Class<T> type) {
+        return Stream.concat(
+                primitiveTypes.stream(),
+                refTypes.stream())
+                .filter(t -> t.clazz().equals(type))
+                .map(t -> (MetaType<T>) t)
+                .findFirst();
+    }
 
     /**
      * Checks whether the given primitive type is already cached.

@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
 import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.ClazzLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 import org.apache.logging.log4j.LogManager;
@@ -63,6 +64,10 @@ public class RandomCodeGenerator {
         this.controller = controller;
 
         this.seed = controller.getSeedValue();
+
+        // reset the types
+        TypeCache.CACHE.reset();
+
         logger.info("Generating class {}", fileName);
         logger.info("SEED: {}", seed);
 
