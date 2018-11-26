@@ -1,8 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.ResolvedBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -117,10 +117,6 @@ public class ClazzLogger
         // generate the main method
         this.main = MethodLogger.generateMainMethod(rand, this);
         this.run = MethodLogger.generateRunMethod(rand, this);
-
-        // only use these if result should be non-deterministic
-        // this.methods.add(new MethodLogger("hashCode", name, Modifier.PUBLIC, INT, true));
-        // this.methods.add(new MethodLogger("toString", name, Modifier.PUBLIC, STRING, true));
     }
 
     // endregion
@@ -159,7 +155,7 @@ public class ClazzLogger
      */
     @Override
     public final String toString() {
-        return name;
+        return descriptor();
     }
 
     // endregion

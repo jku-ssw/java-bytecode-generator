@@ -110,16 +110,14 @@ public class RandomCodeGenerator {
 
     public void generate() {
         try {
-            //generate code in run()-method
+            // generate code in run()-method
             generate(Context.PROGRAM_CONTEXT);
-            //generate method-bodies
+            // generate method bodies for pre-registerd methods
             if (this.getClazzLogger().hasMethods()) {
-                // do not attempt to modify inherited methods
-                getClazzLogger().methods().stream()
-                        .filter(m -> !m.isInherited())
+                getClazzLogger().methods()
                         .forEach(methodGenerator::generateMethodBody);
             }
-            //compute HashValue of all globals
+            // compute HashValue of all globals
             this.methodGenerator.generateHashMethod();
             this.methodGenerator.callRunAndHashMethods(controller.executeRunXTimes());
         } catch (CompilationFailedException e) {

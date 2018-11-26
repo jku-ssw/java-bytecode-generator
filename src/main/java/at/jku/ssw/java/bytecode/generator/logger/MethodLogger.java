@@ -29,13 +29,12 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
     public static final String MAIN_NAME = "main";
     public static final String RUN_NAME = "run";
 
-    private static final String TO_STRING_FORMAT = "method %s%s %s %s(%s)";
+    private static final String TO_STRING_FORMAT = "method %s %s %s(%s)";
 
     // endregion
     //-------------------------------------------------------------------------
     // region Properties
 
-    private final boolean inherited;
     private final String name;
     private final int modifiers;
     private final MetaType[] paramTypes;
@@ -54,11 +53,12 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
     //-------------------------------------------------------------------------
     // region Initialization
 
-    public MethodLogger(Random rand, MetaType<?> container, String name, int modifiers, MetaType<B> returnType, MetaType<?>... paramTypes) {
-        this(rand, container, name, modifiers, returnType, false, paramTypes);
-    }
-
-    public MethodLogger(Random rand, MetaType<?> container, String name, int modifiers, MetaType<B> returnType, boolean inherited, MetaType<?>... paramTypes) {
+    public MethodLogger(Random rand,
+                        MetaType<?> container,
+                        String name,
+                        int modifiers,
+                        MetaType<B> returnType,
+                        MetaType<?>... paramTypes) {
         super(rand);
         this.name = name;
         this.modifiers = modifiers;
@@ -67,7 +67,14 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         this.paramTypes = paramTypes;
         this.methodsExcludedForCalling = new HashSet<>();
         this.calledByThisMethod = new HashSet<>();
-        this.inherited = inherited;
+    }
+
+    public MethodLogger(MetaType<?> container,
+                        String name,
+                        int modifiers,
+                        MetaType<B> returnType,
+                        MetaType<?>... paramTypes) {
+        this(null, container, name, modifiers, returnType, paramTypes);
     }
 
     // endregion
@@ -145,7 +152,6 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
     public String toString() {
         return String.format(
                 TO_STRING_FORMAT,
-                (inherited ? "@Inherited " : ""),
                 Modifier.toString(modifiers),
                 returnType.descriptor(),
                 name,
@@ -179,10 +185,6 @@ public class MethodLogger<B> extends Logger implements Builder<B> {
         return Arrays.stream(paramTypes)
                 .map(JavassistUtils::toCtClass)
                 .toArray(CtClass[]::new);
-    }
-
-    public boolean isInherited() {
-        return inherited;
     }
 
     public boolean isVoid() {
