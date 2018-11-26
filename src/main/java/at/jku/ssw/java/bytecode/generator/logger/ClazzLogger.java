@@ -433,16 +433,10 @@ public class ClazzLogger
     }
 
     private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
-        List<MethodLogger<?>> callableMethods =
-                callingMethod.isStatic()
-                        ? getStaticMethods()
-                        : new ArrayList<>(methods);
-
-        callableMethods.remove(callingMethod);
-
-        removeAllExcludedForCalling(callableMethods, callingMethod.excludedCalls());
-
-        return callableMethods;
+        return methods.stream()
+                .filter(m -> !callingMethod.isStatic() || m.isStatic())
+                .filter(m -> callingMethod.isExcluded(callingMethod))
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -451,26 +445,6 @@ public class ClazzLogger
                 .oneOf(getCallableMethods(callingMethod).stream()
                         .filter(m -> m.returns() == metaType))
                 .orElse(null);
-    }
-
-    private void removeAllExcludedForCalling(List<MethodLogger<?>> callableMethods, Set<MethodLogger<?>> excludedForCalling) {
-        if (excludedForCalling.isEmpty())
-            return;
-
-        callableMethods.removeAll(excludedForCalling);
-
-        excludedForCalling.forEach(m ->
-                removeAllExcludedForCalling(
-                        callableMethods,
-                        m.excludedCalls()
-                )
-        );
-    }
-
-    private List<MethodLogger<?>> getStaticMethods() {
-        return methods.stream()
-                .filter(MethodLogger::isStatic)
-                .collect(Collectors.toList());
     }
 
     // endregion

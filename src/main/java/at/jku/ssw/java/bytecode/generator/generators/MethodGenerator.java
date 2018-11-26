@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -147,9 +146,7 @@ class MethodGenerator extends MethodCaller {
     private String srcCallMethod(MethodLogger<?> calledMethod, MethodLogger<?> method) {
         MetaType[] paramTypes = calledMethod.getParamTypes();
         ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
-        Set<MethodLogger<?>> excludedForCalling = method.excludedCalls();
-        excludedForCalling.add(method);
-        calledMethod.excludeCall(excludedForCalling);
+        calledMethod.excludeCall(method);
         String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
 
         return caller + "." + generateMethodCallString(calledMethod.name(), paramTypes, values);
