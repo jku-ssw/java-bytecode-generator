@@ -18,16 +18,6 @@ import java.util.List;
 public interface Builder<T> {
 
     /**
-     * Specifies the number of parameters that are required to invoke this
-     * builder. Serves as an alias for {@code requires().size()}.
-     *
-     * @return the required number of parameters
-     */
-    default int nArgs() {
-        return requires().size();
-    }
-
-    /**
      * Specifies the required parameter types to invoke this builder.
      * This list is either empty or filled with the corresponding types
      * but should never be zero.
