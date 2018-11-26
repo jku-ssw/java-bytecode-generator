@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.generators;
 
 import at.jku.ssw.java.bytecode.generator.generators.snippets.AssignableFromCall;
 import at.jku.ssw.java.bytecode.generator.generators.snippets.HashCodeSubtraction;
+import at.jku.ssw.java.bytecode.generator.generators.snippets.IntToLongAndMasking;
 import at.jku.ssw.java.bytecode.generator.generators.snippets.Snippet;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
@@ -23,7 +24,8 @@ public class SnippetGenerator extends Generator {
      */
     private static final List<Class<? extends Snippet>> GENERATORS = Arrays.asList(
             HashCodeSubtraction.class,
-            AssignableFromCall.class
+            AssignableFromCall.class,
+            IntToLongAndMasking.class
     );
 
     /**
