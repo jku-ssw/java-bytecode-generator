@@ -43,7 +43,7 @@ class FieldVarGenerator extends Generator {
         String value = null;
         if (rand.nextBoolean()) { //50% chance to be initialized
             // TODO replace by context lookup for class context
-            value = resolver.resolve(getRandomSupplier().constantOf(ft));
+            value = clazzContainer.resolver().resolve(getRandomSupplier().constantOf(ft));
         }
         this.generateField(getRandomSupplier().getVarName(), ft, getRandomSupplier().getFieldModifiers(), value);
     }
@@ -57,7 +57,7 @@ class FieldVarGenerator extends Generator {
 
     public void generateLocalVariable(MethodLogger<?> method) {
         MetaType<?> ft = getRandomSupplier().type();
-        String value = resolver.resolve(getClazzLogger().valueOf(ft, method));
+        String value = clazzContainer.resolver().resolve(getClazzLogger().valueOf(ft, method));
         String name = getRandomSupplier().getVarName();
         this.generateLocalVariable(name, ft, method, value);
     }
@@ -134,7 +134,7 @@ class FieldVarGenerator extends Generator {
         if (getClazzLogger().hasVariables()) {
             FieldVarLogger<?> f = this.getClazzLogger().getNonFinalFieldUsableInMethod(method);
             if (f != null) {
-                setVarValue(f, method, resolver.resolve(getClazzLogger().valueOf(f.getType(), method)));
+                setVarValue(f, method, clazzContainer.resolver().resolve(getClazzLogger().valueOf(f.getType(), method)));
             }
         }
     }
@@ -147,7 +147,7 @@ class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return this.srcSetVarValue(f, resolver.resolve(getClazzLogger().valueOf(f.getType(), method)));
+            return this.srcSetVarValue(f, clazzContainer.resolver().resolve(getClazzLogger().valueOf(f.getType(), method)));
         }
     }
 
@@ -157,7 +157,7 @@ class FieldVarGenerator extends Generator {
         }
         FieldVarLogger<?> f = this.getClazzLogger().getNonFinalLocalVar(method);
         if (f != null) {
-            setVarValue(f, method, resolver.resolve(getClazzLogger().valueOf(f.getType(), method)));
+            setVarValue(f, method, clazzContainer.resolver().resolve(getClazzLogger().valueOf(f.getType(), method)));
         }
     }
 
@@ -169,7 +169,7 @@ class FieldVarGenerator extends Generator {
         if (f == null) {
             return null;
         } else {
-            return srcSetVarValue(f, resolver.resolve(getClazzLogger().valueOf(f.getType(), method)));
+            return srcSetVarValue(f, clazzContainer.resolver().resolve(getClazzLogger().valueOf(f.getType(), method)));
         }
     }
 
