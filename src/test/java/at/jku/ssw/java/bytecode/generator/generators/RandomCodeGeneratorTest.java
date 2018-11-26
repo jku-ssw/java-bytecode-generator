@@ -51,8 +51,7 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
         logger.info("Running class {}", classA);
         final Result exp = run(classA);
 
-        // unload the class loader
-
+        // reset the type registry
         TypeCache.CACHE.reset();
 
         final GeneratedClass classB = generateClass("seeded", "ASeededClass" + index, args);
