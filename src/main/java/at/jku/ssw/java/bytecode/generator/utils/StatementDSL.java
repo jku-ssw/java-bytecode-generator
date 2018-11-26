@@ -100,6 +100,7 @@ public class StatementDSL {
         public static final String FIELD_ACCESS = "%s.%s";
         public static final String METHOD_CALL = "%s.%s(%s)";
         public static final String VOID = "void";
+        public static final String NOP = "";
     }
 
     public static class Blocks {
