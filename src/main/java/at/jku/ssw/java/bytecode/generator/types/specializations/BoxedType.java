@@ -2,9 +2,10 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -81,6 +82,11 @@ public class BoxedType<T> implements RefType<T> {
      */
     private final PrimitiveType<?> boxed;
 
+    /**
+     * The methods that are available for wrapper classes.
+     */
+    private final List<LibMethod<?>> methods;
+
     // endregion
     //-------------------------------------------------------------------------
     // region Initialization
@@ -96,6 +102,7 @@ public class BoxedType<T> implements RefType<T> {
         assert !clazz.isPrimitive();
         this.clazz = clazz;
         this.boxed = boxed;
+        this.methods = inferMethods();
     }
 
     // endregion
@@ -179,6 +186,14 @@ public class BoxedType<T> implements RefType<T> {
     @Override
     public Class<T> clazz() {
         return clazz;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<LibMethod<?>> methods() {
+        return methods;
     }
 
     // endregion

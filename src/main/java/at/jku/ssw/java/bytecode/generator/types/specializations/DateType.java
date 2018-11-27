@@ -2,9 +2,11 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -27,6 +29,15 @@ public enum DateType implements RefType<Date> {
      * Singleton.
      */
     DATE;
+
+    /**
+     * The methods that are available for this type.
+     */
+    private final List<LibMethod<?>> methods;
+
+    DateType() {
+        this.methods = inferMethods();
+    }
 
     /**
      * {@inheritDoc}
@@ -52,9 +63,20 @@ public enum DateType implements RefType<Date> {
         );
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return descriptor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<? extends MethodBuilder<?>> methods() {
+        return methods;
     }
 
     /**

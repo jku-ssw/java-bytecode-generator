@@ -3,8 +3,9 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.DefaultConstructorBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
@@ -25,6 +26,15 @@ public enum StringType implements RefType<String> {
      * {@link String} type constant.
      */
     STRING;
+
+    /**
+     * The methods that are available for this type.
+     */
+    private final List<LibMethod<?>> methods;
+
+    StringType() {
+        methods = inferMethods();
+    }
 
     /**
      * {@inheritDoc}
@@ -73,6 +83,11 @@ public enum StringType implements RefType<String> {
     @Override
     public List<? extends RefType<?>> getAssignableTypes() {
         return Collections.singletonList(this);
+    }
+
+    @Override
+    public List<LibMethod<?>> methods() {
+        return methods;
     }
 
     /**

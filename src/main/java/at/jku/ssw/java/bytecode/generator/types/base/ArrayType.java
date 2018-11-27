@@ -1,10 +1,11 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ArrayInit;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ArrayInit;
 import at.jku.ssw.java.bytecode.generator.types.specializations.RestrictedIntType;
 import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
@@ -22,6 +23,7 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.field;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
+import static java.util.Collections.emptyList;
 
 /**
  * Meta type for specifying, creating and analyzing array types.
@@ -364,6 +366,14 @@ public final class ArrayType<T> implements RefType<T> {
     @Override
     public Kind kind() {
         return ARRAY;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<? extends MethodBuilder<?>> methods() {
+        return emptyList();
     }
 
     // endregion

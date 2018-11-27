@@ -1,6 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.types.TypeCache;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -21,6 +23,15 @@ public enum ObjectType implements RefType<Object> {
      * Singleton.
      */
     OBJECT;
+
+    /**
+     * The methods that are available for this type.
+     */
+    private final List<LibMethod<?>> methods;
+
+    ObjectType() {
+        methods = inferMethods();
+    }
 
     /**
      * {@inheritDoc}
@@ -63,5 +74,13 @@ public enum ObjectType implements RefType<Object> {
     @Override
     public List<? extends RefType<?>> getAssignableTypes() {
         return TypeCache.CACHE.refTypes().collect(Collectors.toList());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<? extends MethodBuilder<?>> methods() {
+        return methods;
     }
 }
