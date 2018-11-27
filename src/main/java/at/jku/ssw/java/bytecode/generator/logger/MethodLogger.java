@@ -1,21 +1,15 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.MethodCall;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
-import at.jku.ssw.java.bytecode.generator.utils.ErrorUtils;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static at.jku.ssw.java.bytecode.generator.types.TypeCache.CACHE;
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
 /**
@@ -86,6 +80,17 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     //-------------------------------------------------------------------------
     // region Initialization
 
+    /**
+     * Creates a new method logger.
+     *
+     * @param rand       The random instance
+     *                   (enables passing over a given seed)
+     * @param sender     The sender type
+     * @param name       The method name
+     * @param modifiers  The method modifiers
+     * @param returnType The return type
+     * @param paramTypes The parameter types
+     */
     public MethodLogger(Random rand,
                         RefType<?> sender,
                         String name,
@@ -99,14 +104,6 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
         this.sender = sender;
         this.paramTypes = Arrays.asList(paramTypes);
         this.excludedCalls = new HashSet<>();
-    }
-
-    public MethodLogger(RefType<?> sender,
-                        String name,
-                        int modifiers,
-                        MetaType<T> returnType,
-                        MetaType<?>... paramTypes) {
-        this(null, sender, name, modifiers, returnType, paramTypes);
     }
 
     // endregion
@@ -151,36 +148,6 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
                 RUN_NAME,
                 Modifier.PRIVATE,
                 VOID
-        );
-    }
-
-    /**
-     * Infers a new {@link MethodLogger} instance from the given reflective
-     * method.
-     *
-     * @param method The reflective method
-     * @return a new method logger which encapsulates the reflective method
-     */
-    @SuppressWarnings("unchecked")
-    public static MethodLogger<?> infer(Method method) {
-        RefType<?> sender = (RefType<?>) CACHE.find(method.getDeclaringClass())
-                .orElseThrow(ErrorUtils::shouldNotReachHere);
-
-        MetaType<?> returnType = Optional.ofNullable(method.getReturnType())
-                .flatMap(CACHE::find)
-                .orElse((MetaType) VOID);
-
-        MetaType<?>[] paramTypes = Arrays.stream(method.getParameterTypes())
-                .map(CACHE::find)
-                .map(o -> o.orElseThrow(ErrorUtils::shouldNotReachHere))
-                .toArray(MetaType[]::new);
-
-        return new MethodLogger<>(
-                sender,
-                method.getName(),
-                method.getModifiers(),
-                returnType,
-                paramTypes
         );
     }
 
@@ -288,43 +255,6 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     @Override
     public List<MetaType<?>> argumentTypes() {
         return paramTypes;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<MetaType<?>> requires() {
-        return isStatic()
-                ? paramTypes
-                : Stream.concat(
-                Stream.<MetaType<?>>of(sender),
-                paramTypes.stream()
-        ).collect(Collectors.toList());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Expression<T> build(List<Expression<?>> params) {
-        if (isStatic())
-            return new MethodCall.Static<>(
-                    name,
-                    returnType,
-                    () -> sender,
-                    params
-            );
-
-        // at least one parameter must be given (the instance)
-        assert params.size() > 0;
-
-        return new MethodCall<>(
-                name,
-                returnType,
-                params.get(0),
-                params.subList(1, params.size())
-        );
     }
 
     /**
