@@ -3,6 +3,7 @@ package at.jku.ssw.java.bytecode.generator.types;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
+import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.DateType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
@@ -124,6 +126,7 @@ public enum TypeCache {
     /**
      * Looks up the given Java class in the cache and returns the first
      * meta type instance that corresponds to it.
+     * Also includes the {@link VoidType} for {@link Void} look ups.
      *
      * @param type The Java type to look up
      * @param <T>  The Java type
@@ -131,9 +134,12 @@ public enum TypeCache {
      */
     @SuppressWarnings("unchecked")
     public <T> Optional<MetaType<T>> find(Class<T> type) {
-        return Stream.concat(
-                primitiveTypes.stream(),
-                refTypes.stream())
+        return Stream
+                .of(
+                        primitiveTypes.stream(),
+                        refTypes.stream(),
+                        Stream.of(VoidType.VOID))
+                .flatMap(Function.identity())
                 .filter(t -> t.clazz().equals(type))
                 .map(t -> (MetaType<T>) t)
                 .findFirst();
