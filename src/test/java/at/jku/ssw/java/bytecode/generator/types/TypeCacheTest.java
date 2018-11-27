@@ -1,14 +1,20 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
-import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
-import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
-import at.jku.ssw.java.bytecode.generator.types.base.RefType;
+import at.jku.ssw.java.bytecode.generator.types.base.*;
 import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.DateType;
+import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.TypeCache.CACHE;
 import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
@@ -17,8 +23,10 @@ import static at.jku.ssw.java.bytecode.generator.types.specializations.ObjectTyp
 import static at.jku.ssw.java.bytecode.generator.types.specializations.StringType.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class TypeCacheTest {
 
@@ -28,7 +36,7 @@ public class TypeCacheTest {
     }
 
     @Test
-    public void testTypes() {
+    public void testContainsTypes() {
         assertThat(
                 CACHE.types().collect(Collectors.toList()),
                 Matchers.<MetaType>containsInAnyOrder(
@@ -56,7 +64,7 @@ public class TypeCacheTest {
     }
 
     @Test
-    public void testRefTypes() {
+    public void testContainsRefTypes() {
         assertThat(
                 CACHE.refTypes,
                 Matchers.<RefType>containsInAnyOrder(
@@ -76,7 +84,7 @@ public class TypeCacheTest {
     }
 
     @Test
-    public void testPrimitiveTypes() {
+    public void testContainsPrimitiveTypes() {
         assertThat(
                 CACHE.primitiveTypes,
                 containsInAnyOrder(
@@ -93,23 +101,41 @@ public class TypeCacheTest {
     }
 
     @Test
-    public void testFindPrimitiveType() {
+    public void testContainsPrimitiveType() {
         assertTrue(CACHE.contains(INT));
     }
 
     @Test
-    public void testFindRefType() {
+    public void testContainsRefType() {
         assertTrue(CACHE.contains(STRING));
     }
 
     @Test
-    public void testFindObjectType() {
+    public void testContainsObjectType() {
         assertTrue(CACHE.contains(OBJECT));
     }
 
     @Test
-    public void testFindArrayType() {
+    public void testContainsArrayType() {
         ArrayType<Object[]> objectArray1dType = ArrayType.of(Object[].class, OBJECT);
         assertFalse(CACHE.contains(objectArray1dType));
     }
+
+    @ParameterizedTest
+    @MethodSource("inferredTypeProvider")
+    public void testFind(Class<?> type, MetaType<?> expected) {
+        assertThat(CACHE.find(type), is(Optional.of(expected)));
+    }
+
+    private static Stream<Arguments> inferredTypeProvider() {
+        return Stream.of(
+                arguments(String.class, STRING),
+                arguments(int.class, PrimitiveType.INT),
+                arguments(Integer.class, BoxedType.INT),
+                arguments(Object.class, ObjectType.OBJECT),
+                arguments(Date.class, DateType.DATE),
+                arguments(Void.TYPE, VoidType.VOID)
+        );
+    }
+
 }
