@@ -1,13 +1,11 @@
 package at.jku.ssw.java.bytecode.generator.types;
 
-import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
-import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
-import at.jku.ssw.java.bytecode.generator.types.base.RefType;
-import at.jku.ssw.java.bytecode.generator.types.base.VoidType;
+import at.jku.ssw.java.bytecode.generator.types.base.*;
 import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.DateType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.StringType;
+import at.jku.ssw.java.bytecode.generator.utils.ClassUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -126,7 +124,8 @@ public enum TypeCache {
     /**
      * Looks up the given Java class in the cache and returns the first
      * meta type instance that corresponds to it.
-     * Also includes the {@link VoidType} for {@link Void} look ups.
+     * Also includes the {@link VoidType} for {@link Void} look ups
+     * as well as array types
      *
      * @param type The Java type to look up
      * @param <T>  The Java type
@@ -134,6 +133,10 @@ public enum TypeCache {
      */
     @SuppressWarnings("unchecked")
     public <T> Optional<MetaType<T>> find(Class<T> type) {
+        if (type.isArray())
+            return find(ClassUtils.innerComponentType(type))
+                    .map(inner -> ArrayType.of(type, inner));
+
         return Stream
                 .of(
                         primitiveTypes.stream(),

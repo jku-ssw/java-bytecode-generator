@@ -2,7 +2,6 @@ package at.jku.ssw.java.bytecode.generator.types;
 
 import at.jku.ssw.java.bytecode.generator.types.base.*;
 import at.jku.ssw.java.bytecode.generator.types.specializations.BoxedType;
-import at.jku.ssw.java.bytecode.generator.types.specializations.DateType;
 import at.jku.ssw.java.bytecode.generator.types.specializations.ObjectType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,7 +120,7 @@ public class TypeCacheTest {
         assertFalse(CACHE.contains(objectArray1dType));
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Meta type ''{1}'' is inferred from ''{0}''")
     @MethodSource("inferredTypeProvider")
     public void testFind(Class<?> type, MetaType<?> expected) {
         assertThat(CACHE.find(type), is(Optional.of(expected)));
@@ -133,8 +132,12 @@ public class TypeCacheTest {
                 arguments(int.class, PrimitiveType.INT),
                 arguments(Integer.class, BoxedType.INT),
                 arguments(Object.class, ObjectType.OBJECT),
-                arguments(Date.class, DateType.DATE),
-                arguments(Void.TYPE, VoidType.VOID)
+                arguments(Date.class, DATE),
+                arguments(Void.TYPE, VoidType.VOID),
+                arguments(Character[][].class, ArrayType.of(BoxedType.CHAR, 2)),
+                arguments(String[].class, ArrayType.of(STRING, 1)),
+                arguments(boolean[][][][][].class, ArrayType.of(PrimitiveType.BOOLEAN, 5)),
+                arguments(Date[][].class, ArrayType.of(DATE, 2))
         );
     }
 
