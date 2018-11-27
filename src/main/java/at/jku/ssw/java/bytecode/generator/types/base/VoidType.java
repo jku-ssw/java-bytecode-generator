@@ -23,8 +23,9 @@ public enum VoidType implements MetaType<Void> {
      */
     @Override
     public String toString() {
-        return Patterns.VOID;
+        return descriptor();
     }
+
 
     /**
      * {@inheritDoc}
@@ -40,6 +41,14 @@ public enum VoidType implements MetaType<Void> {
     @Override
     public Class<Void> clazz() {
         return Void.TYPE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String descriptor() {
+        return Patterns.VOID;
     }
 
     /**
