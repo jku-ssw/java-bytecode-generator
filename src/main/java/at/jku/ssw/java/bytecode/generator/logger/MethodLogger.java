@@ -32,11 +32,6 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      */
     public static final String RUN_NAME = "run";
 
-    /**
-     * The format pattern which is used when a method signature is printed.
-     */
-    private static final String TO_STRING_FORMAT = "method %s %s %s(%s)";
-
     // endregion
     //-------------------------------------------------------------------------
     // region Properties
@@ -186,6 +181,7 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
                 TO_STRING_FORMAT,
                 Modifier.toString(modifiers),
                 returnType.descriptor(),
+                sender,
                 name,
                 paramTypes.stream()
                         .map(MetaType::descriptor)

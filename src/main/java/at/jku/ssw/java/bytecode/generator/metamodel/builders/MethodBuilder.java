@@ -16,6 +16,11 @@ import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 public interface MethodBuilder<T> extends Builder<T> {
 
     /**
+     * The format pattern which is used when a method signature is printed.
+     */
+    String TO_STRING_FORMAT = "method %s %s %s.%s(%s)";
+
+    /**
      * Returns the sender type of this method. This is either the type of the
      * instance on which the instance method may be called or the class
      * that defines the static method.

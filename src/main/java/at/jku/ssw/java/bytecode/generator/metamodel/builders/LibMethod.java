@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -116,6 +117,23 @@ public final class LibMethod<T> implements MethodBuilder<T> {
                     );
                 })
         );
+    }
+
+    /**
+     * Returns a string representation of this object.
+     * This implementation parses the actual method signature and returns it.
+     */
+    @Override
+    public String toString() {
+        return String.format(
+                TO_STRING_FORMAT,
+                Modifier.toString(modifiers),
+                returns.descriptor(),
+                sender,
+                name,
+                argumentTypes.stream()
+                        .map(MetaType::descriptor)
+                        .collect(Collectors.joining(", ")));
     }
 
     /**
