@@ -158,15 +158,9 @@ class MethodGenerator extends MethodCaller {
     }
 
     public String srcGenerateMethodCall(MethodLogger<?> method) {
-        if (this.getClazzLogger().hasMethods()) {
-            MethodLogger<?> calledMethod = getClazzLogger().getRandomCallableMethod(method);
-            if (calledMethod == null) {
-                return null;
-            }
-            return srcCallMethod(calledMethod, method);
-        } else {
-            return null;
-        }
+        return getClazzLogger().getRandomCallableMethod(method)
+                .map(calledMethod -> srcCallMethod(calledMethod, method))
+                .orElse(null);
     }
 
     public void setFieldToReturnValue(MethodLogger<?> method) {

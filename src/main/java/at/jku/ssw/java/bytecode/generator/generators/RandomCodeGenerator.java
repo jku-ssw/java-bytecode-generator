@@ -113,10 +113,8 @@ public class RandomCodeGenerator {
             // generate code in run()-method
             generate(Context.PROGRAM_CONTEXT);
             // generate method bodies for pre-registerd methods
-            if (this.getClazzLogger().hasMethods()) {
-                getClazzLogger().methods()
-                        .forEach(methodGenerator::generateMethodBody);
-            }
+            getClazzLogger().methods()
+                    .forEach(methodGenerator::generateMethodBody);
             // compute HashValue of all globals
             this.methodGenerator.generateHashMethod();
             this.methodGenerator.callRunAndHashMethods(controller.executeRunXTimes());

@@ -422,14 +422,12 @@ public class ClazzLogger
     }
 
     public MethodLogger<?> getRandomMethod() {
-        if (hasMethods()) return methods.get(rand.nextInt(methods.size()));
-        else return null;
+        return randomizer.oneOf(methods)
+                .orElse(null);
     }
 
-    public MethodLogger<?> getRandomCallableMethod(MethodLogger<?> callingMethod) {
-        return randomizer
-                .oneOf(getCallableMethods(callingMethod))
-                .orElse(null);
+    public Optional<MethodLogger<?>> getRandomCallableMethod(MethodLogger<?> callingMethod) {
+        return randomizer.oneOf(getCallableMethods(callingMethod));
     }
 
     private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
@@ -506,21 +504,6 @@ public class ClazzLogger
      */
     public final List<MethodLogger<?>> methods() {
         return methods;
-    }
-
-    /**
-     * Checks whether this class has methods.
-     *
-     * @return {@code true} if this context has at least one method;
-     * {@code false} otherwise
-     * @deprecated since this method is only used to check the capacity
-     * before querying the methods, it may be replaced by a better method
-     * access API (e.g. return optional, prevent null pointers for empty
-     * method list etc.).
-     */
-    @Deprecated
-    public final boolean hasMethods() {
-        return !methods.isEmpty();
     }
 
     // endregion
