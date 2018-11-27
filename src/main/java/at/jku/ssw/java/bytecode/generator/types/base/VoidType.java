@@ -39,7 +39,7 @@ public enum VoidType implements MetaType<Void> {
      */
     @Override
     public Class<Void> clazz() {
-        return Void.class;
+        return Void.TYPE;
     }
 
     /**
