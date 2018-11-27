@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType.*;
@@ -142,8 +141,8 @@ public enum TypeCache {
                         primitiveTypes.stream(),
                         refTypes.stream(),
                         Stream.of(VoidType.VOID))
-                .flatMap(Function.identity())
-                .filter(t -> t.clazz().equals(type))
+                .flatMap(s -> s)
+                .filter((MetaType<?> t) -> t.clazz().equals(type))
                 .map(t -> (MetaType<T>) t)
                 .findFirst();
     }
