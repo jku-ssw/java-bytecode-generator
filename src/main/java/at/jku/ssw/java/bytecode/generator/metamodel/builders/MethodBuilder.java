@@ -2,11 +2,14 @@ package at.jku.ssw.java.bytecode.generator.metamodel.builders;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.MethodCall;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static at.jku.ssw.java.bytecode.generator.types.base.VoidType.VOID;
 
@@ -64,13 +67,40 @@ public interface MethodBuilder<T> extends Builder<T> {
      */
     List<MetaType<?>> argumentTypes();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     default List<? extends MetaType<?>> requires() {
-        return null;
+        return isStatic()
+                ? argumentTypes()
+                : Stream.concat(
+                Stream.<MetaType<?>>of(sender()),
+                argumentTypes().stream()
+        ).collect(Collectors.toList());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     default Expression<T> build(List<Expression<?>> params) {
-        return null;
+        if (isStatic())
+            return new MethodCall.Static<>(
+                    name(),
+                    returns(),
+                    this::sender,
+                    params
+            );
+
+        // at least one parameter must be given (the instance)
+        assert params.size() > 0;
+
+        return new MethodCall<>(
+                name(),
+                returns(),
+                params.get(0),
+                params.subList(1, params.size())
+        );
     }
 }
