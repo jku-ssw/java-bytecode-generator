@@ -48,7 +48,7 @@ public interface CLIArgumentsProvider extends ArgumentsProvider {
                                     "-cf", "40",
                                     "-cl", "10",
                                     "-cd", "5",
-                                    "-mli", zeroTo.apply(100),
+                                    "-mli", zeroTo.apply(20),
                                     "-while", "30",
                                     "-for", "30",
                                     "-dowhile", "20",
