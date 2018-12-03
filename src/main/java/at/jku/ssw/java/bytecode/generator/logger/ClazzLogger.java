@@ -1,7 +1,8 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.builders.ResolvedBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.ResolvedBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
@@ -13,6 +14,7 @@ import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -260,24 +262,42 @@ public class ClazzLogger
      * @param type    The required type that the expression should evaluate to
      * @param context The context in which this expression is placed
      * @param <T>     The actual Java class
-     * @return an expression that evaluates to the given meta type
+     * @return an expression that evaluates to the given meta type or nothing
+     * if no expression of the given class may be generated
      */
     public <T> Expression<T> valueOf(MetaType<T> type, MethodLogger<?> context) {
         // TODO enable invocation of methods, casts etc.
         List<Builder<T>> builders = type.builders();
 
-        return randomizer.oneOf(builders.stream()
-                .map(b -> new ResolvedBuilder<>(
-                        b,
-                        b.requires().stream()
-                                .map(paramType ->
-                                        Stream.<Stream<? extends Expression<?>>>of(
-                                                getInitializedVarsUsableInMethod(context)
-                                        ).<Expression<?>>flatMap(e -> e)
-                                                .filter(v -> paramType.equals(v.type()))
-                                                .findFirst()
-                                                .orElseGet(() -> supplier.constantOf(paramType)))
-                                .collect(Collectors.toList()))))
+        return randomizer.oneOf(
+                builders.stream()
+                        // remove builder that are already excluded (e.g. methods that
+                        // already call the context method
+                        .filter(context::isAllowed)
+                        .flatMap(b -> {
+                            List<? extends Expression<?>> params =
+                                    b.requires().stream()
+                                            .map(paramType ->
+                                                    Stream.<Stream<? extends Expression<?>>>of(
+                                                            getInitializedVarsUsableInMethod(context))
+                                                            .flatMap(Function.identity())
+                                                            .filter(v -> paramType.equals(v.type()))
+                                                            .findFirst()
+                                                            .orElse(
+                                                                    // if no variable of the same type can be derived
+                                                                    // try a constant
+                                                                    supplier.constantOf(paramType)
+                                                                            // if no constant can be generated,
+                                                                            // signal that this builder is unusable
+                                                                            .orElse(null)
+                                                            ))
+                                            .collect(Collectors.toList());
+
+                            if (params.contains(null))
+                                return Stream.empty();
+
+                            return Stream.of(new ResolvedBuilder<>(b, params));
+                        }))
                 .map(b -> b.builder.build(b.params))
                 .orElseThrow(() -> ErrorUtils.shouldNotReachHere("Could not resolve value for type " + type));
     }
@@ -291,7 +311,7 @@ public class ClazzLogger
      * @return a stream of randomly picked parameter values - either variables
      * or constant values
      */
-    public Stream<ParamWrapper<?>> randomParameterValues(Stream<MetaType<?>> paramTypes, MethodLogger<?> method) {
+    public Stream<ParamWrapper<?>> randomParameterValues(Stream<? extends MetaType<?>> paramTypes, MethodLogger<?> method) {
         return paramTypes
                 .map(t ->
                         randomizer.oneOf(
@@ -387,7 +407,7 @@ public class ClazzLogger
         ).filter(v -> !v.isFinal());
     }
 
-    public Stream<FieldVarLogger<?>> getInitializedVarsUsableInMethod(MethodLogger<?> method) {
+    public Stream<? extends FieldVarLogger<?>> getInitializedVarsUsableInMethod(MethodLogger<?> method) {
         return Stream.concat(
                 method.streamVariables(),
                 streamVariables()
@@ -415,32 +435,92 @@ public class ClazzLogger
     //-------------------------------------------------------------------------
     // region Random method access
 
+    /**
+     * Gets all methods that are available to this type
+     * (e.g. all standard library methods, generated methods etc).
+     *
+     * @return a stream of all {@link MethodBuilder}s that are available
+     * in this scope
+     */
+    public final Stream<? extends MethodBuilder<?>> allMethods() {
+        return CACHE.refTypes()
+                .map(RefType::methods)
+                .flatMap(List::stream);
+    }
+
+
     public List<MethodLogger<?>> getOverloadedMethods(String name) {
         return methods.stream()
                 .filter(m -> m.name().equals(name))
                 .collect(Collectors.toList());
     }
 
-    public MethodLogger<?> getRandomMethod() {
-        return randomizer.oneOf(methods)
-                .orElse(null);
+    /**
+     * Selects an arbitrary method of all available generated methods
+     * and library methods defined for standard types.
+     *
+     * @param filter An optional filter to preselect applicable methods
+     * @return a randomly picked method that is available for this class
+     */
+    public Optional<? extends MethodBuilder<?>> randomMethod(Predicate<? super MethodBuilder<?>> filter) {
+        return randomizer.oneOf(allMethods().filter(filter));
     }
 
-    public Optional<MethodLogger<?>> getRandomCallableMethod(MethodLogger<?> callingMethod) {
-        return randomizer.oneOf(getCallableMethods(callingMethod));
+    /**
+     * @see #randomMethod(Predicate)
+     */
+    public Optional<? extends MethodBuilder<?>> randomMethod() {
+        return randomizer.oneOf(allMethods());
     }
 
-    private List<MethodLogger<?>> getCallableMethods(MethodLogger<?> callingMethod) {
-        return methods.stream()
-                .filter(m -> !callingMethod.isStatic() || m.isStatic())
-                .filter(m -> callingMethod.isExcluded(callingMethod))
-                .collect(Collectors.toList());
+    /**
+     * Selects one of the generated methods of this class and returns it.
+     *
+     * @param filter An optional filter to preselect applicable methods
+     * @return a randomly picked generated method of this class or nothing
+     * if no methods are generated yet
+     */
+    public final Optional<? extends MethodLogger<?>> randomGeneratedMethod(Predicate<? super MethodBuilder<?>> filter) {
+        return randomizer.oneOf(methods.stream().filter(filter));
+    }
+
+    /**
+     * @see #randomGeneratedMethod(Predicate)
+     */
+    public final Optional<MethodLogger<?>> randomGeneratedMethod() {
+        return randomizer.oneOf(methods);
+    }
+
+    /**
+     * Returns a randomly selected method that is callable from within the
+     * given method.
+     *
+     * @return a method that is callable from within this class
+     * or nothing if no methods can be found
+     */
+    public final Optional<? extends MethodBuilder<?>> randomCallableMethod(MethodLogger<?> caller) {
+        return randomizer.oneOf(callableMethods(caller));
+    }
+
+    /**
+     * Returns all methods that are callable withing the given calling method
+     * (e.g. only static methods for static calls, preventing recursions).
+     *
+     * @param caller The calling method
+     * @return a stream of {@link MethodBuilder}s which are callable
+     * from within the given method
+     */
+    private Stream<? extends MethodBuilder<?>> callableMethods(MethodLogger<?> caller) {
+        return allMethods()
+                .filter(m -> !caller.isStatic() || m.isStatic())
+                .filter(m -> !(m instanceof MethodLogger) ||
+                        caller.isAllowed(m));
     }
 
     @SuppressWarnings("unchecked")
     public <T> MethodLogger<T> getRandomCallableMethodOfType(MethodLogger<?> callingMethod, MetaType<T> metaType) {
         return (MethodLogger<T>) randomizer
-                .oneOf(getCallableMethods(callingMethod).stream()
+                .oneOf(callableMethods(callingMethod)
                         .filter(m -> m.returns() == metaType))
                 .orElse(null);
     }

@@ -185,24 +185,26 @@ public class RandomSupplier {
      * @return a constant expression of the given type
      */
     @SuppressWarnings("unchecked")
-    public <T> Constant<T> constantOf(MetaType<T> type) {
+    public <T> Optional<? extends Constant<T>> constantOf(MetaType<T> type) {
+        assert type != null;
+
         switch (type.kind()) {
             case BYTE:
-                return (Constant<T>) new ByteConstant((byte) rand.nextInt());
+                return Optional.of((Constant<T>) new ByteConstant((byte) rand.nextInt()));
             case SHORT:
-                return (Constant<T>) new ShortConstant((short) rand.nextInt());
+                return Optional.of((Constant<T>) new ShortConstant((short) rand.nextInt()));
             case INT:
-                return (Constant<T>) new IntConstant(rand.nextInt());
+                return Optional.of((Constant<T>) new IntConstant(rand.nextInt()));
             case LONG:
-                return (Constant<T>) new LongConstant(rand.nextLong());
+                return Optional.of((Constant<T>) new LongConstant(rand.nextLong()));
             case FLOAT:
-                return (Constant<T>) new FloatConstant(rand.nextFloat());
+                return Optional.of((Constant<T>) new FloatConstant(rand.nextFloat()));
             case DOUBLE:
-                return (Constant<T>) new DoubleConstant(rand.nextDouble());
+                return Optional.of((Constant<T>) new DoubleConstant(rand.nextDouble()));
             case BOOLEAN:
-                return (Constant<T>) new BooleanConstant(rand.nextBoolean());
+                return Optional.of((Constant<T>) new BooleanConstant(rand.nextBoolean()));
             case CHAR:
-                return (Constant<T>) new CharConstant(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length())));
+                return Optional.of((Constant<T>) new CharConstant(CHARACTERS.charAt(rand.nextInt(CHARACTERS.length()))));
             case RINT:
                 RestrictedIntType rInt = (RestrictedIntType) type;
 
@@ -215,18 +217,18 @@ public class RandomSupplier {
                         .mapToInt(Integer::intValue)
                         .skip(rand.nextInt(rInt.getInclusions().size()));
 
-                return (Constant<T>) new IntConstant(
+                return Optional.of((Constant<T>) new IntConstant(
                         values
                                 .filter(rInt::isValid)
                                 .findFirst()
                                 .orElseThrow(() ->
-                                        shouldNotReachHere("Could not find integer constant for restricted type " + type)));
+                                        shouldNotReachHere("Could not find integer constant for restricted type " + type))));
             case INSTANCE:
             case ARRAY:
-                return new NullConstant<>((RefType<T>) type);
+                return Optional.of(new NullConstant<>((RefType<T>) type));
+            default:
+                return Optional.empty();
         }
-
-        throw shouldNotReachHere("Unexpected constant request for type " + type);
     }
 
     public String getRandomNumericValue(MetaType<?> type, boolean notZero) {

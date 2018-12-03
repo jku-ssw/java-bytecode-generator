@@ -40,11 +40,13 @@ class FieldVarGenerator extends Generator {
 
     public void generateField() {
         MetaType<?> ft = getRandomSupplier().type();
-        String value = null;
-        if (rand.nextBoolean()) { //50% chance to be initialized
-            // TODO replace by context lookup for class context
-            value = clazzContainer.resolver().resolve(getRandomSupplier().constantOf(ft));
-        }
+        String value = rand.nextBoolean() // 50% chance to be initialized
+                // TODO replace by context lookup for class context
+                ? getRandomSupplier()
+                .constantOf(ft)
+                .map(c -> clazzContainer.resolver().resolve(c))
+                .orElse(null)
+                : null;
         this.generateField(getRandomSupplier().getVarName(), ft, getRandomSupplier().getFieldModifiers(), value);
     }
 

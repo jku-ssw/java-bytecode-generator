@@ -4,6 +4,7 @@ import at.jku.ssw.java.bytecode.generator.exceptions.CompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.exceptions.MethodCompilationFailedException;
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.logger.MethodLogger;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.resolvers.JavassistResolver;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ParamWrapper;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -98,20 +100,19 @@ class MethodGenerator extends MethodCaller {
                 getParameterTypes(maximumParameters), getRandomSupplier().getMethodModifiers());
     }
 
-    public MethodLogger<?> overloadMethod(int maximumParameters) {
-        MethodLogger<?> methodToOverload = getClazzLogger().getRandomMethod();
-        if (methodToOverload == null) {
-            return null;
-        }
+    public Optional<MethodLogger<?>> overloadMethod(int maximumParameters) {
+        return getClazzLogger().randomGeneratedMethod()
+                .map(methodToOverload -> {
 
-        List<MethodLogger<?>> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.name());
-        MetaType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
-        if (paramTypes == null) {
-            return null;
-        }
+                    List<MethodLogger<?>> overLoadedMethods = this.getClazzLogger().getOverloadedMethods(methodToOverload.name());
+                    MetaType[] paramTypes = this.getDifferentParamTypes(overLoadedMethods, maximumParameters);
+                    if (paramTypes == null) {
+                        return null;
+                    }
 
-        return this.generateMethod(methodToOverload.name(),
-                getRandomSupplier().returnType(), paramTypes, getRandomSupplier().getMethodModifiers());
+                    return this.generateMethod(methodToOverload.name(),
+                            getRandomSupplier().returnType(), paramTypes, getRandomSupplier().getMethodModifiers());
+                });
     }
 
     public <T> void insertReturn(MethodLogger<T> method) {
@@ -143,13 +144,17 @@ class MethodGenerator extends MethodCaller {
 
     //===============================================Method Calling=====================================================
 
-    private String srcCallMethod(MethodLogger<?> calledMethod, MethodLogger<?> method) {
-        MetaType[] paramTypes = calledMethod.getParamTypes();
-        ParamWrapper[] values = getClazzLogger().randomParameterValues(paramTypes, method);
-        calledMethod.excludeCall(method);
+    private String srcCallMethod(MethodBuilder<?> calledMethod, MethodLogger<?> method) {
+        List<? extends MetaType<?>> paramTypes = calledMethod.argumentTypes();
+        Stream<ParamWrapper<?>> values = getClazzLogger().randomParameterValues(paramTypes.stream(), method);
+        calledMethod.exclude(method);
         String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
 
-        return caller + "." + generateMethodCallString(calledMethod.name(), paramTypes, values);
+        return caller + "." + generateMethodCallString(
+                calledMethod.name(),
+                paramTypes.toArray(new MetaType[0]),
+                values.toArray(ParamWrapper[]::new)
+        );
     }
 
     public void generateMethodCall(MethodLogger<?> method) {
@@ -158,7 +163,7 @@ class MethodGenerator extends MethodCaller {
     }
 
     public String srcGenerateMethodCall(MethodLogger<?> method) {
-        return getClazzLogger().getRandomCallableMethod(method)
+        return getClazzLogger().randomCallableMethod(method)
                 .map(calledMethod -> srcCallMethod(calledMethod, method))
                 .orElse(null);
     }
