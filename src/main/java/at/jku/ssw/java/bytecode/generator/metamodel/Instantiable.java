@@ -8,7 +8,7 @@ import java.util.List;
 public interface Instantiable<T> {
 
     /**
-     * The "builder" that are available for this type.
+     * The "builders" that are available for this type.
      * These are options on how to initialize instance of this type.
      * This includes direct initialization for primitive values - e.g.
      * {@code int i = 1} - but also object instantiation via constructors,
