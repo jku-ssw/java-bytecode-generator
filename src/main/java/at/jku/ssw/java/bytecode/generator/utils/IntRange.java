@@ -1,11 +1,12 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 /**
  * Helper for integer ranges.
  */
-public final class IntRange {
+public final class IntRange implements Comparable<IntRange> {
     /**
      * Minimum value.
      */
@@ -72,6 +73,9 @@ public final class IntRange {
         return new IntRange(min, Integer.MAX_VALUE);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -81,14 +85,43 @@ public final class IntRange {
                 max == intRange.max;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return Objects.hash(min, max);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "[" + min + ", " + max + "]";
+    }
+
+    /**
+     * Compares this range with the given range using a lexicographical
+     * ordering of the {@link #min} and {@link #max} values.
+     *
+     * @param o The other range to compare this range with
+     * @return {@code 0} if both ranges are equal,
+     * a value below zero if this range is before the given range;
+     * a value above zero otherwise
+     */
+    @Override
+    public int compareTo(IntRange o) {
+        if (this == o)
+            return 0;
+
+        if (min != o.min)
+            return min - o.min;
+
+        if (max != o.max)
+            return max - o.max;
+
+        return 0;
     }
 
     /**
@@ -111,5 +144,16 @@ public final class IntRange {
      */
     public boolean contains(IntRange other) {
         return max >= other.max && min <= other.min;
+    }
+
+    /**
+     * Generates an integer stream that iterates over all values
+     * within this range.
+     *
+     * @return a new (bounded) stream from {@link #min} (inclusive)
+     * to {@link #max} (inclusive)
+     */
+    public IntStream stream() {
+        return IntStream.rangeClosed(min, max);
     }
 }
