@@ -1,4 +1,4 @@
-package at.jku.ssw.java.bytecode.generator.jb_generator;
+package at.jku.ssw.java.bytecode.generator;
 
 import at.jku.ssw.java.bytecode.generator.cli.ControlValueParser;
 import at.jku.ssw.java.bytecode.generator.cli.GenerationController;
