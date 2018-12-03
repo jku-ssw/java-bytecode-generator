@@ -1,6 +1,5 @@
-package at.jku.ssw.java.bytecode.generator.metamodel.builders;
+package at.jku.ssw.java.bytecode.generator.metamodel;
 
-import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public class ResolvedBuilder<T> {
     /**
      * The actual parameter expressions for the builder.
      */
-    public final List<Expression<?>> params;
+    public final List<? extends Expression<?>> params;
 
     /**
      * Creates a new resolved builder for the given builder and the given
@@ -30,7 +29,7 @@ public class ResolvedBuilder<T> {
      * @param builder The builder instance
      * @param params  The list of parameter expressions
      */
-    public ResolvedBuilder(Builder<T> builder, List<Expression<?>> params) {
+    public ResolvedBuilder(Builder<T> builder, List<? extends Expression<?>> params) {
         this.builder = builder;
         this.params = params;
     }

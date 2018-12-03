@@ -89,7 +89,7 @@ public interface MethodBuilder<T> extends Builder<T> {
      * {@inheritDoc}
      */
     @Override
-    default Expression<T> build(List<Expression<?>> params) {
+    default Expression<T> build(List<? extends Expression<?>> params) {
         if (isStatic())
             return new MethodCall.Static<>(
                     name(),

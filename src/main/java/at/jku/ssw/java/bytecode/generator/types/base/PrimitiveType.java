@@ -263,7 +263,7 @@ public class PrimitiveType<T> implements MetaType<T> {
 
                     @SuppressWarnings("unchecked")
                     @Override
-                    public Expression<T> build(List<Expression<?>> params) {
+                    public Expression<T> build(List<? extends Expression<?>> params) {
                         assert params.size() == 1;
                         // the builder directly defers the given expression
                         return (Expression<T>) params.get(0);

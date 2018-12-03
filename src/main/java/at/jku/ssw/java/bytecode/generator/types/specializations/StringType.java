@@ -85,6 +85,9 @@ public enum StringType implements RefType<String> {
         return Collections.singletonList(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<LibMethod<?>> methods() {
         return methods;
@@ -107,7 +110,7 @@ public enum StringType implements RefType<String> {
 
                     @SuppressWarnings("unchecked")
                     @Override
-                    public Expression<String> build(List<Expression<?>> params) {
+                    public Expression<String> build(List<? extends Expression<?>> params) {
                         assert params.size() == 1;
                         return (Expression<String>) params.get(0);
                     }

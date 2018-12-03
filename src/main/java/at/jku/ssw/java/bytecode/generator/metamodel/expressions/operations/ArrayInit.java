@@ -27,7 +27,7 @@ public class ArrayInit<T> implements Call<T> {
      * E.g. {@code new int[1][2]} takes two parameters.
      * All parameter types must implicitly be of type {@code int}
      */
-    private final List<Expression<?>> arguments;
+    private final List<? extends Expression<?>> arguments;
 
     /**
      * Creates a new array initalization expression.
@@ -35,7 +35,7 @@ public class ArrayInit<T> implements Call<T> {
      * @param type      The type of array to create
      * @param arguments The parameters (dimension lengths)
      */
-    public ArrayInit(ArrayType<T> type, List<Expression<?>> arguments) {
+    public ArrayInit(ArrayType<T> type, List<? extends Expression<?>> arguments) {
         assert type.getDim() == arguments.size() : "The number of expressions forming the parameter list must be equal to the number of dimensions";
 
         // all parameter types must be assignable to integer
@@ -73,7 +73,7 @@ public class ArrayInit<T> implements Call<T> {
      * {@inheritDoc}
      */
     @Override
-    public List<Expression<?>> arguments() {
+    public List<? extends Expression<?>> arguments() {
         return arguments;
     }
 }

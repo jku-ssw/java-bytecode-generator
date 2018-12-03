@@ -109,7 +109,9 @@ public class BoxedType<T> implements RefType<T> {
     //-------------------------------------------------------------------------
     // region Overridden methods
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -119,11 +121,17 @@ public class BoxedType<T> implements RefType<T> {
                 Objects.equals(boxed, boxedType.boxed);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return descriptor().hashCode();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return descriptor();
@@ -156,14 +164,13 @@ public class BoxedType<T> implements RefType<T> {
         return asList(
                 new NullBuilder<>(this),
                 new Builder<T>() {
-                    @SuppressWarnings("unchecked")
                     @Override
                     public List<PrimitiveType<?>> requires() {
                         return singletonList(boxed);
                     }
 
                     @Override
-                    public Expression<T> build(List<Expression<?>> params) {
+                    public Expression<T> build(List<? extends Expression<?>> params) {
                         assert params.size() == 1;
                         return new ConstructorCall<>(BoxedType.this, params);
                     }

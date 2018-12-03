@@ -33,7 +33,7 @@ public class MethodCall<T> implements Call<T> {
     /**
      * The actual arguments.
      */
-    private final List<Expression<?>> arguments;
+    private final List<? extends Expression<?>> arguments;
 
     /**
      * Creates a new method call expression.
@@ -43,7 +43,7 @@ public class MethodCall<T> implements Call<T> {
      * @param sender    The sender expression
      * @param arguments The list of argument expressions
      */
-    public MethodCall(String name, MetaType<T> type, Expression<?> sender, List<Expression<?>> arguments) {
+    public MethodCall(String name, MetaType<T> type, Expression<?> sender, List<? extends Expression<?>> arguments) {
         assert name != null;
         assert !name.isEmpty();
         assert type != null;
@@ -73,20 +73,18 @@ public class MethodCall<T> implements Call<T> {
     }
 
     /**
-     * Returns the sender expression.
-     *
-     * @return the expression on which this method is called
+     * {@inheritDoc}
      */
+    @Override
     public Expression<?> sender() {
         return sender;
     }
 
     /**
-     * Returns the argument list.
-     *
-     * @return the list of expressions that are passed as arguments
+     * {@inheritDoc}
      */
-    public List<Expression<?>> arguments() {
+    @Override
+    public List<? extends Expression<?>> arguments() {
         return arguments;
     }
 
@@ -108,7 +106,7 @@ public class MethodCall<T> implements Call<T> {
         public Static(String name,
                       MetaType<T> type,
                       TypeIdentifier<?> clazz,
-                      List<Expression<?>> arguments) {
+                      List<? extends Expression<?>> arguments) {
 
             super(name, type, clazz, arguments);
         }

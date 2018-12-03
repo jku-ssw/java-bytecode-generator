@@ -122,6 +122,7 @@ public final class ArrayType<T> implements RefType<T> {
     public static ArrayType<?> of(MetaType<?> type, int dim, BitSet[] restrictions) {
         assert type != null : "Array type must not be null";
         assert type.kind() != Kind.VOID : "Cannot create array of void type";
+        assert type.kind() != ARRAY : "Inner type must not be array";
         assert dim > 0 : "Invalid array dimensions";
 
         final String desc;
@@ -398,7 +399,7 @@ public final class ArrayType<T> implements RefType<T> {
                     }
 
                     @Override
-                    public Expression<T> build(List<Expression<?>> params) {
+                    public Expression<T> build(List<? extends Expression<?>> params) {
                         return new ArrayInit<>(ArrayType.this, params);
                     }
 

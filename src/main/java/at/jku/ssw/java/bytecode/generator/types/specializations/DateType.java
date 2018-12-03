@@ -99,7 +99,7 @@ public enum DateType implements RefType<Date> {
                     }
 
                     @Override
-                    public Expression<Date> build(List<Expression<?>> params) {
+                    public Expression<Date> build(List<? extends Expression<?>> params) {
                         return new ConstructorCall<>(DateType.this, params);
                     }
                 }

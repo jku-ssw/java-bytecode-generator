@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.logger;
 
+import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
@@ -64,12 +65,12 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     private final RefType<?> sender;
 
     /**
-     * The methods that are excluded from being called from within this
+     * The builders that are excluded from being called from within this
      * method's generated body.
      * This distinction is necessary to avoid infinite recursions by methods
      * calling each other mutually.
      */
-    private final Set<MethodLogger<?>> excludedCalls;
+    private final Set<Builder<?>> exclusions;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -98,7 +99,7 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
         this.returnType = returnType;
         this.sender = sender;
         this.paramTypes = Arrays.asList(paramTypes);
-        this.excludedCalls = new HashSet<>();
+        this.exclusions = new HashSet<>();
     }
 
     // endregion
@@ -193,27 +194,24 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     // region Property accessors
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<? extends Builder<?>> exclusions() {
+        return exclusions;
+    }
+
+    /**
      * Prevents the given method from begin called from any path originating
      * from within this method's body.
      *
      * @param method The method to exclude
+     * @return this {@link MethodLogger}
      */
-    public void excludeCall(MethodLogger<?> method) {
-        excludedCalls.add(method);
-    }
-
-    /**
-     * Checks whether this method is excluded from being called from this
-     * method's body. This is checked to prevent the generation of recursions.
-     *
-     * @param method The method to check
-     * @return {@code true} if the methods match of if this method is excluded
-     * in either this method or in any other method in the hierarchy;
-     * {@code false} otherwise
-     */
-    public boolean isExcluded(MethodLogger<?> method) {
-        return excludedCalls.contains(method) ||
-                excludedCalls.stream().anyMatch(m -> m.isExcluded(method));
+    @Override
+    public MethodLogger<T> exclude(Builder<?> method) {
+        exclusions.add(method);
+        return this;
     }
 
     // TODO replace all calls with #argumentTypes

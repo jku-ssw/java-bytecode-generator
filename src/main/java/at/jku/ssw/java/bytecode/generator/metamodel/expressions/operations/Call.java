@@ -30,5 +30,5 @@ public interface Call<T> extends Expression<T> {
      *
      * @return the list of expressions that are passed as arguments
      */
-    List<Expression<?>> arguments();
+    List<? extends Expression<?>> arguments();
 }

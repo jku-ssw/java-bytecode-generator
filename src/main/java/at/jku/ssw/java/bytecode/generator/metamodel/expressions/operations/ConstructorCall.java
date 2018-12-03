@@ -26,7 +26,7 @@ public class ConstructorCall<T> implements Call<T> {
     /**
      * The actual arguments.
      */
-    private final List<Expression<?>> arguments;
+    private final List<? extends Expression<?>> arguments;
 
     /**
      * Creates a new constructor calls expression for the given type
@@ -35,7 +35,7 @@ public class ConstructorCall<T> implements Call<T> {
      * @param type      The reference type that is initialized
      * @param arguments The list of arguments that this constructor is invoked on
      */
-    public ConstructorCall(RefType<T> type, List<Expression<?>> arguments) {
+    public ConstructorCall(RefType<T> type, List<? extends Expression<?>> arguments) {
         this.type = type;
         this.arguments = arguments;
     }
@@ -77,7 +77,7 @@ public class ConstructorCall<T> implements Call<T> {
      * {@inheritDoc}
      */
     @Override
-    public List<Expression<?>> arguments() {
+    public List<? extends Expression<?>> arguments() {
         return arguments;
     }
 }
