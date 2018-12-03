@@ -19,6 +19,7 @@ abstract class MethodCaller extends Generator {
         super(rand, clazzContainer);
     }
 
+    // TODO unite paramValues and paramTypes (e.g. require expression / typecast)
     static String generateMethodCallString(String methodName, MetaType<?>[] paramTypes, ParamWrapper[] paramValues) {
         String params = Optional.ofNullable(paramValues)
                 .map(v -> IntStream.range(0, paramTypes.length)
