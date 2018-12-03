@@ -28,7 +28,7 @@ public final class Randomizer {
      * @param suppliers The functions that are executed
      * @param <T>       The expected return type
      * @return The first result of the calls that is not {@code null}
-     * or {@link Optional#EMPTY} if all results are {@code null}
+     * or {@link Optional#empty()} if all results are {@code null}
      */
     @SafeVarargs
     public final <T> Optional<T> oneNotNullOf(Supplier<T>... suppliers) {
@@ -63,7 +63,7 @@ public final class Randomizer {
      *
      * @param values The values
      * @param <T>    The type of the values
-     * @return one of the given values, or {@link Optional#EMPTY} if
+     * @return one of the given values, or {@link Optional#empty()} if
      * no values are given
      */
     @SafeVarargs
