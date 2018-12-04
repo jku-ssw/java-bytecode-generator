@@ -280,7 +280,7 @@ public class ClazzLogger
                                             .map(paramType ->
                                                     Stream.<Stream<? extends Expression<?>>>of(
                                                             getInitializedVarsUsableInMethod(context))
-                                                            .flatMap(Function.identity())
+                                                            .<Expression<?>>flatMap(Function.identity())
                                                             .filter(v -> paramType.equals(v.type()))
                                                             .findFirst()
                                                             .orElse(
