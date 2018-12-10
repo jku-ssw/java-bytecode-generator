@@ -1,7 +1,7 @@
 package at.jku.ssw.java.bytecode.generator.types.base;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.builders.DefaultConstructorBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.ConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
@@ -77,7 +77,7 @@ public interface RefType<T> extends MetaType<T> {
         // TODO dynamically determine (via reflection?)!
         return asList(
                 new NullBuilder<>(this),
-                new DefaultConstructorBuilder<>(this)
+                new ConstructorBuilder<>(this)
         );
     }
 
@@ -112,4 +112,7 @@ public interface RefType<T> extends MetaType<T> {
     default Set<String> excludedLibraryMethods() {
         return emptySet();
     }
+
+    // endregion
+    //-------------------------------------------------------------------------
 }

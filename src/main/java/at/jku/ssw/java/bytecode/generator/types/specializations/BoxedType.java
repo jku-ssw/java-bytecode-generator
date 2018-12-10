@@ -2,11 +2,9 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.ConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
@@ -17,7 +15,6 @@ import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.n
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.method;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.ternary;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
 /**
  * Represents boxed versions of primitive types.
@@ -163,23 +160,8 @@ public class BoxedType<T> implements RefType<T> {
     public List<Builder<T>> builders() {
         return asList(
                 new NullBuilder<>(this),
-                new Builder<T>() {
-                    @Override
-                    public List<PrimitiveType<?>> requires() {
-                        return singletonList(boxed);
-                    }
-
-                    @Override
-                    public Expression<T> build(List<? extends Expression<?>> params) {
-                        assert params.size() == 1;
-                        return new ConstructorCall<>(BoxedType.this, params);
-                    }
-
-                    @Override
-                    public MetaType<T> returns() {
-                        return BoxedType.this;
-                    }
-                }
+                // new Integer(int), new Double(double) ...
+                new ConstructorBuilder<>(this, boxed)
         );
     }
 

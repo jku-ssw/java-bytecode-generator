@@ -2,7 +2,7 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
-import at.jku.ssw.java.bytecode.generator.metamodel.builders.DefaultConstructorBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.ConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
@@ -100,7 +100,7 @@ public enum StringType implements RefType<String> {
     public List<Builder<String>> builders() {
         return asList(
                 new NullBuilder<>(this),
-                new DefaultConstructorBuilder<>(this),
+                new ConstructorBuilder<>(this),
                 // direct initialization (i.e. String str = "...")
                 new Builder<String>() {
                     @Override

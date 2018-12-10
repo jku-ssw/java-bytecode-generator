@@ -2,16 +2,13 @@ package at.jku.ssw.java.bytecode.generator.types.specializations;
 
 import at.jku.ssw.java.bytecode.generator.logger.FieldVarLogger;
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
+import at.jku.ssw.java.bytecode.generator.metamodel.builders.ConstructorBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.LibMethod;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.NullBuilder;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
-import at.jku.ssw.java.bytecode.generator.metamodel.expressions.operations.ConstructorCall;
-import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.PrimitiveType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -87,22 +84,7 @@ public enum DateType implements RefType<Date> {
         return asList(
                 new NullBuilder<>(this),
                 // new Date(long)
-                new Builder<Date>() {
-                    @Override
-                    public List<? extends MetaType<?>> requires() {
-                        return Collections.singletonList(PrimitiveType.LONG);
-                    }
-
-                    @Override
-                    public DateType returns() {
-                        return DateType.this;
-                    }
-
-                    @Override
-                    public Expression<Date> build(List<? extends Expression<?>> params) {
-                        return new ConstructorCall<>(DateType.this, params);
-                    }
-                }
+                new ConstructorBuilder<>(this, PrimitiveType.LONG)
         );
     }
 }
