@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * Declares an instantiable type.
  */
+@FunctionalInterface
 public interface Instantiable<T> {
 
     /**
