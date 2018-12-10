@@ -41,13 +41,6 @@ public interface Builder<T> {
     Expression<T> build(List<? extends Expression<?>> params);
 
     /**
-     * @see #build(List)
-     */
-    default Expression<T> build(Expression<?>... params) {
-        return build(Arrays.asList(params));
-    }
-
-    /**
      * Specifies the return type of this builder.
      *
      * @return a meta type describing the result of this builder.
@@ -125,12 +118,12 @@ public interface Builder<T> {
          * {@inheritDoc}
          */
         @Override
-        default Expression<T> build(List<? extends Expression<?>> __) {
+        default Expression<T> build(@SuppressWarnings("unused") List<? extends Expression<?>> __) {
             return build();
         }
 
         /**
-         * @see #build(Expression[])
+         * @see #build(List)
          */
         Expression<T> build();
     }
