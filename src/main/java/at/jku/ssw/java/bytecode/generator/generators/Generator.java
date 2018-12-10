@@ -86,6 +86,7 @@ abstract class Generator {
         return getClazzContainer().getRandomSupplier();
     }
 
+    // TODO change parameter to expression and append to method body
     void insertIntoMethodBody(MethodLogger<?> method, String src) {
         if (src == null) {
             return;
