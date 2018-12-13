@@ -14,8 +14,18 @@ import static java.util.stream.IntStream.range;
  */
 public final class Randomizer {
 
+    /**
+     * The random instance that is used in order to be able to recreate a
+     * certain execution / selection order,
+     */
     private final Random rand;
 
+    /**
+     * Creates a new randomizer using the given {@link Random} instance
+     * for all selections.
+     *
+     * @param rand The random instance
+     */
     public Randomizer(Random rand) {
         this.rand = rand;
     }
