@@ -248,7 +248,7 @@ public class ControlValueParser {
 
     private void help() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("jb_generator", options);
+        formatter.printHelp("jbgenerator", options);
         System.exit(0);
     }
 }
