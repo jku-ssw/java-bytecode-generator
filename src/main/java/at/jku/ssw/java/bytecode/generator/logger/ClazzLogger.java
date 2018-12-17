@@ -577,7 +577,6 @@ public class ClazzLogger
 
     /**
      * Returns the methods of this class.
-     * TODO include / exclude main / run?
      *
      * @return a list of all methods that are registered for this class.
      * (excluding the {@link #main} and {@link #run} methods
