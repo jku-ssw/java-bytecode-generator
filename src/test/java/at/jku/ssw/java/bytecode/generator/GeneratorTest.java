@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public interface GeneratorTest extends CLIArgumentsProvider {
 
-    int TIMEOUT = 2;
+    int TIMEOUT = 10;
 
     Logger logger = LogManager.getLogger();
 
