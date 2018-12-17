@@ -242,7 +242,7 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * @return a set of builders that must not be called by this builder
      */
     public final Set<? extends MethodLogger<?>> allExclusions() {
-        return buildExclusions(new HashSet<>());
+        return buildExclusions(new HashSet<>(Collections.singleton(this)));
     }
 
     /**
@@ -253,17 +253,13 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * @return the modified set of generators (same as the parameter)
      */
     final Set<? extends MethodLogger<?>> buildExclusions(Set<MethodLogger<?>> generators) {
-
-        // include this instance
-        generators.add(this);
-
         // get all those instances that are new
         Set<? extends MethodLogger<?>> localExclusions =
                 exclusions().stream()
                         .filter(generators::add)
                         .collect(Collectors.toSet());
 
-        // call the excluded builders exclusions and add them
+        // call the excluded builders' exclusions and add them
         localExclusions.forEach(e -> e.buildExclusions(generators));
 
         return generators;
