@@ -266,14 +266,10 @@ public class ClazzLogger
      * if no expression of the given class may be generated
      */
     public <T> Expression<T> valueOf(MetaType<T> type, MethodLogger<?> context) {
-        // TODO enable invocation of methods, casts etc.
         List<Builder<T>> builders = type.builders();
 
         return randomizer.oneOf(
                 builders.stream()
-                        // remove builder that are already excluded (e.g. methods that
-                        // already call the context method
-                        .filter(context::isAllowed)
                         .flatMap(b -> {
                             List<? extends Expression<?>> params =
                                     b.requires().stream()
@@ -511,10 +507,14 @@ public class ClazzLogger
      * from within the given method
      */
     private Stream<? extends MethodBuilder<?>> callableMethods(MethodLogger<?> caller) {
+        Set<? extends Builder<?>> exclusions = caller.allExclusions();
+
         return allMethods()
+                // if caller is static, exclude non-static methods
+                // otherwise consider all
                 .filter(m -> !caller.isStatic() || m.isStatic())
-                .filter(m -> !(m instanceof MethodLogger) ||
-                        caller.isAllowed(m));
+                // if called method is generated, check if it is excluded
+                .filter(m -> !(m instanceof MethodLogger) || !exclusions.contains(m));
     }
 
     @SuppressWarnings("unchecked")

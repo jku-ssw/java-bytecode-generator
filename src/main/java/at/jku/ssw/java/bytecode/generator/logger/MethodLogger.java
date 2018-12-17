@@ -2,6 +2,7 @@ package at.jku.ssw.java.bytecode.generator.logger;
 
 import at.jku.ssw.java.bytecode.generator.metamodel.Builder;
 import at.jku.ssw.java.bytecode.generator.metamodel.builders.MethodBuilder;
+import at.jku.ssw.java.bytecode.generator.metamodel.expressions.Expression;
 import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.types.base.RefType;
@@ -70,7 +71,12 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * This distinction is necessary to avoid infinite recursions by methods
      * calling each other mutually.
      */
-    private final Set<Builder<?>> exclusions;
+    private final Set<MethodLogger<?>> exclusions;
+
+    /**
+     * The method body.
+     */
+    private final List<Expression<?>> body;
 
     // endregion
     //-------------------------------------------------------------------------
@@ -100,6 +106,7 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
         this.sender = sender;
         this.paramTypes = Arrays.asList(paramTypes);
         this.exclusions = new HashSet<>();
+        this.body = new ArrayList<>();
     }
 
     // endregion
@@ -194,29 +201,78 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     // region Property accessors
 
     /**
-     * {@inheritDoc}
+     * Invokes the given builder from this builder.
+     * If the target builder is a {@link MethodLogger} this method
+     * ensures that the targeted builder does not call this builder afterwards
+     * to prevent infinite recursions.
+     *
+     * @param target The target builder (constructor, method etc.)
      */
-    @Override
-    public Set<? extends Builder<?>> exclusions() {
+    public final void invoke(Builder<?> target) {
+        if (target instanceof MethodLogger) {
+            MethodLogger<?> gen = (MethodLogger<?>) target;
+            gen.exclude(this);
+        }
+    }
+
+    /**
+     * Excludes the given {@link MethodLogger} from being called from within
+     * this builder (e.g. if the target already calls this builder).
+     *
+     * @param generator The generator that is to be excluded
+     */
+    public void exclude(MethodLogger<?> generator) {
+        System.out.println(this + " excludes " + generator);
+        exclusions.add(generator);
+    }
+
+    /**
+     * Determines all local exclusions.
+     *
+     * @return a set of all local exclusions that directly call this builder
+     */
+    public Set<? extends MethodLogger<?>> exclusions() {
         return exclusions;
     }
 
     /**
-     * Prevents the given method from begin called from any path originating
-     * from within this method's body.
+     * Determines all builders that must not be called from within
+     * this builder. This method recursively collects all builders
+     * that are excluded from being called by this builder.
      *
-     * @param method The method to exclude
-     * @return this {@link MethodLogger}
+     * @return a set of builders that must not be called by this builder
      */
-    @Override
-    public MethodLogger<T> exclude(Builder<?> method) {
-        exclusions.add(method);
-        return this;
+    public final Set<? extends MethodLogger<?>> allExclusions() {
+        Set<? extends MethodLogger<?>> e = buildExclusions(new HashSet<>());
+
+        System.out.println("EXCLUSIONS FOR " + this);
+        e.forEach(System.out::println);
+
+        return e;
     }
 
-    // TODO replace all calls with #argumentTypes
-    public MetaType[] getParamTypes() {
-        return paramTypes.toArray(new MetaType[0]);
+    /**
+     * Mutates the given set of generators and adds all this builder's
+     * exclusions if it is not already excluded.
+     *
+     * @param generators The generator set that is modified
+     * @return the modified set of generators (same as the parameter)
+     */
+    final Set<? extends MethodLogger<?>> buildExclusions(Set<MethodLogger<?>> generators) {
+
+        // include this instance
+        generators.add(this);
+
+        // get all those instances that are new
+        Set<? extends MethodLogger<?>> localExclusions =
+                exclusions().stream()
+                        .filter(generators::add)
+                        .collect(Collectors.toSet());
+
+        // call the excluded builders exclusions and add them
+        localExclusions.forEach(e -> e.buildExclusions(generators));
+
+        return generators;
     }
 
     /**
@@ -257,6 +313,27 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
     @Override
     public MetaType<T> returns() {
         return returnType;
+    }
+
+    /**
+     * Appends the given expression to the body.
+     *
+     * @param expression The expression to add
+     * @return this builder (to enable chaining)
+     */
+    // TODO actually use in combination with "insertIntoMethodBody"
+    public MethodLogger<T> append(Expression<?> expression) {
+        body.add(expression);
+        return this;
+    }
+
+    /**
+     * Gets all expressions that form the body.
+     *
+     * @return a list of all expressions (in order) which form the body
+     */
+    public List<? extends Expression<?>> body() {
+        return body;
     }
 
     // endregion

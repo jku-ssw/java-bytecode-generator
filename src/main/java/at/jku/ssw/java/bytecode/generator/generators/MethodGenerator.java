@@ -144,10 +144,12 @@ class MethodGenerator extends MethodCaller {
 
     //===============================================Method Calling=====================================================
 
-    private String srcCallMethod(MethodBuilder<?> calledMethod, MethodLogger<?> method) {
+    private String srcCallMethod(MethodBuilder<?> calledMethod, MethodLogger<?> context) {
         List<? extends MetaType<?>> paramTypes = calledMethod.argumentTypes();
-        Stream<ParamWrapper<?>> values = getClazzLogger().randomParameterValues(paramTypes.stream(), method);
-        calledMethod.exclude(method);
+        Stream<ParamWrapper<?>> values = getClazzLogger().randomParameterValues(paramTypes.stream(), context);
+
+        context.invoke(calledMethod);
+
         String caller = calledMethod.isStatic() ? clazzContainer.getFileName() : "this";
 
         return caller + "." + generateMethodCallString(
@@ -294,7 +296,7 @@ class MethodGenerator extends MethodCaller {
         for (int i = 0; i < overloadedMethods.size(); i++) {
             MetaType[] parameterTypes = getParameterTypes(maximumNumberOfParams);
             Stream<MethodLogger<?>> equalNumberOfParamMethods = overloadedMethods.stream().filter(
-                    m -> m.getParamTypes().length == parameterTypes.length);
+                    m -> m.argumentTypes().size() == parameterTypes.length);
             if (!equalOverloadedParamTypesExists(equalNumberOfParamMethods, parameterTypes)) {
                 return parameterTypes;
             }
@@ -303,7 +305,10 @@ class MethodGenerator extends MethodCaller {
     }
 
     private boolean equalOverloadedParamTypesExists(Stream<MethodLogger<?>> equalNumberOfParamMethods, MetaType[] parameterTypes) {
-        return equalNumberOfParamMethods.anyMatch(ml -> equalParameterTypes(parameterTypes, ml.getParamTypes()));
+        return equalNumberOfParamMethods.anyMatch(ml ->
+
+                equalParameterTypes(parameterTypes, ml.argumentTypes().toArray(new MetaType[0]))
+        );
     }
 
     private static boolean equalParameterTypes(MetaType[] types1, MetaType[] types2) {
