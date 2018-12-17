@@ -222,7 +222,6 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * @param generator The generator that is to be excluded
      */
     public void exclude(MethodLogger<?> generator) {
-        System.out.println(this + " excludes " + generator);
         exclusions.add(generator);
     }
 
@@ -243,12 +242,7 @@ public class MethodLogger<T> extends Logger implements MethodBuilder<T> {
      * @return a set of builders that must not be called by this builder
      */
     public final Set<? extends MethodLogger<?>> allExclusions() {
-        Set<? extends MethodLogger<?>> e = buildExclusions(new HashSet<>());
-
-        System.out.println("EXCLUSIONS FOR " + this);
-        e.forEach(System.out::println);
-
-        return e;
+        return buildExclusions(new HashSet<>());
     }
 
     /**
