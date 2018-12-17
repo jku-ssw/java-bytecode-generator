@@ -6,7 +6,7 @@ The *Java Bytecode Generator* can create random Java class files refined with di
 options in order to test compilers or other tools that work with Java bytecode.
 
 ## Usage
-The generator can be executed by running the main method in [JBGenerator](src/main/java/at/jku/ssw/java/bytecode/generator/jb_generator/JBGenerator.java)
+The generator can be executed by running the main method in [JBGenerator](src/main/java/at/jku/ssw/java/bytecode/generator/JBGenerator.java)
 or by using the provided Gradle wrapper:
 ```
 ./gradlew run
