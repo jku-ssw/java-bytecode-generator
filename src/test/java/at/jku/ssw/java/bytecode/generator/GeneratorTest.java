@@ -27,7 +27,17 @@ public interface GeneratorTest extends CLIArgumentsProvider {
 
     Logger logger = LogManager.getLogger();
 
-    String outputDirectory();
+    String TEMP_DIR = ".tmp";
+
+    /**
+     * The default output directory for generated files
+     *
+     * @return a path denoting the output directory for generated files
+     * of this test class
+     */
+    default Path outputDirectory() {
+        return Paths.get(TEMP_DIR).resolve(getClass().getSimpleName());
+    }
 
     default void fail(GeneratedClass clazz, Throwable throwable) {
         Assertions.fail(
@@ -60,7 +70,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
         try {
             randomCodeGenerator = new RandomCodeGenerator(className, controller);
             randomCodeGenerator.generate();
-            Path p = Paths.get(outputDirectory()).resolve(path);
+            Path p = outputDirectory().resolve(path);
             Files.createDirectories(p);
             randomCodeGenerator.writeFile(p.toString());
         } catch (Throwable t) {
@@ -90,7 +100,7 @@ public interface GeneratorTest extends CLIArgumentsProvider {
     default Result run(GeneratedClass clazz)
             throws IOException, InterruptedException {
 
-        Path path = Paths.get(outputDirectory()).resolve(clazz.path);
+        Path path = outputDirectory().resolve(clazz.path);
 
         Process p = Runtime.getRuntime().exec("java " + clazz.name, null, path.toFile());
 

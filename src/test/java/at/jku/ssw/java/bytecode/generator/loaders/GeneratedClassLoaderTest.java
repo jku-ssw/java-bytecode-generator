@@ -21,13 +21,14 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
     private static final int MAX_LENGTH = 50;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = false;
 
-    private static final String DIR = "src/test/resources/generated";
-
     private GeneratedClassLoader generatedClassLoader;
 
     @BeforeEach
     public void setUp() {
-        generatedClassLoader = new GeneratedClassLoader(DIR);
+        generatedClassLoader = new GeneratedClassLoader(
+                outputDirectory().toString()
+        );
+
         TypeCache.CACHE.reset();
     }
 
@@ -128,11 +129,6 @@ public class GeneratedClassLoaderTest implements GeneratorTest {
         } catch (Throwable t) {
             fail(genClass, t);
         }
-    }
-
-    @Override
-    public String outputDirectory() {
-        return DIR;
     }
 
     @Override

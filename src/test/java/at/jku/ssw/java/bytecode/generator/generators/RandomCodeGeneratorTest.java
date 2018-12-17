@@ -12,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
 
@@ -31,8 +30,6 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
     private static final int MAX_LENGTH = 30;
     private static final boolean ALLOW_ARITHMETIC_EXCEPTIONS = true;
 
-    private static final String DIR = "src/test/resources/generated";
-
     @BeforeEach
     void setUp() {
         TypeCache.CACHE.reset();
@@ -40,7 +37,6 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
     @ParameterizedTest
     @ArgumentsSource(MinorRepetitionProvider.class)
-    @SuppressWarnings("unchecked")
     void testSeedGenerate(List<String> args, int index) throws Exception {
         int seed = new Random().nextInt();
         args.add("-seed");
@@ -61,8 +57,8 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
         compareResults(exp, act);
 
-        byte[] classABytecode = Files.readAllBytes(Paths.get(DIR).resolve(classA.path).resolve(classA.name + ".class"));
-        byte[] classBBytecode = Files.readAllBytes(Paths.get(DIR).resolve(classB.path).resolve(classB.name + ".class"));
+        byte[] classABytecode = Files.readAllBytes(outputDirectory().resolve(classA.path).resolve(classA.name + ".class"));
+        byte[] classBBytecode = Files.readAllBytes(outputDirectory().resolve(classB.path).resolve(classB.name + ".class"));
 
         assertSameStructure(classABytecode, classBBytecode);
     }
@@ -87,7 +83,6 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
 
     @ParameterizedTest
     @ArgumentsSource(RandomCodeGeneratorTest.class)
-    @SuppressWarnings("unchecked")
     void testGenerate(List<String> args, int index) throws Exception {
         final String className = "HighBranchingFactor" + index;
         logger.info("Generating class '{}'", className);
@@ -109,11 +104,6 @@ public class RandomCodeGeneratorTest implements GeneratorTest {
         } catch (Throwable t) {
             fail(clazz, t);
         }
-    }
-
-    @Override
-    public String outputDirectory() {
-        return DIR;
     }
 
     @Override
