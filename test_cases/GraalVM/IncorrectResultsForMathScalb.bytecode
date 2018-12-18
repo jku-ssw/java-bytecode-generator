@@ -1,0 +1,74 @@
+public class IncorrectResultsForMathScalb
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC
+Constant pool:
+   #1 = Utf8               IncorrectResultsForMathScalb
+   #2 = Class              #1             // IncorrectResultsForMathScalb
+   #3 = Utf8               java/lang/Object
+   #4 = Class              #3             // java/lang/Object
+   #5 = Utf8               a
+   #6 = Utf8               I
+   #7 = Utf8               main
+   #8 = Utf8               ([Ljava/lang/String;)V
+   #9 = NameAndType        #5:#6          // a:I
+  #10 = Fieldref           #2.#9          // IncorrectResultsForMathScalb.a:I
+  #11 = Utf8               java/lang/System
+  #12 = Class              #11            // java/lang/System
+  #13 = Utf8               out
+  #14 = Utf8               Ljava/io/PrintStream;
+  #15 = NameAndType        #13:#14        // out:Ljava/io/PrintStream;
+  #16 = Fieldref           #12.#15        // java/lang/System.out:Ljava/io/PrintStream;
+  #17 = Utf8               java/lang/Math
+  #18 = Class              #17            // java/lang/Math
+  #19 = Utf8               scalb
+  #20 = Utf8               (FI)F
+  #21 = NameAndType        #19:#20        // scalb:(FI)F
+  #22 = Methodref          #18.#21        // java/lang/Math.scalb:(FI)F
+  #23 = Utf8               java/io/PrintStream
+  #24 = Class              #23            // java/io/PrintStream
+  #25 = Utf8               println
+  #26 = Utf8               (F)V
+  #27 = NameAndType        #25:#26        // println:(F)V
+  #28 = Methodref          #24.#27        // java/io/PrintStream.println:(F)V
+  #29 = Utf8               Code
+  #30 = Utf8               StackMapTable
+{
+  static int a;
+    descriptor: I
+    flags: ACC_STATIC
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=2, args_size=1
+         0: sipush        -279
+         3: istore_1
+         4: getstatic     #10                 // Field a:I
+         7: ifle          21
+        10: getstatic     #10                 // Field a:I
+        13: ifge          17
+        16: nop
+        17: iconst_1
+        18: goto          22
+        21: iconst_0
+        22: ifeq          27
+        25: iconst_0
+        26: istore_1
+        27: getstatic     #16                 // Field java/lang/System.out:Ljava/io/PrintStream;
+        30: iconst_m1
+        31: i2f
+        32: iload_1
+        33: invokestatic  #22                 // Method java/lang/Math.scalb:(FI)F
+        36: invokevirtual #28                 // Method java/io/PrintStream.println:(F)V
+        39: return
+      StackMapTable: number_of_entries = 4
+        frame_type = 252 /* append */
+          offset_delta = 17
+          locals = [ int ]
+        frame_type = 3 /* same */
+        frame_type = 64 /* same_locals_1_stack_item */
+          stack = [ int ]
+        frame_type = 4 /* same */
+}
