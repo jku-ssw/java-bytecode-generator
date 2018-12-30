@@ -6,6 +6,7 @@ import at.jku.ssw.java.bytecode.generator.types.base.ArrayType;
 import at.jku.ssw.java.bytecode.generator.types.base.MetaType;
 import at.jku.ssw.java.bytecode.generator.utils.ClazzFileContainer;
 import at.jku.ssw.java.bytecode.generator.utils.Randomizer;
+import at.jku.ssw.java.bytecode.generator.utils.StatementDSL;
 
 import java.util.BitSet;
 import java.util.Random;
@@ -18,10 +19,10 @@ import static at.jku.ssw.java.bytecode.generator.types.base.MetaType.Kind.ARRAY;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Assignments.assign;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.BlockEnd;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Blocks.If;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Casts.cast;
-import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Conditions.notNull;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.Statement;
 import static at.jku.ssw.java.bytecode.generator.utils.StatementDSL.array;
+import static java.util.Arrays.copyOfRange;
+import static java.util.Arrays.stream;
 
 /**
  * Generator the enables access to arrays.
@@ -32,31 +33,68 @@ public class ArrayAccessGenerator extends MethodCaller {
         super(rand, clazzContainer);
     }
 
+
     /**
-     * Generates a string that describes a valid array access.
+     * Generates a randomly filled array that denotes visitable positions
+     * of the array. Both the number of dimensions as well as the actual
+     * positions are randomly generated.
      *
-     * @param a    The array to access
-     * @param dims The number of dimensions to access
-     * @return a string representation of a the array access
+     * @param array The array that is accessed
+     * @return an array that denotes the visited positions for each array.
+     * The array has a length of at least one and at most that of
+     * {@code array#length - 1}.
      */
-    private String srcAccessArray(FieldVarLogger<?> a, int dims) {
-        assert dims > 0;
+    private int[] genAccessPositions(FieldVarLogger<?> array) {
+        assert array != null;
 
-        BitSet[] restrictions = a.getType().getRestrictions();
+        // fetch random number of dimensions
+        // (minimum 1, maximum the dimensions of a)
+        final int nParams = rand.nextInt(array.getType().getDim()) + 1;
 
-        boolean unrestricted = !a.getType().isRestricted();
+        final BitSet[] restrictions = array.getType().getRestrictions();
 
-        return array(
-                a.access(),
-                IntStream.range(0, dims)
-                        .map(d -> rand.ints(0, MIN_ARRAY_DIM_LENGTH)
-                                // filter values that do not fit the restrictions (if any)
-                                .filter(i -> unrestricted || restrictions[d] == null || restrictions[d].isEmpty() || restrictions[d].get(i))
-                                .findFirst()
-                                .orElseThrow(AssertionError::new))
-                        .mapToObj(i -> cast(i).to(int.class))
-                        .collect(Collectors.toList())
-        );
+        final boolean unrestricted = !array.getType().isRestricted();
+
+        return IntStream.range(0, nParams)
+                .map(d -> rand.ints(0, MIN_ARRAY_DIM_LENGTH)
+                        // filter values that do not fit the restrictions (if any)
+                        .filter(i -> unrestricted
+                                || restrictions[d] == null
+                                || restrictions[d].isEmpty()
+                                || restrictions[d].get(i))
+                        .findFirst()
+                        .orElseThrow(AssertionError::new))
+                .toArray();
+    }
+
+    /**
+     * Generates a guard that ensures that the given array is not {@code null}
+     * at any of the given position and then embeds the body in it.
+     *
+     * @param array     The array that is accessed
+     * @param positions The array positions that are visited
+     *                  (in each dimension)
+     * @param body      The body expression that performs the array access
+     * @return an expression that guards the array from being null and then
+     * performs the potentially unsafe operation
+     */
+    private String guardAccess(FieldVarLogger<?> array, int[] positions, String body) {
+        final String arrayName = array.access();
+
+        /*
+        This generates the concatenated condition string that ensures all
+        accessed dimension positions (except the last one) being not null
+        */
+        final String condition = IntStream.range(0, positions.length)
+                .mapToObj(pos -> stream(copyOfRange(positions, 0, pos)))
+                .map(IntStream::toArray)
+                .map(curPos -> array(arrayName, curPos))
+                .map(StatementDSL.Conditions::notNull)
+                .collect(Collectors.joining(" && "));
+
+        return If(condition) +
+                Statement(body) +
+                BlockEnd;
     }
 
     /**
@@ -75,22 +113,24 @@ public class ArrayAccessGenerator extends MethodCaller {
                         // only initialized arrays
                         .filter(FieldVarLogger::isInitialized)
                         .flatMap(a -> {
-                            // fetch random number of dimensions
-                            // (minimum 1, maximum the dimensions of a)
-                            int nParams = rand.nextInt(a.getType().getDim()) + 1;
+                            int[] positions = genAccessPositions(a);
 
-                            MetaType<?> returnType = ArrayType.resultingTypeOf(a, nParams);
+                            MetaType<?> returnType = ArrayType.resultingTypeOf(a, positions.length);
 
                             return getClazzLogger()
                                     .getNonFinalVarsUsableInMethod(method)
                                     .filter(v -> v.getType().isAssignableFrom(returnType))
                                     .map(v -> (Supplier<String>) () ->
-                                            If(notNull(a.toString())) +
-                                                    Statement(
-                                                            assign(srcAccessArray(a, nParams))
-                                                                    .to(v.access())
-                                                    ) +
-                                                    BlockEnd
+                                            guardAccess(
+                                                    a,
+                                                    positions,
+                                                    assign(
+                                                            array(
+                                                                    a.access(),
+                                                                    positions)
+                                                    ).to(v.access())
+                                            )
+
                                     );
                         })
         ).findFirst()
@@ -112,21 +152,24 @@ public class ArrayAccessGenerator extends MethodCaller {
                         .filter(v -> v.getType().kind() == ARRAY)
                         .filter(FieldVarLogger::isInitialized)
                         .flatMap(a -> {
-                            // fetch random number of dimensions (at least,
-                            // with a maximum of the dimensions of a)
-                            int nParams = rand.nextInt(a.getType().getDim()) + 1;
+                            int[] positions = genAccessPositions(a);
 
-                            MetaType<?> type = ArrayType.resultingTypeOf(a, nParams);
+                            MetaType<?> type = ArrayType.resultingTypeOf(a, positions.length);
 
                             return getClazzLogger()
                                     .getInitializedVarsUsableInMethod(method)
                                     .filter(v -> type.isAssignableFrom(v.getType()))
                                     .map(v -> (Supplier<String>) () ->
-                                            If(notNull(a.toString())) +
-                                                    Statement(assign(v.access())
-                                                            .to(srcAccessArray(a, nParams))
-                                                    ) +
-                                                    BlockEnd
+                                            guardAccess(
+                                                    a,
+                                                    positions,
+                                                    assign(v.access()).to(
+                                                            array(
+                                                                    a.access(),
+                                                                    positions
+                                                            )
+                                                    )
+                                            )
                                     );
                         })
         ).findFirst()
