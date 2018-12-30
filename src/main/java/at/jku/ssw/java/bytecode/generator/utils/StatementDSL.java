@@ -1,5 +1,6 @@
 package at.jku.ssw.java.bytecode.generator.utils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -210,9 +211,15 @@ public class StatementDSL {
         return String.format(TERNARY, cond, t, e);
     }
 
-    public static String array(String name, List<Object> dim) {
+    public static String array(String name, List<?> dim) {
         return name + dim.stream()
                 .map(d -> String.format(ARRAY, d))
+                .collect(Collectors.joining());
+    }
+
+    public static String array(String name, int[] dim) {
+        return name + Arrays.stream(dim)
+                .mapToObj(d -> String.format(ARRAY, d))
                 .collect(Collectors.joining());
     }
 
