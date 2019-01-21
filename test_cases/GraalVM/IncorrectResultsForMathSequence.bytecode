@@ -1,6 +1,3 @@
-Classfile /home/sebastiankloibhofer/Development/graal-generator-tests/IncorrectResultsForMathSequence.class
-  Last modified Jan 21, 2019; size 394 bytes
-  MD5 checksum 3d2873506ca27a903005b92f76efb938
 public class IncorrectResultsForMathSequence
   minor version: 0
   major version: 52
