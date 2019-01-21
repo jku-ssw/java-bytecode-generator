@@ -1,0 +1,64 @@
+Classfile /home/sebastiankloibhofer/Development/graal-generator-tests/IncorrectResultsForMathSequence.class
+  Last modified Jan 21, 2019; size 394 bytes
+  MD5 checksum 3d2873506ca27a903005b92f76efb938
+public class IncorrectResultsForMathSequence
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC
+Constant pool:
+   #1 = Utf8               IncorrectResultsForMathSequence
+   #2 = Class              #1             // IncorrectResultsForMathSequence
+   #3 = Utf8               java/lang/Object
+   #4 = Class              #3             // java/lang/Object
+   #5 = Utf8               main
+   #6 = Utf8               ([Ljava/lang/String;)V
+   #7 = Utf8               java/lang/Math
+   #8 = Class              #7             // java/lang/Math
+   #9 = Utf8               IEEEremainder
+  #10 = Utf8               (DD)D
+  #11 = NameAndType        #9:#10         // IEEEremainder:(DD)D
+  #12 = Methodref          #8.#11         // java/lang/Math.IEEEremainder:(DD)D
+  #13 = Utf8               ulp
+  #14 = Utf8               (F)F
+  #15 = NameAndType        #13:#14        // ulp:(F)F
+  #16 = Methodref          #8.#15         // java/lang/Math.ulp:(F)F
+  #17 = Utf8               copySign
+  #18 = Utf8               (FF)F
+  #19 = NameAndType        #17:#18        // copySign:(FF)F
+  #20 = Methodref          #8.#19         // java/lang/Math.copySign:(FF)F
+  #21 = Utf8               java/lang/System
+  #22 = Class              #21            // java/lang/System
+  #23 = Utf8               out
+  #24 = Utf8               Ljava/io/PrintStream;
+  #25 = NameAndType        #23:#24        // out:Ljava/io/PrintStream;
+  #26 = Fieldref           #22.#25        // java/lang/System.out:Ljava/io/PrintStream;
+  #27 = Utf8               java/io/PrintStream
+  #28 = Class              #27            // java/io/PrintStream
+  #29 = Utf8               println
+  #30 = Utf8               (F)V
+  #31 = NameAndType        #29:#30        // println:(F)V
+  #32 = Methodref          #28.#31        // java/io/PrintStream.println:(F)V
+  #33 = Utf8               Code
+{
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=4, locals=2, args_size=1
+         0: dconst_0
+         1: dconst_0
+         2: invokestatic  #12                 // Method java/lang/Math.IEEEremainder:(DD)D
+         5: d2f
+         6: fstore_1
+         7: fload_1
+         8: invokestatic  #16                 // Method java/lang/Math.ulp:(F)F
+        11: fstore_1
+        12: fconst_0
+        13: fload_1
+        14: invokestatic  #20                 // Method java/lang/Math.copySign:(FF)F
+        17: fstore_1
+        18: getstatic     #26                 // Field java/lang/System.out:Ljava/io/PrintStream;
+        21: fload_1
+        22: invokevirtual #32                 // Method java/io/PrintStream.println:(F)V
+        25: return
+}
